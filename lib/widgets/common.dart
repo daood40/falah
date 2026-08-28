@@ -168,11 +168,15 @@ class StatusDot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final wq = context.wq;
-    final (Color bg, Color borderColor, String label) = switch (status) {
-      TaskStatus.done => (wq.done, Colors.transparent, '✓'),
-      TaskStatus.doneLate => (wq.late, Colors.transparent, '!'),
-      TaskStatus.missed => (wq.missed, Colors.transparent, '✕'),
-      null => (Colors.transparent, wq.none, ''),
+    final (Color bg, Color borderColor, IconData? icon) = switch (status) {
+      TaskStatus.done => (wq.done, Colors.transparent, Icons.check_rounded),
+      TaskStatus.doneLate => (
+        wq.late,
+        Colors.transparent,
+        Icons.priority_high_rounded,
+      ),
+      TaskStatus.missed => (wq.missed, Colors.transparent, Icons.close_rounded),
+      null => (Colors.transparent, wq.none, null),
     };
 
     final dot = AnimatedContainer(
@@ -188,16 +192,8 @@ class StatusDot extends StatelessWidget {
           width: 2,
         ),
       ),
-      child: applicable && label.isNotEmpty
-          ? Text(
-              label,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: size * 0.46,
-                fontWeight: FontWeight.w800,
-                height: 1,
-              ),
-            )
+      child: applicable && icon != null
+          ? Icon(icon, size: size * 0.58, color: Colors.white)
           : null,
     );
 

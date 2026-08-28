@@ -94,7 +94,7 @@ class TasksTab extends StatelessWidget {
             ElevatedButton(
               onPressed: () => showTaskEditorSheet(context),
               child: Text(
-                '＋ ${s.addTask}',
+                '+ ${s.addTask}',
                 style: const TextStyle(fontSize: 12),
               ),
             ),
