@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  quality:
+    name: Typecheck · Lint · Test · Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm test
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+          retention-days: 7
+
+  database:
+    name: Validate PostgreSQL schema + RLS
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: falah
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: falah
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply migrations
+        run: |
+          for f in supabase/migrations/*.sql; do
+            echo "applying $f"
+            psql -v ON_ERROR_STOP=1 -q -f "$f"
+          done
+      - name: Sanity checks
+        run: |
+          psql -v ON_ERROR_STOP=1 -At <<'SQL'
+          select 'plans: ' || count(*) from subscription_plans;
+          select 'sources: ' || count(*) from content_sources;
+          insert into auth.users (id) values ('00000000-0000-0000-0000-000000000001');
+          insert into content_projects (user_id, title, type, format_id)
+            values ('00000000-0000-0000-0000-000000000001', 'ci', 'post', 'ig-post');
+          select 'rls tables: ' || count(*) from pg_class c
+            join pg_namespace n on n.oid = c.relnamespace
+            where n.nspname = 'public' and c.relkind = 'r' and c.relrowsecurity;
+          SQL

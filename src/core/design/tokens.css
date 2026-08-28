@@ -1,0 +1,125 @@
+/* ============================================================
+   FALAH Design Tokens — single source of truth for all styling
+   ============================================================ */
+:root {
+  /* Brand palette — green / white / gold (restrained) */
+  --fl-green-900: #06281f;
+  --fl-green-800: #083b2d;
+  --fl-green-700: #0e5c46;
+  --fl-green-600: #12744f;
+  --fl-green-500: #178a60;
+  --fl-green-100: #d9efe6;
+  --fl-green-50: #eef8f3;
+  --fl-gold-600: #b08d24;
+  --fl-gold-500: #d4af37;
+  --fl-gold-100: #f6ecc9;
+  --fl-cream: #f8f5ec;
+
+  /* Semantic — light theme */
+  --fl-bg: #f6f7f6;
+  --fl-surface: #ffffff;
+  --fl-surface-2: #eef1ef;
+  --fl-surface-3: #e2e7e4;
+  --fl-text: #14201b;
+  --fl-text-2: #4c5a53;
+  --fl-text-3: #7c8781;
+  --fl-border: #dde3df;
+  --fl-primary: var(--fl-green-700);
+  --fl-primary-hover: var(--fl-green-600);
+  --fl-on-primary: #ffffff;
+  --fl-accent: var(--fl-gold-600);
+  --fl-danger: #b3352c;
+  --fl-warning: #a8710a;
+  --fl-success: #17734f;
+  --fl-info: #1a5f8a;
+  --fl-overlay: rgba(10, 20, 16, 0.55);
+  --fl-shadow-1: 0 1px 3px rgba(10, 25, 20, 0.09);
+  --fl-shadow-2: 0 4px 16px rgba(10, 25, 20, 0.13);
+  --fl-shadow-3: 0 12px 40px rgba(10, 25, 20, 0.2);
+
+  /* Typography */
+  --fl-font-ui: 'Cairo', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --fl-font-quran: 'Amiri Quran', 'Scheherazade New', 'Amiri', serif;
+  --fl-font-naskh: 'Scheherazade New', 'Amiri', serif;
+  --fl-fs-xs: 0.75rem;
+  --fl-fs-sm: 0.875rem;
+  --fl-fs-md: 1rem;
+  --fl-fs-lg: 1.125rem;
+  --fl-fs-xl: 1.375rem;
+  --fl-fs-2xl: 1.75rem;
+  --fl-fs-3xl: 2.25rem;
+  --fl-lh-tight: 1.3;
+  --fl-lh-normal: 1.6;
+  --fl-lh-loose: 2.2;
+
+  /* Spacing scale */
+  --fl-sp-1: 0.25rem;
+  --fl-sp-2: 0.5rem;
+  --fl-sp-3: 0.75rem;
+  --fl-sp-4: 1rem;
+  --fl-sp-5: 1.5rem;
+  --fl-sp-6: 2rem;
+  --fl-sp-7: 3rem;
+  --fl-sp-8: 4rem;
+
+  /* Radius */
+  --fl-r-sm: 8px;
+  --fl-r-md: 12px;
+  --fl-r-lg: 16px;
+  --fl-r-xl: 24px;
+  --fl-r-full: 999px;
+
+  /* Motion */
+  --fl-t-fast: 120ms ease;
+  --fl-t-med: 220ms ease;
+
+  /* Layout */
+  --fl-nav-h: 64px;
+  --fl-header-h: 56px;
+  --fl-content-max: 1200px;
+  --fl-touch-min: 44px;
+}
+
+[data-theme='dark'] {
+  --fl-bg: #0b1210;
+  --fl-surface: #121a17;
+  --fl-surface-2: #1a2420;
+  --fl-surface-3: #24312b;
+  --fl-text: #eef3f0;
+  --fl-text-2: #aebbb4;
+  --fl-text-3: #74817a;
+  --fl-border: #26332d;
+  --fl-primary: var(--fl-green-500);
+  --fl-primary-hover: #1da06f;
+  --fl-on-primary: #06281f;
+  --fl-accent: var(--fl-gold-500);
+  --fl-danger: #e06158;
+  --fl-warning: #d99a2b;
+  --fl-success: #2fae7d;
+  --fl-info: #4d9fd0;
+  --fl-overlay: rgba(0, 0, 0, 0.65);
+  --fl-shadow-1: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --fl-shadow-2: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --fl-shadow-3: 0 12px 40px rgba(0, 0, 0, 0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --fl-t-fast: 0ms;
+    --fl-t-med: 0ms;
+  }
+}
+
+/* ---------- v1.2 visual language: gradients + geometric pattern ---------- */
+:root {
+  --fl-grad-primary: linear-gradient(135deg, #178a60, #0e5c46 55%, #0a4a38);
+  --fl-grad-hero: linear-gradient(150deg, #10684f, #083b2d 58%, #06281f);
+  --fl-grad-gold: linear-gradient(120deg, #e6c65c, #d4af37 45%, #b08d24);
+  /* Subtle rub-el-hizb geometric tile (light strokes, for dark/green surfaces). */
+  --fl-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.055' stroke-width='1'%3E%3Crect x='16' y='16' width='40' height='40'/%3E%3Crect x='16' y='16' width='40' height='40' transform='rotate(45 36 36)'/%3E%3Ccircle cx='36' cy='36' r='4.5'/%3E%3C/g%3E%3C/svg%3E");
+  --fl-glow-primary: 0 8px 22px rgba(18, 116, 79, 0.35);
+}
+[data-theme='dark'] {
+  --fl-grad-primary: linear-gradient(135deg, #1da06f, #12744f 55%, #0e5c46);
+  --fl-glow-primary: 0 8px 24px rgba(23, 138, 96, 0.45);
+}

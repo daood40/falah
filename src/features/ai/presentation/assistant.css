@@ -1,0 +1,54 @@
+.assistant {
+  display: flex;
+  flex-direction: column;
+  gap: var(--fl-sp-4);
+  min-height: calc(100vh - var(--fl-header-h) - var(--fl-nav-h) - 3rem);
+}
+.assistant__log {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--fl-sp-3);
+}
+.assistant__msg {
+  max-width: min(85%, 560px);
+  padding: var(--fl-sp-3) var(--fl-sp-4);
+  border-radius: var(--fl-r-lg);
+  font-size: var(--fl-fs-sm);
+}
+.assistant__msg--user {
+  align-self: flex-end;
+  background: var(--fl-primary);
+  color: var(--fl-on-primary);
+  border-end-end-radius: 4px;
+}
+.assistant__msg--assistant {
+  align-self: flex-start;
+  background: var(--fl-surface);
+  border: 1px solid var(--fl-border);
+  border-end-start-radius: 4px;
+}
+.assistant__ref {
+  display: block;
+  color: var(--fl-text);
+  border-inline-start: 3px solid var(--fl-accent);
+}
+.assistant__composer {
+  position: sticky;
+  bottom: calc(var(--fl-nav-h) + var(--fl-sp-2));
+  display: flex;
+  gap: var(--fl-sp-2);
+  background: var(--fl-bg);
+  padding: var(--fl-sp-2) 0;
+}
+@media (min-width: 900px) {
+  .assistant__composer {
+    bottom: 0;
+  }
+}
+
+/* ---------- v1.2 assistant polish ---------- */
+.assistant__msg--user {
+  background: var(--fl-grad-primary);
+  color: #ffffff;
+}

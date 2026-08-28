@@ -1,0 +1,99 @@
+.create-hub {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--fl-sp-4);
+}
+.create-hub__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--fl-sp-2);
+  text-align: center;
+  padding: var(--fl-sp-6) var(--fl-sp-4);
+  color: var(--fl-text);
+  transition:
+    transform var(--fl-t-fast),
+    box-shadow var(--fl-t-fast);
+}
+.create-hub__card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--fl-shadow-2);
+}
+.create-hub__icon {
+  font-size: 2.6rem;
+}
+.create-hub__card--quran {
+  border-top: 4px solid var(--fl-primary);
+}
+.create-hub__card--hadith {
+  border-top: 4px solid var(--fl-accent);
+}
+
+.create-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--fl-sp-3);
+}
+
+.ayah-card {
+  border-inline-start: 4px solid var(--fl-primary);
+}
+.ayah-card .fl-quran-text {
+  font-size: var(--fl-fs-xl);
+  margin: var(--fl-sp-2) 0;
+}
+.ayah-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--fl-sp-2);
+  align-items: center;
+  font-size: var(--fl-fs-xs);
+  color: var(--fl-text-2);
+}
+
+.hadith-card {
+  border-inline-start: 4px solid var(--fl-accent);
+}
+.hadith-card .fl-naskh {
+  font-size: var(--fl-fs-lg);
+  margin: var(--fl-sp-2) 0;
+}
+
+.format-row {
+  display: flex;
+  gap: var(--fl-sp-2);
+  overflow-x: auto;
+  padding-bottom: var(--fl-sp-1);
+}
+.format-row .fl-chip {
+  flex-shrink: 0;
+}
+
+/* ---------- v1.2 create polish ---------- */
+.create-hub__card {
+  position: relative;
+  overflow: hidden;
+}
+.create-hub__card--quran {
+  background-image:
+    var(--fl-pattern), linear-gradient(165deg, var(--fl-green-800), var(--fl-green-900));
+  color: #f5f1e6;
+  border-top: none;
+}
+.create-hub__card--quran .fl-muted {
+  color: #b9cec4;
+}
+.create-hub__card--quran .create-hub__icon {
+  color: var(--fl-gold-500);
+}
+.create-hub__card--hadith {
+  background-image: var(--fl-pattern), linear-gradient(165deg, #3a3325, #211c12);
+  color: #f2e9d5;
+  border-top: none;
+}
+.create-hub__card--hadith .fl-muted {
+  color: #c9bfa4;
+}
+.create-hub__card--hadith .create-hub__icon {
+  color: var(--fl-gold-500);
+}

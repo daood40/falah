@@ -1,0 +1,264 @@
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--fl-sp-3);
+}
+
+.editor__toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--fl-sp-2);
+  flex-wrap: wrap;
+}
+.editor__name {
+  font-weight: 700;
+  border: none;
+  background: transparent;
+  font-size: var(--fl-fs-md);
+  min-width: 120px;
+  flex: 1;
+}
+.editor__name:focus {
+  outline: 1px solid var(--fl-border);
+  border-radius: var(--fl-r-sm);
+}
+
+.stage-wrap {
+  display: flex;
+  justify-content: center;
+  background: var(--fl-surface-2);
+  border-radius: var(--fl-r-lg);
+  padding: var(--fl-sp-4);
+  overflow: hidden;
+}
+.stage {
+  position: relative;
+  max-width: 100%;
+  box-shadow: var(--fl-shadow-2);
+  border-radius: 4px;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+}
+.stage__el {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  overflow: hidden;
+}
+.stage__el--selected {
+  outline: 2px dashed var(--fl-accent);
+  outline-offset: 2px;
+}
+/* Small "verified/locked" chip shown only while the element is selected,
+   so it never visually pollutes the design itself. */
+.stage__lock {
+  position: absolute;
+  top: -10px;
+  inset-inline-start: -6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--fl-r-full);
+  background: var(--fl-gold-500);
+  color: #14201b;
+  box-shadow: var(--fl-shadow-1);
+  pointer-events: none;
+}
+.stage__text {
+  width: 100%;
+  text-align: center;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+.stage__handle {
+  position: absolute;
+  bottom: -7px;
+  inset-inline-end: -7px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--fl-accent);
+  border: 2px solid #fff;
+  cursor: nwse-resize;
+  touch-action: none;
+}
+
+.editor__tabs {
+  display: flex;
+  gap: var(--fl-sp-1);
+  overflow-x: auto;
+}
+.editor__panel {
+  background: var(--fl-surface);
+  border: 1px solid var(--fl-border);
+  border-radius: var(--fl-r-lg);
+  padding: var(--fl-sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--fl-sp-3);
+}
+.editor__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: var(--fl-sp-3);
+}
+
+.layer-row {
+  display: flex;
+  align-items: center;
+  gap: var(--fl-sp-2);
+  padding: var(--fl-sp-2);
+  border: 1px solid var(--fl-border);
+  border-radius: var(--fl-r-md);
+  cursor: pointer;
+  background: var(--fl-surface);
+}
+.layer-row--active {
+  border-color: var(--fl-primary);
+  background: var(--fl-green-50);
+}
+[data-theme='dark'] .layer-row--active {
+  background: rgba(23, 138, 96, 0.12);
+}
+.layer-row__label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fl-fs-xs);
+  font-weight: 600;
+}
+
+.swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--fl-sp-1);
+}
+.swatch {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--fl-r-sm);
+  border: 2px solid var(--fl-border);
+  cursor: pointer;
+  padding: 0;
+}
+.swatch--active {
+  border-color: var(--fl-accent);
+}
+
+@media (min-width: 900px) {
+  .editor {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+  .editor__stage-col {
+    flex: 1.4;
+    min-width: 0;
+    position: sticky;
+    top: calc(var(--fl-header-h) + 8px);
+  }
+  .editor__side {
+    flex: 1;
+    min-width: 320px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--fl-sp-3);
+  }
+}
+
+/* ---------- Templates panel ---------- */
+.tpl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: var(--fl-sp-3);
+}
+.tpl-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--fl-sp-1);
+  border: 1px solid var(--fl-border);
+  border-radius: var(--fl-r-md);
+  background: var(--fl-surface);
+  padding: var(--fl-sp-2);
+  cursor: pointer;
+  font: inherit;
+  color: var(--fl-text);
+  transition:
+    border-color var(--fl-t-fast),
+    transform var(--fl-t-fast);
+}
+.tpl-card:hover:not(:disabled) {
+  border-color: var(--fl-primary);
+  transform: translateY(-2px);
+}
+.tpl-card:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.tpl-swatch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  aspect-ratio: 4 / 5;
+  border-radius: var(--fl-r-sm);
+}
+.tpl-swatch__line {
+  width: 60%;
+  height: 4px;
+  border-radius: 2px;
+}
+.tpl-swatch__line--short {
+  width: 32%;
+  height: 3px;
+}
+.tpl-card__name {
+  font-size: var(--fl-fs-xs);
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+}
+
+/* ---------- Snap guides ---------- */
+.stage__guide {
+  position: absolute;
+  background: var(--fl-gold-500);
+  opacity: 0.9;
+  pointer-events: none;
+  z-index: 5;
+}
+.stage__guide--v {
+  top: 0;
+  bottom: 0;
+  width: 1.5px;
+  left: 50%;
+}
+.stage__guide--h {
+  left: 0;
+  right: 0;
+  height: 1.5px;
+  top: 50%;
+}
+
+/* ---------- v1.2 editor polish ---------- */
+.editor__toolbar {
+  background: var(--fl-surface);
+  border: 1px solid var(--fl-border);
+  border-radius: var(--fl-r-lg);
+  padding: var(--fl-sp-2);
+  box-shadow: var(--fl-shadow-1);
+}
+.stage-wrap {
+  background:
+    radial-gradient(circle at 1px 1px, var(--fl-surface-3) 1px, transparent 0) 0 0 / 18px 18px,
+    var(--fl-surface-2);
+}
