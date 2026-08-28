@@ -49,6 +49,37 @@ export async function quizRoutes(app: FastifyInstance): Promise<void> {
     return startAttempt(req.userId!, req.isGuest, opts);
   });
 
+  /** Active admin-curated (scheduled) quizzes. */
+  app.get('/scheduled', async () => {
+    const { rows } = await query(
+      `SELECT id, title, mode, difficulty, question_count, time_limit_sec, starts_at, ends_at
+       FROM quizzes
+       WHERE status = 'active'
+         AND (starts_at IS NULL OR starts_at <= now())
+         AND (ends_at IS NULL OR ends_at > now())
+       ORDER BY created_at DESC LIMIT 20`,
+    );
+    return { quizzes: rows };
+  });
+
+  /** Play an admin-curated quiz (fixed identical question set). */
+  app.post('/:quizId/start', { preHandler: [requireAuth, startLimiter] }, async (req) => {
+    const { quizId } = req.params as { quizId: string };
+    const { rows } = await query('SELECT * FROM quizzes WHERE id = $1', [quizId]);
+    const quiz = rows[0];
+    if (!quiz) throw notFound('Quiz not found');
+    if (quiz.status !== 'active') throw badRequest('Quiz is not active');
+    if (quiz.starts_at && new Date(quiz.starts_at).getTime() > Date.now()) throw badRequest('Quiz has not started yet');
+    if (quiz.ends_at && new Date(quiz.ends_at).getTime() < Date.now()) throw badRequest('Quiz has ended');
+    const started = await startAttempt(req.userId!, req.isGuest, {
+      mode: quiz.mode,
+      fixedQuestionIds: quiz.question_ids,
+      overallTimeLimitSec: quiz.time_limit_sec,
+    });
+    await query('UPDATE attempts SET quiz_id = $2 WHERE id = $1', [started.attemptId, quizId]);
+    return started;
+  });
+
   app.post('/attempts/:id/answers', { preHandler: [requireAuth, answerLimiter] }, async (req) => {
     const { id } = req.params as { id: string };
     const schema = z.object({ questionId: z.string().uuid(), answer: z.unknown() });

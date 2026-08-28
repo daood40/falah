@@ -32,6 +32,8 @@ Base: `/api/v1`. Auth: `Authorization: Bearer <accessToken>`. Errors:
 | Method | Path | Notes |
 |---|---|---|
 | GET | /quizzes/question-types | registry: id, family, scored, media |
+| GET | /quizzes/scheduled | active admin-curated quizzes |
+| POST | /quizzes/:quizId/start | play a curated quiz (identical fixed set) |
 | POST | /quizzes/start | mode, categoryId?, difficulty?, language?, questionCount?, types? → attemptId + sanitized questions + deadline |
 | POST | /quizzes/attempts/:id/answers | { questionId, answer } → { outcome, points } (server-timed) |
 | POST | /quizzes/attempts/:id/submit | totals, XP, streak, achievements |
@@ -78,6 +80,8 @@ Base: `/api/v1`. Auth: `Authorization: Bearer <accessToken>`. Errors:
   `GET /admin/questions/meta/types`
 - Import/export (editor+): `POST /admin/questions/import` (json|csv; strict|partial; row-level errors),
   `GET /admin/questions/export?format=json|csv&…filters`
+- Quizzes: `GET /admin/quizzes` (moderator+), `POST /admin/quizzes` (admin — curates a fixed set),
+  `POST /admin/quizzes/:id/status` (draft|scheduled|active|paused|ended|archived)
 - Users (moderator+): `GET /admin/users`, `GET /admin/users/:id`,
   `POST /admin/users/:id/status`, `POST /admin/users/:id/role` (admin+/super_admin rules)
 - Reports (moderator+): `GET /admin/reports`, `POST /admin/reports/:id/resolve`

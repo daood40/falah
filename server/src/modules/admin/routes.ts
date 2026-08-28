@@ -8,6 +8,7 @@ import { requireRole } from '../../plugins/auth.js';
 import { roleAtLeast } from '../auth/rbac.js';
 import type { Role } from '../auth/tokens.js';
 import { adminQuestionRoutes } from './questions.js';
+import { adminQuizRoutes } from './quizzes.js';
 import { importExportRoutes } from './importExport.js';
 
 export async function adminRoutes(app: FastifyInstance): Promise<void> {
@@ -16,6 +17,7 @@ export async function adminRoutes(app: FastifyInstance): Promise<void> {
 
   await app.register(adminQuestionRoutes, { prefix: '/questions' });
   await app.register(importExportRoutes, { prefix: '/questions' });
+  await app.register(adminQuizRoutes, { prefix: '/quizzes' });
 
   // ---------- dashboard ----------
   app.get('/dashboard', { preHandler: [moderator] }, async () => {

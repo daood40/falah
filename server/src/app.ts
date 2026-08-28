@@ -39,6 +39,13 @@ export async function buildApp(): Promise<FastifyInstance> {
   app.addHook('onRequest', attachIdentity);
   app.addHook('onRequest', rateLimit({ keyPrefix: 'global' }));
 
+  app.addHook('onSend', async (_req, reply) => {
+    reply.header('x-content-type-options', 'nosniff');
+    reply.header('x-frame-options', 'DENY');
+    reply.header('referrer-policy', 'no-referrer');
+    if (env.isProd) reply.header('strict-transport-security', 'max-age=31536000; includeSubDomains');
+  });
+
   // uniform error responses — internals are never leaked to clients
   app.setErrorHandler((err, req, reply) => {
     if (err instanceof AppError) {

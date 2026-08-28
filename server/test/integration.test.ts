@@ -520,3 +520,40 @@ describe('stats & search', () => {
     expect((search2.body as { categories: unknown[] }).categories).toHaveLength(1);
   });
 });
+
+describe('admin quiz management (scheduled quizzes)', () => {
+  beforeEach(resetDb);
+
+  it('create → activate → users play the identical fixed set', async () => {
+    for (let i = 0; i < 6; i++) await seedQuestion({});
+    const admin = await registerUser('quizadmin');
+    await makeAdmin(admin.id);
+    const token = await loginAs('quizadmin');
+
+    const created = await api('/admin/quizzes', {
+      method: 'POST', token,
+      body: { title: { en: 'Weekly Special' }, questionCount: 3, mode: 'competitive' },
+    });
+    expect(created.status).toBe(200);
+    const quizId = (created.body as { id: string }).id;
+
+    const player = await registerUser('quizplayer');
+    // draft quiz is not playable
+    const early = await api(`/quizzes/${quizId}/start`, { method: 'POST', token: player.token });
+    expect(early.status).toBe(400);
+
+    const activate = await api(`/admin/quizzes/${quizId}/status`, { method: 'POST', token, body: { status: 'active' } });
+    expect(activate.status).toBe(200);
+
+    const listed = await api('/quizzes/scheduled');
+    expect((listed.body as { quizzes: Array<{ id: string }> }).quizzes.some((q) => q.id === quizId)).toBe(true);
+
+    const s1 = await api(`/quizzes/${quizId}/start`, { method: 'POST', token: player.token });
+    expect(s1.status).toBe(200);
+    const q1 = (s1.body as { questions: Array<{ id: string }> }).questions.map((q) => q.id).sort();
+    const player2 = await registerUser('quizplayer2');
+    const s2 = await api(`/quizzes/${quizId}/start`, { method: 'POST', token: player2.token });
+    const q2 = (s2.body as { questions: Array<{ id: string }> }).questions.map((q) => q.id).sort();
+    expect(q1).toEqual(q2);
+  });
+});
