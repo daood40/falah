@@ -162,6 +162,19 @@ class AppStrings {
     required this.hexColorHint,
     required this.simulatedNote,
     required this.today,
+    required this.system,
+    required this.todayTasks,
+    required this.todayAllDone,
+    required this.todayNoTasks,
+    required this.loadDemoData,
+    required this.demoLoaded,
+    required this.yearHeatmap,
+    required this.heatmapLegendLess,
+    required this.heatmapLegendMore,
+    required this.reorderHint,
+    required this.about,
+    required this.aboutVersion,
+    required this.aboutDesc,
   });
 
   final String appName;
@@ -322,6 +335,19 @@ class AppStrings {
   final String hexColorHint;
   final String simulatedNote;
   final String today;
+  final String system;
+  final String todayTasks;
+  final String todayAllDone;
+  final String todayNoTasks;
+  final String loadDemoData;
+  final String demoLoaded;
+  final String yearHeatmap;
+  final String heatmapLegendLess;
+  final String heatmapLegendMore;
+  final String reorderHint;
+  final String about;
+  final String aboutVersion;
+  final String aboutDesc;
 
   static const ar = AppStrings(
     appName: 'وقتي',
@@ -507,6 +533,19 @@ class AppStrings {
     hexColorHint: 'كود اللون مثل 6E8F72',
     simulatedNote: 'محاكاة — بدون دفع فعلي',
     today: 'اليوم',
+    system: 'تلقائي',
+    todayTasks: 'مهام اليوم',
+    todayAllDone: 'أحسنت! أنجزت كل مهام اليوم 🎉',
+    todayNoTasks: 'لا توجد مهام مستحقة اليوم',
+    loadDemoData: 'تحميل بيانات تجريبية',
+    demoLoaded: 'تم تحميل البيانات التجريبية',
+    yearHeatmap: 'خريطة السنة',
+    heatmapLegendLess: 'أقل',
+    heatmapLegendMore: 'أكثر',
+    reorderHint: 'اضغط مطولًا واسحب لإعادة الترتيب',
+    about: 'حول التطبيق',
+    aboutVersion: 'الإصدار',
+    aboutDesc: 'تطبيق لتتبع المهام والعادات اليومية، مبني بـ Flutter.',
   );
 
   static const en = AppStrings(
@@ -693,6 +732,19 @@ class AppStrings {
     hexColorHint: 'Hex code like 6E8F72',
     simulatedNote: 'Simulated — no real payment',
     today: 'Today',
+    system: 'Auto',
+    todayTasks: "Today's tasks",
+    todayAllDone: 'Well done! You completed all of today\'s tasks 🎉',
+    todayNoTasks: 'No tasks due today',
+    loadDemoData: 'Load demo data',
+    demoLoaded: 'Demo data loaded',
+    yearHeatmap: 'Year heatmap',
+    heatmapLegendLess: 'Less',
+    heatmapLegendMore: 'More',
+    reorderHint: 'Long-press and drag to reorder',
+    about: 'About',
+    aboutVersion: 'Version',
+    aboutDesc: 'A daily tasks & habits tracker built with Flutter.',
   );
 
   static AppStrings of(String langCode) => langCode == 'en' ? en : ar;

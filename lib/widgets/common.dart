@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
+import '../core/l10n.dart';
 import '../core/theme.dart';
 import '../models/models.dart';
 
@@ -155,6 +157,14 @@ class StatusDot extends StatelessWidget {
   final double size;
   final VoidCallback? onTap;
 
+  /// وصف الحالة لقارئات الشاشة.
+  String _semanticLabel(AppStrings s) => switch (status) {
+    TaskStatus.done => s.done,
+    TaskStatus.doneLate => s.late,
+    TaskStatus.missed => s.missed,
+    null => applicable ? s.remaining : s.none,
+  };
+
   @override
   Widget build(BuildContext context) {
     final wq = context.wq;
@@ -191,10 +201,26 @@ class StatusDot extends StatelessWidget {
           : null,
     );
 
+    final strings = AppStrings.of(
+      Directionality.of(context) == TextDirection.rtl ? 'ar' : 'en',
+    );
     if (!applicable || onTap == null) {
-      return Opacity(opacity: applicable ? 1 : .5, child: dot);
+      return Semantics(
+        label: _semanticLabel(strings),
+        child: Opacity(opacity: applicable ? 1 : .5, child: dot),
+      );
     }
-    return GestureDetector(onTap: onTap, child: dot);
+    return Semantics(
+      label: _semanticLabel(strings),
+      button: true,
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          onTap!();
+        },
+        child: dot,
+      ),
+    );
   }
 }
 

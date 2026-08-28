@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -92,9 +93,11 @@ class AppState extends ChangeNotifier {
     try {
       final json = jsonDecode(raw) as Map<String, dynamic>;
       lang = json['lang'] as String? ?? 'ar';
-      themeMode = (json['theme'] as String?) == 'dark'
-          ? ThemeMode.dark
-          : ThemeMode.light;
+      themeMode = switch (json['theme'] as String?) {
+        'dark' => ThemeMode.dark,
+        'system' => ThemeMode.system,
+        _ => ThemeMode.light,
+      };
       notifMaster = json['notifMaster'] as bool? ?? true;
       morningRecap = json['morningRecap'] as bool? ?? true;
       eveningRecap = json['eveningRecap'] as bool? ?? false;
@@ -130,7 +133,11 @@ class AppState extends ChangeNotifier {
   Future<void> _persist() async {
     final json = <String, dynamic>{
       'lang': lang,
-      'theme': themeMode == ThemeMode.dark ? 'dark' : 'light',
+      'theme': switch (themeMode) {
+        ThemeMode.dark => 'dark',
+        ThemeMode.system => 'system',
+        ThemeMode.light => 'light',
+      },
       'notifMaster': notifMaster,
       'morningRecap': morningRecap,
       'eveningRecap': eveningRecap,
@@ -268,6 +275,83 @@ class AppState extends ChangeNotifier {
     final removed = tasks.removeAt(index);
     _commit();
     return (removed, index);
+  }
+
+  /// يعيد ترتيب المهام (سحب وإفلات في تبويب المهام).
+  void reorderTask(int oldIndex, int newIndex) {
+    if (oldIndex < 0 || oldIndex >= tasks.length) return;
+    var target = newIndex;
+    if (target > oldIndex) target -= 1;
+    final task = tasks.removeAt(oldIndex);
+    tasks.insert(target.clamp(0, tasks.length), task);
+    _commit();
+  }
+
+  /// يزرع بيانات تجريبية (ضمن حد الخطة المجانية) مع سجل إنجاز
+  /// عشوائي واقعي للأيام الماضية من الشهر الحالي — للاستكشاف السريع.
+  void seedDemoData() {
+    if (tasks.isNotEmpty) return;
+    final demo = [
+      TaskItem(
+        id: TaskItem.newId(),
+        name: 'الصلاة في وقتها',
+        icon: '🙏',
+        colorValue: 0xFF6E8F72,
+        categoryId: 'c1',
+        priority: TaskPriority.high,
+      ),
+      TaskItem(
+        id: TaskItem.newId(),
+        name: 'قراءة القرآن',
+        icon: '📖',
+        colorValue: 0xFF6E8F72,
+        categoryId: 'c1',
+        priority: TaskPriority.high,
+      ),
+      TaskItem(
+        id: TaskItem.newId(),
+        name: 'الرياضة',
+        icon: '🏃‍♂️',
+        colorValue: 0xFFE3A93F,
+        categoryId: 'c2',
+      ),
+      TaskItem(
+        id: TaskItem.newId(),
+        name: 'قراءة كتاب',
+        icon: '📚',
+        colorValue: 0xFF4C8DE0,
+        categoryId: 'c3',
+        priority: TaskPriority.low,
+        recurrence: const Recurrence(
+          type: RecurrenceType.specificDays,
+          days: [0, 2, 4],
+        ),
+      ),
+      TaskItem(
+        id: TaskItem.newId(),
+        name: 'شرب 2 لتر ماء',
+        icon: '💧',
+        colorValue: 0xFF3FB6B0,
+        categoryId: 'c2',
+      ),
+    ];
+    final random = Random();
+    final today = DateTime.now();
+    for (final task in demo) {
+      for (var back = 1; back <= today.day - 1; back++) {
+        final date = DateTime(today.year, today.month, today.day - back);
+        if (!task.isApplicableOn(date)) continue;
+        final roll = random.nextDouble();
+        task.setStatusOn(
+          date,
+          roll < 0.72
+              ? TaskStatus.done
+              : (roll < 0.87 ? TaskStatus.doneLate : TaskStatus.missed),
+        );
+      }
+    }
+    tasks.addAll(demo);
+    _commit();
   }
 
   void restoreTask(TaskItem task, int index) {
@@ -422,6 +506,19 @@ class AppState extends ChangeNotifier {
       final date = DateTime(year, month, i + 1);
       return tasks.where((t) => t.statusOn(date) == TaskStatus.done).length;
     });
+  }
+
+  /// نسبة إنجاز يوم واحد (لخريطة السنة الحرارية).
+  /// ترجع -1 إذا لم تكن هناك مهام مستحقة في ذلك اليوم.
+  int dailyCompletionPct(DateTime date) {
+    var applicable = 0, done = 0;
+    for (final task in tasks) {
+      if (!task.isApplicableOn(date)) continue;
+      applicable++;
+      if (task.statusOn(date) == TaskStatus.done) done++;
+    }
+    if (applicable == 0) return -1;
+    return ((done / applicable) * 100).round();
   }
 
   /// نسب الإنجاز الأسبوعية (كل 7 أيام من الشهر).

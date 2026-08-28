@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/app_info.dart';
 import '../../core/l10n.dart';
 import '../../core/theme.dart';
 import '../../state/app_state.dart';
@@ -252,10 +253,17 @@ class SettingsTab extends StatelessWidget {
         _Group(
           title: s.theme,
           child: SegmentedPills(
-            options: ['☀️ ${s.light}', '🌙 ${s.dark}'],
-            selectedIndex: state.themeMode == ThemeMode.dark ? 1 : 0,
-            onSelected: (i) =>
-                state.setThemeMode(i == 1 ? ThemeMode.dark : ThemeMode.light),
+            options: ['☀️ ${s.light}', '🌙 ${s.dark}', '📱 ${s.system}'],
+            selectedIndex: switch (state.themeMode) {
+              ThemeMode.light => 0,
+              ThemeMode.dark => 1,
+              ThemeMode.system => 2,
+            },
+            onSelected: (i) => state.setThemeMode(switch (i) {
+              1 => ThemeMode.dark,
+              2 => ThemeMode.system,
+              _ => ThemeMode.light,
+            }),
           ),
         ),
 
@@ -304,6 +312,22 @@ class SettingsTab extends StatelessWidget {
                   icon: const Icon(Icons.upload_rounded, size: 17),
                   label: Text(s.importData),
                 ),
+              ),
+            ],
+          ),
+        ),
+
+        // ---------- حول التطبيق ----------
+        _Group(
+          title: s.about,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(s.aboutDesc, style: const TextStyle(fontSize: 13)),
+              const SizedBox(height: 8),
+              Text(
+                '${s.aboutVersion}: $kAppVersion',
+                style: TextStyle(fontSize: 12, color: wq.textMuted),
               ),
             ],
           ),

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:waqti/models/models.dart';
@@ -125,5 +126,85 @@ void main() {
     state.restoreTask(removed!.$1, removed.$2);
     expect(state.tasks, hasLength(2));
     expect(state.tasks.first.id, 't1');
+  });
+
+  // ---------- اختبارات إضافية للمزايا الجديدة ----------
+
+  test('seedDemoData seeds within the free plan limit and only once', () async {
+    final state = await freshState();
+    state.seedDemoData();
+    expect(state.tasks, hasLength(5));
+    expect(state.tasks.length <= AppState.freePlanTaskLimit, isTrue);
+    state.seedDemoData(); // لا تُزرع مرة ثانية فوق بيانات موجودة.
+    expect(state.tasks, hasLength(5));
+  });
+
+  test('reorderTask moves a task and persists order', () async {
+    final state = await freshState();
+    state.addTask(TaskItem(id: 'a', name: 'أ'));
+    state.addTask(TaskItem(id: 'b', name: 'ب'));
+    state.addTask(TaskItem(id: 'c', name: 'ج'));
+    state.reorderTask(0, 3); // كما يرسلها ReorderableListView
+    expect(state.tasks.map((t) => t.id).toList(), ['b', 'c', 'a']);
+    state.reorderTask(2, 0);
+    expect(state.tasks.map((t) => t.id).toList(), ['a', 'b', 'c']);
+  });
+
+  test('dailyCompletionPct returns -1 without applicable tasks', () async {
+    final state = await freshState();
+    expect(state.dailyCompletionPct(DateTime(2026, 8, 10)), -1);
+    final task = TaskItem(id: 't1', name: 'قراءة');
+    state.addTask(task);
+    expect(state.dailyCompletionPct(DateTime(2026, 8, 10)), 0);
+    task.setStatusOn(DateTime(2026, 8, 10), TaskStatus.done);
+    expect(state.dailyCompletionPct(DateTime(2026, 8, 10)), 100);
+  });
+
+  test('theme mode system round-trips through persistence', () async {
+    SharedPreferences.setMockInitialValues({});
+    var state = await AppState.load();
+    state.setThemeMode(ThemeMode.system);
+    // نعيد التحميل من نفس التخزين الوهمي.
+    state = await AppState.load();
+    expect(state.themeMode, ThemeMode.system);
+  });
+
+  test('weeklyBuckets covers the whole month', () async {
+    final state = await freshState();
+    final task = TaskItem(id: 't1', name: 'قراءة');
+    state.addTask(task);
+    for (var d = 1; d <= 7; d++) {
+      task.setStatusOn(DateTime(2026, 8, d), TaskStatus.done);
+    }
+    final buckets = state.weeklyBuckets(2026, 8);
+    expect(buckets, hasLength(5)); // 31 يومًا → 5 مقاطع
+    expect(buckets.first.pct, 100);
+    expect(buckets.last.pct, 0);
+  });
+
+  test('best and worst habit ranked by commitment', () async {
+    final state = await freshState();
+    final good = TaskItem(id: 'g', name: 'جيدة');
+    final bad = TaskItem(id: 'b', name: 'ضعيفة');
+    state.addTask(good);
+    state.addTask(bad);
+    for (var d = 1; d <= 10; d++) {
+      good.setStatusOn(DateTime(2026, 8, d), TaskStatus.done);
+    }
+    expect(state.bestHabit(2026, 8)!.task.id, 'g');
+    expect(state.worstHabit(2026, 8)!.task.id, 'b');
+  });
+
+  test('levelInfo derives level from xp', () async {
+    final state = await freshState();
+    final task = TaskItem(id: 't1', name: 'قراءة');
+    state.addTask(task);
+    // 31 يوم إنجاز = 310 نقطة → المستوى 2 والباقي 10.
+    for (var d = 1; d <= 31; d++) {
+      task.setStatusOn(DateTime(2026, 8, d), TaskStatus.done);
+    }
+    final level = state.levelInfo();
+    expect(level.level, 2);
+    expect(level.current, 10);
   });
 }

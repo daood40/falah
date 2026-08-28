@@ -1,7 +1,7 @@
 name: waqti
 description: "وقتي — تطبيق تتبع المهام والعادات اليومية | Waqti — daily tasks & habits tracker"
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.1.0+2
 
 environment:
   sdk: ^3.9.0
@@ -19,6 +19,20 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.1
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  image_path: "assets/branding/app_icon.png"
+  adaptive_icon_background: "#4F6E54"
+  adaptive_icon_foreground: "assets/branding/app_icon_foreground.png"
+  web:
+    generate: true
+    image_path: "assets/branding/app_icon.png"
+    background_color: "#F6F7F1"
+    theme_color: "#6E8F72"
 
 flutter:
   uses-material-design: true

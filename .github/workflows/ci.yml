@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    name: تحليل واختبار وبناء
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.35.1
+          cache: true
+
+      - name: تثبيت الاعتماديات
+        run: flutter pub get
+
+      - name: التحقق من التنسيق
+        run: dart format --output=none --set-exit-if-changed lib test
+
+      - name: التحليل الثابت
+        run: flutter analyze
+
+      - name: الاختبارات
+        run: flutter test
+
+      - name: بناء الويب
+        run: flutter build web --release

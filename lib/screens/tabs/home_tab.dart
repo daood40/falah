@@ -112,6 +112,8 @@ class _HomeTabState extends State<HomeTab> {
           ),
           const SizedBox(height: 18),
         ],
+        _TodayCard(strings: s),
+        const SizedBox(height: 18),
         Text(
           s.monthlySchedule,
           style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
@@ -209,7 +211,25 @@ class _HomeTabState extends State<HomeTab> {
                 ),
               ),
               if (tasks.isEmpty)
-                EmptyHint(query.isNotEmpty ? s.noResults : s.noTasks)
+                Column(
+                  children: [
+                    EmptyHint(query.isNotEmpty ? s.noResults : s.noTasks),
+                    if (query.isEmpty && state.tasks.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 20),
+                        child: FilledButton.icon(
+                          onPressed: () {
+                            state.seedDemoData();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(s.demoLoaded)),
+                            );
+                          },
+                          icon: const Icon(Icons.auto_awesome, size: 16),
+                          label: Text(s.loadDemoData),
+                        ),
+                      ),
+                  ],
+                )
               else
                 Padding(
                   padding: const EdgeInsets.fromLTRB(10, 6, 10, 14),
@@ -408,6 +428,144 @@ class _Legend extends StatelessWidget {
         item(wq.missed, strings.missed),
         item(wq.none, strings.none, outlined: true),
       ],
+    );
+  }
+}
+
+/// بطاقة "مهام اليوم": إنجاز سريع لمهام اليوم الحالي بنقرة واحدة.
+class _TodayCard extends StatelessWidget {
+  const _TodayCard({required this.strings});
+
+  final AppStrings strings;
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.watch<AppState>();
+    final wq = context.wq;
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final todayTasks = state.tasks
+        .where((t) => t.isApplicableOn(today))
+        .toList(growable: false);
+    if (todayTasks.isEmpty) return const SizedBox.shrink();
+
+    final doneCount = todayTasks
+        .where((t) => t.statusOn(today) == TaskStatus.done)
+        .length;
+    final allDone = doneCount == todayTasks.length;
+    final pct = ((doneCount / todayTasks.length) * 100).round();
+
+    return WqCard(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '☀️ ${strings.todayTasks}',
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              Text(
+                '$doneCount / ${todayTasks.length}',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  color: allDone ? wq.done : wq.textMuted,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          LevelBar(pct: pct, color: allDone ? wq.done : null, height: 8),
+          const SizedBox(height: 12),
+          if (allDone)
+            Text(
+              strings.todayAllDone,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: wq.done,
+              ),
+            )
+          else
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final task in todayTasks)
+                  _TodayChip(task: task, date: today),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// شريحة مهمة واحدة داخل بطاقة اليوم — تنقر لتقليب حالتها.
+class _TodayChip extends StatelessWidget {
+  const _TodayChip({required this.task, required this.date});
+
+  final TaskItem task;
+  final DateTime date;
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.read<AppState>();
+    final wq = context.wq;
+    final status = task.statusOn(date);
+    final (Color bg, Color fg) = switch (status) {
+      TaskStatus.done => (wq.done.withValues(alpha: .15), wq.done),
+      TaskStatus.doneLate => (wq.late.withValues(alpha: .15), wq.late),
+      TaskStatus.missed => (wq.missed.withValues(alpha: .15), wq.missed),
+      null => (wq.surfaceAlt, wq.textMuted),
+    };
+    return Material(
+      color: bg,
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () => state.cycleStatus(task.id, date),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(task.icon, style: const TextStyle(fontSize: 13)),
+              const SizedBox(width: 6),
+              Text(
+                task.name,
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                  color: fg,
+                  decoration: status == TaskStatus.done
+                      ? TextDecoration.lineThrough
+                      : null,
+                  decorationColor: fg,
+                ),
+              ),
+              if (status != null) ...[
+                const SizedBox(width: 5),
+                Icon(
+                  switch (status) {
+                    TaskStatus.done => Icons.check_circle,
+                    TaskStatus.doneLate => Icons.error,
+                    TaskStatus.missed => Icons.cancel,
+                  },
+                  size: 14,
+                  color: fg,
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

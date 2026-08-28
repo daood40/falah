@@ -6,6 +6,7 @@ import '../../core/theme.dart';
 import '../../state/app_state.dart';
 import '../../widgets/common.dart';
 import '../../widgets/trend_chart.dart';
+import '../../widgets/year_heatmap.dart';
 import '../shell_screen.dart';
 
 /// تبويب الإحصائيات: ملخص الشهر، أفضل/أضعف عادة،
@@ -113,6 +114,25 @@ class StatsTab extends StatelessWidget {
           child: weeks.every((w) => w.pct == 0)
               ? EmptyHint(s.noData)
               : WeeklyBars(buckets: weeks),
+        ),
+        SectionTitle(
+          s.yearHeatmap,
+          trailing: Text(
+            '${cursor.year}',
+            style: TextStyle(fontSize: 13, color: wq.textMuted),
+          ),
+        ),
+        WqCard(
+          padding: const EdgeInsets.all(16),
+          child: state.tasks.isEmpty
+              ? EmptyHint(s.noData)
+              : YearHeatmap(
+                  year: cursor.year,
+                  pctForDate: state.dailyCompletionPct,
+                  monthLabels: s.months,
+                  lessLabel: s.heatmapLegendLess,
+                  moreLabel: s.heatmapLegendMore,
+                ),
         ),
         SectionTitle(s.tasks),
         WqCard(
