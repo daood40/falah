@@ -128,6 +128,7 @@ export async function processDuePosts(
           status: 'scheduled',
           attempts: 0,
           idempotency_key: newId(),
+          last_error: null,
         });
       }
     } catch (error) {
