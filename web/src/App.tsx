@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { BrowserRouter, Link, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom';
-import { get } from './api';
+import { IS_DEMO, get } from './api';
 import { ToastProvider } from './components';
 import { AuthProvider, ThemeProvider, useAuth, useTheme } from './ctx';
 import { I18nProvider, useI18n, type Lang } from './i18n';
@@ -27,11 +27,16 @@ function TopBar() {
   }, [user, location.pathname]);
 
   if (!user) return null;
-  const links: Array<[string, string]> = [
-    ['/', t('home')], ['/play', t('play')], ['/leaderboard', t('leaderboard')],
-    ['/challenges', t('challenges')], ['/tournaments', t('tournaments')], ['/groups', t('groups')], ['/friends', t('friends')],
-    ['/stats', t('stats')], ['/achievements', t('achievements')],
-  ];
+  const links: Array<[string, string]> = IS_DEMO
+    ? [
+        ['/', t('home')], ['/play', t('play')], ['/leaderboard', t('leaderboard')],
+        ['/stats', t('stats')], ['/achievements', t('achievements')],
+      ]
+    : [
+        ['/', t('home')], ['/play', t('play')], ['/leaderboard', t('leaderboard')],
+        ['/challenges', t('challenges')], ['/tournaments', t('tournaments')], ['/groups', t('groups')], ['/friends', t('friends')],
+        ['/stats', t('stats')], ['/achievements', t('achievements')],
+      ];
   return (
     <header className="topbar">
       <Link to="/" className="brand">🧠 <span>{t('appName')}</span></Link>
@@ -66,9 +71,16 @@ function Protected({ children }: { children: ReactNode }) {
 
 function Shell() {
   const { user } = useAuth();
+  const { t } = useI18n();
   return (
     <div className="app-shell">
       <TopBar />
+      {IS_DEMO && user && (
+        <div className="banner info" style={{ borderRadius: 0, textAlign: 'center', fontSize: 13 }}>
+          🧪 {t('demoBanner')}{' '}
+          <a href="https://github.com/daood40/quiz-app" target="_blank" rel="noreferrer">GitHub ↗</a>
+        </div>
+      )}
       <main className="main">
         <Routes>
           <Route path="/login" element={user ? <Navigate to="/" replace /> : <LoginPage />} />
@@ -105,7 +117,7 @@ export default function App() {
       <ThemeProvider>
         <ToastProvider>
           <AuthProvider>
-            <BrowserRouter>
+            <BrowserRouter basename={import.meta.env.BASE_URL}>
               <Shell />
             </BrowserRouter>
           </AuthProvider>

@@ -160,6 +160,10 @@ const dict = {
   streakFreezes: { en: 'Streak freezes', ar: 'حماية السلسلة' },
   avatarPick: { en: 'Choose your avatar', ar: 'اختر صورتك الرمزية' },
   sameForAll: { en: 'Same questions for everyone today', ar: 'نفس الأسئلة للجميع اليوم' },
+  demoBanner: {
+    en: 'Live demo — runs fully in your browser. Competitions, friends and admin need the full server (see the repo).',
+    ar: 'نسخة تجريبية مباشرة — تعمل كاملة في متصفحك. المنافسات والأصدقاء والإدارة تتطلب الخادم الكامل (انظر المستودع).',
+  },
 } as const;
 
 export type TKey = keyof typeof dict;

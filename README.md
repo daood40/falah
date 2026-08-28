@@ -1,5 +1,7 @@
 # 🧠 QUIZ PLATFORM
 
+**🌐 Live demo:** the `Deploy demo to GitHub Pages` workflow publishes a fully in-browser demo (real question engine + bundled bank, progress in localStorage) on every push — see the repository's **Environments → github-pages** for the URL. Competitions, friends and admin need the full server below.
+
 A production-grade, bilingual (Arabic/English) quiz & competition platform:
 a **Universal Question Engine** (80 question types), server-authoritative
 scoring and anti-cheat, leaderboards, challenges, monthly challenges,

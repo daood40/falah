@@ -2,6 +2,9 @@
 
 const BASE = (import.meta.env.VITE_API_BASE as string | undefined) ?? '/api/v1';
 
+/** Static demo build (GitHub Pages): an in-browser backend replaces the API. */
+export const IS_DEMO = import.meta.env.VITE_DEMO === '1';
+
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -31,7 +34,7 @@ export function setTokens(access: string | null, refresh: string | null): void {
 }
 
 export function hasSession(): boolean {
-  return accessToken !== null;
+  return IS_DEMO || accessToken !== null;
 }
 
 async function tryRefresh(): Promise<boolean> {
@@ -63,6 +66,15 @@ interface RequestOpts {
 }
 
 export async function api<T = unknown>(path: string, opts: RequestOpts = {}): Promise<T> {
+  if (IS_DEMO) {
+    const { demoApi, DemoError } = await import('./demo/demoApi');
+    try {
+      return (await demoApi(path, { method: opts.method, body: opts.body })) as T;
+    } catch (err) {
+      if (err instanceof DemoError) throw new ApiError(err.status, err.code, err.message);
+      throw err;
+    }
+  }
   const doFetch = async (): Promise<Response> =>
     fetch(`${BASE}${path}`, {
       method: opts.method ?? 'GET',
