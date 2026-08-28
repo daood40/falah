@@ -4,6 +4,8 @@ import react from '@vitejs/plugin-react';
 import { fileURLToPath } from 'node:url';
 
 export default defineConfig({
+  // GitHub Pages serves the site under /<repo>/ — CI sets VITE_BASE accordingly.
+  base: process.env.VITE_BASE || '/',
   plugins: [react()],
   resolve: {
     alias: {

@@ -1,95 +1,124 @@
-# فلاح — FALAH
+# فلاح — FALAH 🕌
 
-منصة احترافية لصناعة وتنظيم ونشر المحتوى الإسلامي الموثوق.
-A professional platform for creating, organizing, and publishing trusted Islamic content.
+**منصة احترافية لصناعة وتنظيم ونشر المحتوى الإسلامي الموثوق.**
 
-> **القاعدة الذهبية — SOURCE LOCK**: لا يُعرض أو يُصدَّر أي نص ديني (قرآن، حديث، تفسير، أذكار)
-> إلا من مصدر موثّق مع بيانات وصفية كاملة وبصمة تحقق (checksum). الذكاء الاصطناعي في فلاح
+تطبيق ويب PWA يعمل على الجوال والتابلت والكمبيوتر، ويُبنى منه أيضًا تطبيق أندرويد (APK) تلقائيًا.
+
+> **القاعدة الذهبية — SOURCE LOCK:** لا يُعرض أو يُصدَّر أي نص ديني (قرآن، حديث، تفسير)
+> إلا من مصدر موثّق مع بياناته الكاملة وبصمة تحقق. الذكاء الاصطناعي في فلاح
 > **لا يؤلف نصوصًا دينية أبدًا** — يساعد فقط في التصميم والأفكار والتنظيم.
 
-## Features
+---
 
-- 📖 **Quran Engine** — the complete Quran (Tanzil Uthmani text, Hafs riwayah) bundled offline
-  with Sahih International translation, reference search (`2:255`), diacritics-insensitive
-  Arabic search, per-ayah recitation audio (4 reciters), and live tafsir/juz/page enrichment.
-- 📜 **Hadith Engine** — verified Nawawi's 40 collection bundled offline (Arabic + English +
-  narrator + full source metadata); sunnah.com API integration for the six books (keyed).
-- 🎨 **Content Editor** — canvas editor with layers, drag & drop, resize, snap-to-center
-  guides, keyboard shortcuts, numeric position/rotation controls, watermark, text/shape/image
-  elements, gradients, Arabic typography, undo/redo. Sacred text is **immutable** in the editor.
-- 🧩 **Design Templates** — 8 curated looks (free + premium) applied in one tap; templates
-  restyle only (background/colors/frames) and can never alter sacred text.
-- 🎬 **Video Creator** — real in-browser video rendering (canvas + MediaRecorder → WebM) with
-  text animations, subtitles, recitation audio mixing, and 9:16 / 1:1 / 16:9 / 4:5 formats.
-- 🗂️ **Library** — offline-first (IndexedDB) with filters, search, sort, duplicate, favorite.
-- 🗓️ **Scheduler** — schedule to platforms with repeat rules and the full
-  draft → scheduled → publishing → published/failed lifecycle.
-- 🔌 **SocialPublisher** — pluggable adapters for Instagram/Facebook/TikTok/YouTube/Telegram/X.
-  Honest by design: without operator OAuth credentials, publishing reports *not configured*
-  instead of pretending to work.
-- ✨ **AI Assistant** — design ideas, titles, hashtags, layout help. Requests for religious text
-  are routed to the verified engines or **refused** (source-lock guard, client + server side).
-- 🌍 **i18n** — Arabic (RTL) + English (LTR), dynamic direction, architecture scales to 50+ locales.
-- 🔊 **Audio Player** — global player bar with seek, speed (0.75×–2×), loop, and volume.
-- 🌗 Light / Dark / System themes · 📱 Responsive phone/tablet/desktop · ♿ a11y-conscious ·
-  installable **offline PWA** (service worker) · route-level code splitting · CI on every push.
+## 🔗 روابط سريعة
 
-## Stack
-
-| Layer | Choice |
+| ماذا | أين |
 |---|---|
-| Frontend | React 18 + TypeScript (strict) + Vite, PWA |
-| State | Zustand |
-| Offline store | IndexedDB (Dexie) |
-| Backend | Supabase (PostgreSQL + Auth + Storage + Edge Functions) — optional; app runs fully in local mode without it |
-| AI | Anthropic API via the `ai-assistant` Edge Function (server-side key) |
-| Quran data | [quran-json](https://github.com/risan/quran-json) (Tanzil Uthmani + Sahih Intl.) |
-| Hadith data | Nawawi's 40 dataset + sunnah.com API |
+| 🌐 **معاينة التطبيق من المتصفح** (بعد تفعيل Pages — انظر الأسفل) | https://daood40.github.io/-/ |
+| 📱 **تحميل APK للأندرويد** | تبويب **Actions** ← آخر تشغيلة **Build Android APK** ← قسم **Artifacts** ← `falah-apk` |
+| ⚙️ حالة الفحوصات والبناء | تبويب **Actions** في المستودع |
 
-> **Why a web PWA?** It runs excellently on Android, iOS, tablet, and web from one codebase,
-> and every part of it (tests, build, DB schema) is verifiable in CI. The clean architecture
-> (core / features / data / domain / presentation) ports directly to Flutter if a native
-> shell is wanted later.
+---
 
-## Quick start
+## ✨ ماذا يفعل التطبيق؟
+
+- 📖 **القرآن كاملًا بدون إنترنت** (نص Tanzil برواية حفص + ترجمة صحيح إنترناشونال)، بحث بالنص أو بالمرجع مثل `2:255`، واستماع لأربعة قرّاء.
+- 📜 **الحديث**: الأربعون النووية موثقة (عربي/إنجليزي/الراوي/المصدر) + تكامل sunnah.com.
+- 🎨 **محرر تصميم**: طبقات، سحب وإفلات، خطوط عربية، قوالب جاهزة، تصدير PNG.
+- 🎬 **صانع فيديو حقيقي** بحركات نص وترجمة وصوت تلاوة، بأبعاد كل المنصات (9:16، 1:1…).
+- 🗂️ مكتبة + 🗓️ جدولة نشر + ✨ مساعد ذكي (يرفض تأليف أي نص ديني).
+- 🌍 عربي RTL + إنجليزي، وضع فاتح/داكن، يعمل Offline بالكامل بعد أول زيارة.
+
+---
+
+## 📱 كيف تحمّل APK على جوالك (خطوة بخطوة)
+
+1. افتح صفحة المستودع على GitHub من متصفح الجوال أو الكمبيوتر.
+2. اضغط تبويب **Actions** في أعلى الصفحة.
+3. من القائمة اليسرى اختر **Build Android APK**.
+4. اضغط أحدث تشغيلة (أول سطر في القائمة، بجانبه ✅ أخضر).
+5. انزل لأسفل الصفحة إلى قسم **Artifacts**.
+6. اضغط **falah-apk** — سيُحمَّل ملف مضغوط `falah-apk.zip`.
+7. فك الضغط تجد `app-debug.apk` — افتحه على جوال أندرويد ووافق على "التثبيت من مصادر غير معروفة" عند السؤال.
+
+> ملاحظة: تحميل الـ Artifacts يتطلب تسجيل الدخول إلى GitHub.
+> بديل بدون تثبيت: افتح رابط المعاينة من متصفح الجوال ثم "إضافة إلى الشاشة الرئيسية" — يعمل كتطبيق كامل (PWA).
+
+---
+
+## 🚀 تشغيل المشروع على جهازك
+
+يتطلب [Node.js](https://nodejs.org) (النسخة 20 أو أحدث):
 
 ```bash
+git clone https://github.com/daood40/-.git falah
+cd falah
 npm install
-npm run dev        # http://localhost:5173
+npm run dev        # افتح http://localhost:5173
 ```
 
-Works immediately in **local mode** (no accounts, everything on-device).
+أوامر أخرى:
 
-### Full backend (optional)
-
-```bash
-cp .env.example .env         # fill VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY
-supabase db push             # applies supabase/migrations
-supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
-supabase functions deploy ai-assistant
-```
-
-## Scripts
-
-| Command | Purpose |
+| الأمر | الوظيفة |
 |---|---|
-| `npm run dev` | dev server |
-| `npm run build` | typecheck + production build |
-| `npm test` | unit + component tests (Vitest) |
-| `npm run lint` / `npm run typecheck` / `npm run format` | quality gates |
-| `npm run db:validate` | applies the SQL schema to a real PostgreSQL and sanity-checks it |
+| `npm run build` | بناء نسخة الإنتاج في `dist/` |
+| `npm test` | تشغيل الاختبارات (52 اختبارًا) |
+| `npm run lint` / `npm run typecheck` | فحوصات الجودة |
+| `npm run db:validate` | التحقق من مخطط قاعدة البيانات على PostgreSQL حقيقي |
 
-## Documentation
+التطبيق يعمل فورًا **بوضع محلي** بدون أي حسابات. لربط خادم Supabase (حسابات ومزامنة) انسخ `.env.example` إلى `.env` واملأ القيم — التفاصيل في `docs/DEPLOYMENT.md`.
 
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — layers, source lock pipeline, offline-first sync
-- [docs/DATABASE.md](docs/DATABASE.md) — schema, RLS, indexes
-- [docs/SECURITY.md](docs/SECURITY.md) — threat model, secrets, RLS, audit
-- [docs/API.md](docs/API.md) — external APIs and edge functions
-- [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) — hosting, Supabase, social platform credentials
-- [docs/TESTING.md](docs/TESTING.md) — test strategy and QA checklist
-- [docs/CHANGELOG.md](docs/CHANGELOG.md) · [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)
+---
 
-## Content licenses
+## 🤖 النشر التلقائي (جاهز ومُفعّل في الكود)
 
-Quran text: Tanzil Project (CC BY-ND terms) via quran-json (CC BY 4.0).
-Recitation audio: [cdn.islamic.network](https://alquran.cloud). Attribute sources when publishing.
+مع **كل push** إلى الفرع تعمل ثلاث خطوط تلقائيًا في تبويب Actions:
+
+| Workflow | ماذا يفعل |
+|---|---|
+| **Deploy Web to GitHub Pages** | يبني الموقع وينشره على الرابط الدائم أعلاه |
+| **Build Android APK** | يبني تطبيق أندرويد ويرفعه في Artifacts |
+| **CI** | فحص الأنواع + Lint + الاختبارات + التحقق من قاعدة البيانات |
+
+---
+
+## 📂 بنية الملفات
+
+```
+├── src/
+│   ├── app/                 # نقطة الدخول: الراوتر + هيكل التطبيق (هيدر/تنقل/قائمة)
+│   ├── core/                # الأساسيات المشتركة
+│   │   ├── design/          #   نظام التصميم (الألوان/الخطوط/المسافات كـ Tokens)
+│   │   ├── i18n/            #   الترجمة عربي/إنجليزي واتجاه RTL
+│   │   ├── sourcelock/      #   قفل المصادر: حماية النصوص الدينية (الأهم!)
+│   │   ├── db/              #   قاعدة البيانات المحلية (تعمل Offline)
+│   │   └── ...              #   الأخطاء، الصلاحيات، سجل التدقيق، مكونات الواجهة
+│   └── features/            # الميزات، كل ميزة بطبقاتها (domain/data/presentation)
+│       ├── quran/           #   محرك القرآن (بحث/تلاوة/تفسير)
+│       ├── hadith/          #   محرك الحديث
+│       ├── editor/          #   محرر التصميم
+│       ├── video/           #   صانع الفيديو
+│       ├── templates/       #   القوالب الجاهزة
+│       ├── library/         #   المكتبة
+│       ├── scheduler/       #   الجدولة
+│       ├── publishing/      #   النشر للمنصات (Instagram/TikTok/YouTube…)
+│       ├── ai/              #   المساعد الذكي
+│       └── ...              #   الرئيسية، الحساب، الإعدادات، الصوت
+├── android/                 # مشروع أندرويد (Capacitor) — منه يُبنى الـ APK
+├── supabase/                # مخطط قاعدة البيانات + الدوال الخادمية
+├── .github/workflows/       # النشر والبناء التلقائي (Pages / APK / CI)
+├── docs/                    # توثيق تفصيلي (معمارية/أمان/نشر/اختبار…)
+├── scripts/                 # أدوات (التحقق من قاعدة البيانات، لقطات المعاينة)
+└── public/                  # الملفات الثابتة (الأيقونة، Service Worker…)
+```
+
+## 📚 توثيق إضافي
+
+`docs/ARCHITECTURE.md` (المعمارية) · `docs/DATABASE.md` (قاعدة البيانات) ·
+`docs/SECURITY.md` (الأمان) · `docs/API.md` (التكاملات) · `docs/DEPLOYMENT.md` (النشر الكامل) ·
+`docs/TESTING.md` (الاختبارات) · `docs/CHANGELOG.md` (سجل الإصدارات)
+
+## 📜 تراخيص المحتوى
+
+نص القرآن: مشروع Tanzil (عبر quran-json، رخصة CC BY 4.0). الصوت: cdn.islamic.network.
+انسب النص لمصدره عند النشر.

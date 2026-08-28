@@ -10,7 +10,9 @@ const ASSET_CACHE = `${VERSION}-assets`;
 const MEDIA_CACHE = `${VERSION}-media`;
 const MEDIA_LIMIT = 120;
 
-const SHELL_URLS = ['/', '/index.html', '/manifest.webmanifest', '/icon.svg'];
+// Scope-aware base path: works at '/' locally and under '/<repo>/' on GitHub Pages.
+const BASE = new URL(self.registration.scope).pathname;
+const SHELL_URLS = [BASE, BASE + 'index.html', BASE + 'manifest.webmanifest', BASE + 'icon.svg'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -57,10 +59,10 @@ async function networkFirstShell(request) {
   try {
     const response = await fetch(request);
     const cache = await caches.open(SHELL_CACHE);
-    cache.put('/index.html', response.clone());
+    cache.put(BASE + 'index.html', response.clone());
     return response;
   } catch {
-    return (await caches.match(request)) || (await caches.match('/index.html'));
+    return (await caches.match(request)) || (await caches.match(BASE + 'index.html'));
   }
 }
 
@@ -75,7 +77,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   // Immutable hashed build assets.
-  if (url.origin === self.location.origin && url.pathname.startsWith('/assets/')) {
+  if (url.origin === self.location.origin && url.pathname.startsWith(BASE + 'assets/')) {
     event.respondWith(cacheFirst(request, ASSET_CACHE, false));
     return;
   }

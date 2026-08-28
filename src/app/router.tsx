@@ -13,7 +13,11 @@ function page(load: () => Promise<{ default: ComponentType }>) {
   );
 }
 
-export const router = createBrowserRouter([
+// Deployed under a sub-path (e.g. GitHub Pages /<repo>/) the router must know its base.
+const basename = import.meta.env.BASE_URL.replace(/\/$/, '') || '/';
+
+export const router = createBrowserRouter(
+  [
   {
     path: '/',
     element: <AppShell />,
@@ -82,4 +86,6 @@ export const router = createBrowserRouter([
       },
     ],
   },
-]);
+],
+  { basename },
+);
