@@ -1,0 +1,84 @@
+.home-quick {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--fl-sp-3);
+}
+.home-quick__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--fl-sp-2);
+  font-weight: 700;
+  color: var(--fl-text);
+  text-align: center;
+  transition:
+    transform var(--fl-t-fast),
+    box-shadow var(--fl-t-fast);
+}
+.home-quick__item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--fl-shadow-2);
+}
+.home-quick__icon {
+  font-size: 1.8rem;
+}
+
+.home-verse {
+  cursor: pointer;
+  text-align: center;
+  background: linear-gradient(160deg, var(--fl-green-800), var(--fl-green-900));
+  color: #f5f1e6;
+  border: 1px solid var(--fl-green-700);
+}
+.home-verse .fl-muted {
+  color: #b9cec4;
+}
+.home-verse .fl-quran-text {
+  margin: var(--fl-sp-3) 0;
+}
+.home-verse__ref {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--fl-sp-2);
+  color: var(--fl-gold-500);
+  font-size: var(--fl-fs-sm);
+  font-weight: 700;
+}
+
+.home-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--fl-sp-3);
+}
+.home-grid__item {
+  cursor: pointer;
+  padding: var(--fl-sp-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--fl-sp-2);
+  font: inherit;
+  text-align: center;
+}
+.home-grid__item img {
+  width: 100%;
+  border-radius: var(--fl-r-md);
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+.home-grid__placeholder {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  background: var(--fl-surface-2);
+  border-radius: var(--fl-r-md);
+}
+.home-grid__title {
+  font-size: var(--fl-fs-xs);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

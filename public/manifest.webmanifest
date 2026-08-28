@@ -1,0 +1,14 @@
+{
+  "name": "فلاح — FALAH",
+  "short_name": "فلاح",
+  "description": "منصة احترافية لصناعة وتنظيم ونشر المحتوى الإسلامي الموثوق",
+  "start_url": "/",
+  "display": "standalone",
+  "dir": "rtl",
+  "lang": "ar",
+  "background_color": "#0b1210",
+  "theme_color": "#0e5c46",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
