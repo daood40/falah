@@ -1,8 +1,11 @@
-/** Interactive design stage: DOM-rendered elements with pointer drag + resize. */
-import { useRef } from 'react';
+/** Interactive design stage: DOM-rendered elements with pointer drag + resize,
+ * responsive width, and snap-to-center guides. */
+import { useEffect, useRef, useState } from 'react';
 import type { CanvasBackground, CanvasElement, TextElement } from '@core/models/content';
 import { formatById } from '@core/models/content';
 import { useEditor } from '../domain/editorStore';
+
+const SNAP_THRESHOLD = 0.018;
 
 function backgroundStyle(bg: CanvasBackground): React.CSSProperties {
   if (bg.type === 'image' && bg.imageSrc) {
@@ -40,9 +43,30 @@ function TextView({ el, stageWidth }: { el: TextElement; stageWidth: number }) {
   );
 }
 
-export function CanvasStage({ stageWidth = 420 }: { stageWidth?: number }) {
+/** Measure the wrapper so the stage always fits the available space. */
+function useContainerWidth(max = 520): [React.RefObject<HTMLDivElement>, number] {
+  const ref = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(360);
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+    const measure = () => {
+      const available = node.clientWidth - 32; // stage-wrap padding
+      setWidth(Math.max(220, Math.min(max, available)));
+    };
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [max]);
+  return [ref, width];
+}
+
+export function CanvasStage() {
   const { project, selectedId, select, moveElement, commitGesture } = useEditor();
-  const stageRef = useRef<HTMLDivElement>(null);
+  const [wrapRef, stageWidth] = useContainerWidth();
+  const [snap, setSnap] = useState<{ v: boolean; h: boolean }>({ v: false, h: false });
   const gesture = useRef<{
     id: string;
     mode: 'move' | 'resize';
@@ -75,10 +99,15 @@ export function CanvasStage({ stageWidth = 420 }: { stageWidth?: number }) {
     const dx = (e.clientX - g.startX) / stageWidth;
     const dy = (e.clientY - g.startY) / stageHeight;
     if (g.mode === 'move') {
-      moveElement(g.id, {
-        x: Math.min(0.98 - g.orig.w / 2, Math.max(-g.orig.w / 2 + 0.02, g.orig.x + dx)),
-        y: Math.min(0.98 - g.orig.h / 2, Math.max(-g.orig.h / 2 + 0.02, g.orig.y + dy)),
-      });
+      let x = Math.min(0.98 - g.orig.w / 2, Math.max(-g.orig.w / 2 + 0.02, g.orig.x + dx));
+      let y = Math.min(0.98 - g.orig.h / 2, Math.max(-g.orig.h / 2 + 0.02, g.orig.y + dy));
+      // Snap the element's center to the canvas center.
+      const snapV = Math.abs(x + g.orig.w / 2 - 0.5) < SNAP_THRESHOLD;
+      const snapH = Math.abs(y + g.orig.h / 2 - 0.5) < SNAP_THRESHOLD;
+      if (snapV) x = 0.5 - g.orig.w / 2;
+      if (snapH) y = 0.5 - g.orig.h / 2;
+      setSnap({ v: snapV, h: snapH });
+      moveElement(g.id, { x, y });
     } else {
       moveElement(g.id, {
         w: Math.min(1, Math.max(0.06, g.orig.w + dx)),
@@ -90,14 +119,14 @@ export function CanvasStage({ stageWidth = 420 }: { stageWidth?: number }) {
   const onPointerUp = () => {
     if (gesture.current) {
       gesture.current = null;
+      setSnap({ v: false, h: false });
       commitGesture();
     }
   };
 
   return (
-    <div className="stage-wrap">
+    <div className="stage-wrap" ref={wrapRef}>
       <div
-        ref={stageRef}
         className="stage"
         dir="rtl"
         style={{ width: stageWidth, height: stageHeight, ...backgroundStyle(project.background) }}
@@ -108,6 +137,8 @@ export function CanvasStage({ stageWidth = 420 }: { stageWidth?: number }) {
         role="application"
         aria-label={project.title}
       >
+        {snap.v && <div className="stage__guide stage__guide--v" />}
+        {snap.h && <div className="stage__guide stage__guide--h" />}
         {project.elements.map((el) => {
           const selected = el.id === selectedId;
           const style: React.CSSProperties = {

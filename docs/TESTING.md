@@ -2,7 +2,7 @@
 
 ## Automated suite (Vitest + Testing Library + fake-indexeddb)
 
-`npm test` — 48 tests across 8 files:
+`npm test` — 52 tests across 9 files:
 
 | File | Covers |
 |---|---|
@@ -14,6 +14,7 @@
 | `features/ai/assistant.test.ts` | sacred-prompt detection, verified routing, **refusal without source**, local answers, citation validation |
 | `core/core.test.ts` | i18n ar/en + runtime locale registration, entitlements, error mapping, text wrapping |
 | `app/app.test.tsx` | RTL/LTR document switching, dark mode attribute, create hub rendering, library empty state |
+| `features/templates/templates.test.ts` | template catalog, styling-only guarantee (sacred text + checksum untouched, publish gate still passes), decoration replacement |
 
 Also validated:
 
@@ -28,11 +29,14 @@ Also validated:
 - [ ] Drawer: theme light/dark/system, language ar/en flips dir instantly, logout
 - [ ] Quran: search "الرحمن", "2:255", surah picker, listen button plays/pauses
 - [ ] Hadith: search "النية", open in editor
-- [ ] Editor: drag, resize, layers reorder, sacred text uneditable (🔒), undo/redo, save
+- [ ] Editor: drag (snap guides appear at center), resize, layers reorder, sacred text
+      uneditable (lock badge), undo/redo (also Ctrl+Z), arrow-key nudge, templates tab, save
 - [ ] Export PNG requires the approval checkbox when sacred text present
 - [ ] Video: render 5s reel, preview plays, WebM downloads (Chrome/Edge; Safari fallback msg)
 - [ ] Scheduler: past time rejected; scheduled post appears on home + library
-- [ ] Offline: airplane mode → app loads, library/editor work, banner shows
+- [ ] Audio bar: seek, speed 1.5×, loop, volume, close
+- [ ] Offline (production build): airplane mode → app loads via service worker, library/editor
+      work, banner shows
 - [ ] Empty states: fresh library, no search results
 - [ ] Error states: audio without network shows friendly toast
 - [ ] Tablet ≥900px: side rail replaces bottom nav; editor two-column

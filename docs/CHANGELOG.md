@@ -1,5 +1,32 @@
 # Changelog
 
+## 1.1.0 — 2026-08-28
+
+Professional polish release.
+
+### Added
+- **Design templates**: 8 curated looks (free + premium) with decorative frames,
+  applied in one tap from the editor's new Templates tab — styling only, sacred
+  text and checksums untouched (tested).
+- **Global audio player bar**: play/pause, seek with timestamps, speed
+  (0.75×–2×), loop, volume — persistent above the navigation.
+- **Editor pro tools**: responsive stage that fits any screen, snap-to-center
+  guides while dragging, keyboard shortcuts (Delete, Ctrl+Z / Ctrl+Shift+Z /
+  Ctrl+Y, arrow-key nudging with Shift), numeric X/Y/W/H controls, rotation
+  slider, line-height control, one-tap watermark.
+- **SVG icon system**: ~40 consistent stroke icons replacing emoji across the
+  entire UI (navigation, drawer, editor, library, audio).
+- **True offline PWA**: service worker with app-shell precache, immutable asset
+  caching, and a capped runtime cache for fonts and recitation audio.
+- **Route-level code splitting** (React.lazy) — initial bundle cut by ~20% —
+  plus a top-level React error boundary with a friendly recovery screen.
+- **CI (GitHub Actions)**: typecheck, lint, format check, tests, build artifact,
+  and schema validation against a real PostgreSQL 16 service with RLS checks.
+- SEO/social meta tags and robots.txt.
+
+### Tests
+52 passing (adds template styling-guarantee suite).
+
 ## 1.0.0 — 2026-08-28
 
 Initial production-ready release.

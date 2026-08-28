@@ -15,6 +15,7 @@ import {
   type LibrarySort,
 } from '../data/libraryRepository';
 import { cancelScheduled, listScheduled } from '@features/scheduler/domain/scheduler';
+import { IconCopy, IconEdit, IconImage, IconStar, IconTrash } from '@core/ui/icons';
 import './library.css';
 
 const FILTERS: LibraryFilter[] = [
@@ -117,7 +118,9 @@ export function LibraryPage() {
                 {project.thumbnail ? (
                   <img src={project.thumbnail} alt="" loading="lazy" />
                 ) : (
-                  <span aria-hidden>🖼️</span>
+                  <span aria-hidden>
+                    <IconImage size={26} />
+                  </span>
                 )}
               </button>
               <div className="library-item__body">
@@ -136,7 +139,7 @@ export function LibraryPage() {
                     title={t('library.edit')}
                     onClick={() => navigate(`/editor/${project.id}`)}
                   >
-                    ✏️
+                    <IconEdit size={15} />
                   </button>
                   <button
                     className="fl-btn fl-btn--ghost fl-btn--sm"
@@ -146,7 +149,7 @@ export function LibraryPage() {
                       reload();
                     }}
                   >
-                    ⧉
+                    <IconCopy size={15} />
                   </button>
                   <button
                     className="fl-btn fl-btn--ghost fl-btn--sm"
@@ -156,14 +159,14 @@ export function LibraryPage() {
                       reload();
                     }}
                   >
-                    {project.favorite ? '⭐' : '☆'}
+                    <IconStar size={15} filled={project.favorite} />
                   </button>
                   <button
                     className="fl-btn fl-btn--ghost fl-btn--sm"
                     title={t('library.delete')}
                     onClick={() => setDeleting(project)}
                   >
-                    🗑️
+                    <IconTrash size={15} />
                   </button>
                 </div>
               </div>

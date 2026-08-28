@@ -4,6 +4,7 @@ import { create } from 'zustand';
 import { onAppError } from '../errors/errors';
 import { useI18n } from '../i18n';
 import { newId } from '../utils/id';
+import { IconClose } from './icons';
 
 export type ToastKind = 'success' | 'error' | 'info';
 
@@ -57,7 +58,7 @@ export function ToastHost() {
             onClick={() => dismiss(item.id)}
             aria-label={t('common.close')}
           >
-            ✕
+            <IconClose size={15} />
           </button>
         </div>
       ))}

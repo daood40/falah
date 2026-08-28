@@ -14,8 +14,11 @@ A professional platform for creating, organizing, and publishing trusted Islamic
   Arabic search, per-ayah recitation audio (4 reciters), and live tafsir/juz/page enrichment.
 - 📜 **Hadith Engine** — verified Nawawi's 40 collection bundled offline (Arabic + English +
   narrator + full source metadata); sunnah.com API integration for the six books (keyed).
-- 🎨 **Content Editor** — canvas editor with layers, drag & drop, resize, text/shape/image
+- 🎨 **Content Editor** — canvas editor with layers, drag & drop, resize, snap-to-center
+  guides, keyboard shortcuts, numeric position/rotation controls, watermark, text/shape/image
   elements, gradients, Arabic typography, undo/redo. Sacred text is **immutable** in the editor.
+- 🧩 **Design Templates** — 8 curated looks (free + premium) applied in one tap; templates
+  restyle only (background/colors/frames) and can never alter sacred text.
 - 🎬 **Video Creator** — real in-browser video rendering (canvas + MediaRecorder → WebM) with
   text animations, subtitles, recitation audio mixing, and 9:16 / 1:1 / 16:9 / 4:5 formats.
 - 🗂️ **Library** — offline-first (IndexedDB) with filters, search, sort, duplicate, favorite.
@@ -27,7 +30,9 @@ A professional platform for creating, organizing, and publishing trusted Islamic
 - ✨ **AI Assistant** — design ideas, titles, hashtags, layout help. Requests for religious text
   are routed to the verified engines or **refused** (source-lock guard, client + server side).
 - 🌍 **i18n** — Arabic (RTL) + English (LTR), dynamic direction, architecture scales to 50+ locales.
-- 🌗 Light / Dark / System themes · 📱 Responsive phone/tablet/desktop · ♿ a11y-conscious · PWA manifest.
+- 🔊 **Audio Player** — global player bar with seek, speed (0.75×–2×), loop, and volume.
+- 🌗 Light / Dark / System themes · 📱 Responsive phone/tablet/desktop · ♿ a11y-conscious ·
+  installable **offline PWA** (service worker) · route-level code splitting · CI on every push.
 
 ## Stack
 

@@ -2,6 +2,7 @@
 import type { ReactNode } from 'react';
 import { useEffect } from 'react';
 import { useI18n } from '../i18n';
+import { IconClose } from './icons';
 
 export function Modal({
   open,
@@ -37,7 +38,7 @@ export function Modal({
       <div className="fl-row" style={{ marginBottom: 'var(--fl-sp-4)' }}>
         <h2 className="fl-title fl-grow">{title}</h2>
         <button className="fl-btn fl-btn--ghost fl-btn--icon" onClick={onClose} aria-label="close">
-          ✕
+          <IconClose size={18} />
         </button>
       </div>
       {children}

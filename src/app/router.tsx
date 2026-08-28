@@ -1,29 +1,85 @@
+/** Router with route-level code splitting: each page loads on demand. */
+import { Suspense, lazy, type ComponentType } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
+import { Spinner } from '@core/ui/primitives';
 import { AppShell } from './layout/AppShell';
-import { HomePage } from '@features/home/HomePage';
-import { CreateHubPage } from '@features/create/CreateHubPage';
-import { QuranCreatePage } from '@features/create/QuranCreatePage';
-import { HadithCreatePage } from '@features/create/HadithCreatePage';
-import { EditorPage } from '@features/editor/presentation/EditorPage';
-import { LibraryPage } from '@features/library/presentation/LibraryPage';
-import { AiAssistantPage } from '@features/ai/presentation/AiAssistantPage';
-import { SettingsPage } from '@features/settings/SettingsPage';
-import { AuthPage } from '@features/auth/AuthPage';
+
+function page(load: () => Promise<{ default: ComponentType }>) {
+  const Page = lazy(load);
+  return (
+    <Suspense fallback={<Spinner />}>
+      <Page />
+    </Suspense>
+  );
+}
 
 export const router = createBrowserRouter([
   {
     path: '/',
     element: <AppShell />,
     children: [
-      { index: true, element: <HomePage /> },
-      { path: 'create', element: <CreateHubPage /> },
-      { path: 'create/quran', element: <QuranCreatePage /> },
-      { path: 'create/hadith', element: <HadithCreatePage /> },
-      { path: 'editor/:id', element: <EditorPage /> },
-      { path: 'library', element: <LibraryPage /> },
-      { path: 'assistant', element: <AiAssistantPage /> },
-      { path: 'settings', element: <SettingsPage /> },
-      { path: 'auth', element: <AuthPage /> },
+      {
+        index: true,
+        element: page(() =>
+          import('@features/home/HomePage').then((m) => ({ default: m.HomePage })),
+        ),
+      },
+      {
+        path: 'create',
+        element: page(() =>
+          import('@features/create/CreateHubPage').then((m) => ({ default: m.CreateHubPage })),
+        ),
+      },
+      {
+        path: 'create/quran',
+        element: page(() =>
+          import('@features/create/QuranCreatePage').then((m) => ({ default: m.QuranCreatePage })),
+        ),
+      },
+      {
+        path: 'create/hadith',
+        element: page(() =>
+          import('@features/create/HadithCreatePage').then((m) => ({
+            default: m.HadithCreatePage,
+          })),
+        ),
+      },
+      {
+        path: 'editor/:id',
+        element: page(() =>
+          import('@features/editor/presentation/EditorPage').then((m) => ({
+            default: m.EditorPage,
+          })),
+        ),
+      },
+      {
+        path: 'library',
+        element: page(() =>
+          import('@features/library/presentation/LibraryPage').then((m) => ({
+            default: m.LibraryPage,
+          })),
+        ),
+      },
+      {
+        path: 'assistant',
+        element: page(() =>
+          import('@features/ai/presentation/AiAssistantPage').then((m) => ({
+            default: m.AiAssistantPage,
+          })),
+        ),
+      },
+      {
+        path: 'settings',
+        element: page(() =>
+          import('@features/settings/SettingsPage').then((m) => ({ default: m.SettingsPage })),
+        ),
+      },
+      {
+        path: 'auth',
+        element: page(() =>
+          import('@features/auth/AuthPage').then((m) => ({ default: m.AuthPage })),
+        ),
+      },
     ],
   },
 ]);

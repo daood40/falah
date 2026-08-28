@@ -162,3 +162,80 @@
     gap: var(--fl-sp-3);
   }
 }
+
+/* ---------- Templates panel ---------- */
+.tpl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: var(--fl-sp-3);
+}
+.tpl-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--fl-sp-1);
+  border: 1px solid var(--fl-border);
+  border-radius: var(--fl-r-md);
+  background: var(--fl-surface);
+  padding: var(--fl-sp-2);
+  cursor: pointer;
+  font: inherit;
+  color: var(--fl-text);
+  transition:
+    border-color var(--fl-t-fast),
+    transform var(--fl-t-fast);
+}
+.tpl-card:hover:not(:disabled) {
+  border-color: var(--fl-primary);
+  transform: translateY(-2px);
+}
+.tpl-card:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.tpl-swatch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  aspect-ratio: 4 / 5;
+  border-radius: var(--fl-r-sm);
+}
+.tpl-swatch__line {
+  width: 60%;
+  height: 4px;
+  border-radius: 2px;
+}
+.tpl-swatch__line--short {
+  width: 32%;
+  height: 3px;
+}
+.tpl-card__name {
+  font-size: var(--fl-fs-xs);
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+}
+
+/* ---------- Snap guides ---------- */
+.stage__guide {
+  position: absolute;
+  background: var(--fl-gold-500);
+  opacity: 0.9;
+  pointer-events: none;
+  z-index: 5;
+}
+.stage__guide--v {
+  top: 0;
+  bottom: 0;
+  width: 1.5px;
+  left: 50%;
+}
+.stage__guide--h {
+  left: 0;
+  right: 0;
+  height: 1.5px;
+  top: 50%;
+}

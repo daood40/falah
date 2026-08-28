@@ -1,21 +1,57 @@
-/** App shell: header (☰ drawer), RTL bottom navigation, offline banner. */
-import { useEffect, useState } from 'react';
+/** App shell: header (menu drawer), RTL bottom navigation, offline banner, audio bar. */
+import { useEffect, useState, type ComponentType } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useI18n, LOCALES } from '@core/i18n';
 import { useTheme, type ThemeMode } from '@core/theme/theme';
 import { ToastHost, toast } from '@core/ui/Toast';
 import { Modal } from '@core/ui/primitives';
+import {
+  IconBell,
+  IconCard,
+  IconClose,
+  IconFile,
+  IconHelp,
+  IconHome,
+  IconLibrary,
+  IconLogin,
+  IconLogout,
+  IconMenu,
+  IconMonitor,
+  IconMoon,
+  IconMosque,
+  IconPlus,
+  IconSettings,
+  IconShield,
+  IconSparkles,
+  IconSun,
+  IconUser,
+  type IconProps,
+} from '@core/ui/icons';
 import { useAuth } from '@features/auth/authStore';
+import { AudioBar } from '@features/audio/AudioBar';
 import './layout.css';
 
+interface NavItem {
+  to: string;
+  icon: ComponentType<IconProps>;
+  key: string;
+  create?: boolean;
+}
+
 /** Bottom nav — order in source is RTL-visual order via flex + dir. */
-const NAV_ITEMS = [
-  { to: '/', icon: '🏠', key: 'nav.home' },
-  { to: '/assistant', icon: '✨', key: 'nav.ai' },
-  { to: '/create', icon: '＋', key: 'nav.create', create: true },
-  { to: '/library', icon: '🗂️', key: 'nav.library' },
-  { to: '/settings', icon: '⚙️', key: 'nav.settings' },
+const NAV_ITEMS: NavItem[] = [
+  { to: '/', icon: IconHome, key: 'nav.home' },
+  { to: '/assistant', icon: IconSparkles, key: 'nav.ai' },
+  { to: '/create', icon: IconPlus, key: 'nav.create', create: true },
+  { to: '/library', icon: IconLibrary, key: 'nav.library' },
+  { to: '/settings', icon: IconSettings, key: 'nav.settings' },
 ];
+
+const THEME_ICONS: Record<ThemeMode, ComponentType<IconProps>> = {
+  light: IconSun,
+  dark: IconMoon,
+  system: IconMonitor,
+};
 
 function useOnline(): boolean {
   const [online, setOnline] = useState(() => navigator.onLine);
@@ -30,6 +66,28 @@ function useOnline(): boolean {
     };
   }, []);
   return online;
+}
+
+function DrawerItem({
+  icon: Icon,
+  label,
+  onClick,
+  danger = false,
+}: {
+  icon: ComponentType<IconProps>;
+  label: string;
+  onClick: () => void;
+  danger?: boolean;
+}) {
+  return (
+    <button
+      className="drawer__item"
+      style={danger ? { color: 'var(--fl-danger)' } : undefined}
+      onClick={onClick}
+    >
+      <Icon size={19} /> {label}
+    </button>
+  );
 }
 
 function Drawer({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -51,14 +109,14 @@ function Drawer({ open, onClose }: { open: boolean; onClose: () => void }) {
       <nav className="drawer" aria-label={t('common.menu')}>
         <div className="fl-row" style={{ marginBottom: 'var(--fl-sp-3)' }}>
           <span className="shell__brand fl-grow">
-            <span aria-hidden>🕌</span> {t('app.name')}
+            <IconMosque size={22} /> {t('app.name')}
           </span>
           <button
             className="fl-btn fl-btn--ghost fl-btn--icon"
             onClick={onClose}
             aria-label={t('common.close')}
           >
-            ✕
+            <IconClose size={18} />
           </button>
         </div>
 
@@ -68,29 +126,34 @@ function Drawer({ open, onClose }: { open: boolean; onClose: () => void }) {
         </div>
 
         <div className="drawer__section">{t('menu.account')}</div>
-        <button className="drawer__item" onClick={() => go('/settings')}>
-          👤 {t('menu.profile')}
-        </button>
-        <button className="drawer__item" onClick={() => go('/settings')}>
-          💳 {t('menu.subscription')}
-        </button>
-        <button className="drawer__item" onClick={() => go('/settings')}>
-          🔔 {t('menu.notifications')}
-        </button>
+        <DrawerItem icon={IconUser} label={t('menu.profile')} onClick={() => go('/settings')} />
+        <DrawerItem
+          icon={IconCard}
+          label={t('menu.subscription')}
+          onClick={() => go('/settings')}
+        />
+        <DrawerItem
+          icon={IconBell}
+          label={t('menu.notifications')}
+          onClick={() => go('/settings')}
+        />
 
         <div className="drawer__section">{t('menu.theme')}</div>
         <div className="fl-row fl-wrap" role="radiogroup" aria-label={t('menu.theme')}>
-          {(['light', 'dark', 'system'] as ThemeMode[]).map((m) => (
-            <button
-              key={m}
-              className={`fl-chip ${mode === m ? 'fl-chip--active' : ''}`}
-              role="radio"
-              aria-checked={mode === m}
-              onClick={() => setMode(m)}
-            >
-              {t(`settings.theme.${m}`)}
-            </button>
-          ))}
+          {(['light', 'dark', 'system'] as ThemeMode[]).map((m) => {
+            const ThemeIcon = THEME_ICONS[m];
+            return (
+              <button
+                key={m}
+                className={`fl-chip ${mode === m ? 'fl-chip--active' : ''}`}
+                role="radio"
+                aria-checked={mode === m}
+                onClick={() => setMode(m)}
+              >
+                <ThemeIcon size={15} /> {t(`settings.theme.${m}`)}
+              </button>
+            );
+          })}
         </div>
 
         <div className="drawer__section">{t('menu.language')}</div>
@@ -109,36 +172,34 @@ function Drawer({ open, onClose }: { open: boolean; onClose: () => void }) {
         </div>
 
         <div className="drawer__section">{t('settings.help')}</div>
-        <button className="drawer__item" onClick={() => go('/settings#help')}>
-          ❓ {t('menu.help')}
-        </button>
-        <button className="drawer__item" onClick={() => go('/settings#about')}>
-          🕌 {t('menu.about')}
-        </button>
-        <button className="drawer__item" onClick={() => go('/settings#privacy')}>
-          🛡️ {t('menu.privacy')}
-        </button>
-        <button className="drawer__item" onClick={() => go('/settings#terms')}>
-          📄 {t('menu.terms')}
-        </button>
+        <DrawerItem icon={IconHelp} label={t('menu.help')} onClick={() => go('/settings#help')} />
+        <DrawerItem
+          icon={IconMosque}
+          label={t('menu.about')}
+          onClick={() => go('/settings#about')}
+        />
+        <DrawerItem
+          icon={IconShield}
+          label={t('menu.privacy')}
+          onClick={() => go('/settings#privacy')}
+        />
+        <DrawerItem icon={IconFile} label={t('menu.terms')} onClick={() => go('/settings#terms')} />
 
         <div style={{ flex: 1 }} />
         {user ? (
-          <button
-            className="drawer__item"
-            style={{ color: 'var(--fl-danger)' }}
-            onClick={async () => {
-              await signOut();
-              toast('info', t('auth.loggedOut'));
-              onClose();
+          <DrawerItem
+            icon={IconLogout}
+            label={t('menu.logout')}
+            danger
+            onClick={() => {
+              void signOut().then(() => {
+                toast('info', t('auth.loggedOut'));
+                onClose();
+              });
             }}
-          >
-            🚪 {t('menu.logout')}
-          </button>
+          />
         ) : (
-          <button className="drawer__item" onClick={() => go('/auth')}>
-            🔑 {t('menu.login')}
-          </button>
+          <DrawerItem icon={IconLogin} label={t('menu.login')} onClick={() => go('/auth')} />
         )}
       </nav>
     </>
@@ -165,10 +226,10 @@ export function AppShell() {
             aria-label={t('common.menu')}
             onClick={() => setDrawerOpen(true)}
           >
-            ☰
+            <IconMenu size={20} />
           </button>
           <span className="shell__brand">
-            <span aria-hidden>🕌</span> {t('app.name')}
+            <IconMosque size={22} /> {t('app.name')}
           </span>
         </header>
         {!online && <div className="offline-banner">{t('common.offline')}</div>}
@@ -178,21 +239,25 @@ export function AppShell() {
       </div>
 
       <nav className="shell__nav" aria-label={t('common.menu')}>
-        {NAV_ITEMS.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.to === '/'}
-            className={`shell__nav-item ${item.create ? 'shell__nav-item--create' : ''}`}
-          >
-            <span className="shell__nav-icon" aria-hidden>
-              {item.icon}
-            </span>
-            {t(item.key)}
-          </NavLink>
-        ))}
+        {NAV_ITEMS.map((item) => {
+          const ItemIcon = item.icon;
+          return (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.to === '/'}
+              className={`shell__nav-item ${item.create ? 'shell__nav-item--create' : ''}`}
+            >
+              <span className="shell__nav-icon" aria-hidden>
+                <ItemIcon size={item.create ? 24 : 21} />
+              </span>
+              {t(item.key)}
+            </NavLink>
+          );
+        })}
       </nav>
 
+      <AudioBar />
       <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
       <ToastHost />
 
@@ -204,9 +269,8 @@ export function AppShell() {
         <div className="fl-col">
           <button
             className="fl-btn fl-btn--primary"
-            onClick={async () => {
-              await continueLocal();
-              setWelcomeOpen(false);
+            onClick={() => {
+              void continueLocal().then(() => setWelcomeOpen(false));
             }}
           >
             {t('auth.continueLocal')}

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useI18n } from '@core/i18n';
 import { newId } from '@core/utils/id';
 import { useAuth } from '@features/auth/authStore';
+import { IconSparkles } from '@core/ui/icons';
 import { entitlementsFor } from '@core/entitlements/entitlements';
 import type { AssistantMessage } from '../domain/assistant';
 import { defaultAssistantProvider } from '../data/aiProvider';
@@ -51,7 +52,9 @@ export function AiAssistantPage() {
   return (
     <div className="assistant">
       <header>
-        <h1 className="fl-title">✨ {t('ai.title')}</h1>
+        <h1 className="fl-title fl-row" style={{ gap: 'var(--fl-sp-2)' }}>
+          <IconSparkles size={24} /> {t('ai.title')}
+        </h1>
         <p className="fl-muted">{t('ai.disclaimer')}</p>
       </header>
 

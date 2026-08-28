@@ -1,11 +1,24 @@
-/** Editor side panels: insert, layers, element properties, background. */
+/** Editor side panels: insert, layers, element properties, background, templates. */
 import type { ChangeEvent } from 'react';
 import { useI18n } from '@core/i18n';
 import type { CanvasElement, ShapeElement, TextElement } from '@core/models/content';
 import { Field } from '@core/ui/primitives';
+import {
+  IconChevronDown,
+  IconChevronUp,
+  IconCopy,
+  IconImage,
+  IconLock,
+  IconShapes,
+  IconTrash,
+  IconType,
+} from '@core/ui/icons';
 import { newShapeElement, newTextElement } from '../domain/projectFactory';
 import { useEditor } from '../domain/editorStore';
 import { newId } from '@core/utils/id';
+import { TEMPLATES, applyTemplate, type DesignTemplate } from '@features/templates/templates';
+import { useAuth } from '@features/auth/authStore';
+import { entitlementsFor } from '@core/entitlements/entitlements';
 
 const FONTS = [
   { label: 'Cairo', value: "'Cairo', sans-serif" },
@@ -109,25 +122,30 @@ export function InsertBar() {
   return (
     <div className="fl-row fl-wrap">
       <button className="fl-btn fl-btn--sm" onClick={addText}>
-        🅰️ {t('editor.addText')}
+        <IconType size={15} /> {t('editor.addText')}
       </button>
       <button className="fl-btn fl-btn--sm" onClick={addShape}>
-        ⬛ {t('editor.addShape')}
+        <IconShapes size={15} /> {t('editor.addShape')}
       </button>
       <label className="fl-btn fl-btn--sm" style={{ cursor: 'pointer' }}>
-        🖼️ {t('editor.addImage')}
+        <IconImage size={15} /> {t('editor.addImage')}
         <input type="file" accept="image/*" onChange={addImage} style={{ display: 'none' }} />
       </label>
     </div>
   );
 }
 
-function layerLabel(el: CanvasElement): string {
-  if (el.kind === 'shape') return `⬛ ${el.shape}`;
-  if (el.kind === 'image') return '🖼️ صورة';
-  const text = (el as TextElement).text;
-  const prefix = el.kind === 'sacred-text' ? '🔒 ' : el.kind === 'reference' ? '📌 ' : '🅰️ ';
-  return prefix + text.slice(0, 30);
+function LayerIcon({ el }: { el: CanvasElement }) {
+  if (el.kind === 'shape') return <IconShapes size={15} />;
+  if (el.kind === 'image') return <IconImage size={15} />;
+  if (el.kind === 'sacred-text') return <IconLock size={15} />;
+  return <IconType size={15} />;
+}
+
+function layerText(el: CanvasElement): string {
+  if (el.kind === 'shape') return el.shape;
+  if (el.kind === 'image') return 'صورة';
+  return (el as TextElement).text.slice(0, 30);
 }
 
 export function LayersPanel() {
@@ -143,7 +161,8 @@ export function LayersPanel() {
           className={`layer-row ${el.id === selectedId ? 'layer-row--active' : ''}`}
           onClick={() => select(el.id)}
         >
-          <span className="layer-row__label">{layerLabel(el)}</span>
+          <LayerIcon el={el} />
+          <span className="layer-row__label">{layerText(el)}</span>
           <button
             className="fl-btn fl-btn--ghost fl-btn--sm"
             aria-label={t('editor.moveUp')}
@@ -152,7 +171,7 @@ export function LayersPanel() {
               reorderElement(el.id, 1);
             }}
           >
-            ↑
+            <IconChevronUp size={15} />
           </button>
           <button
             className="fl-btn fl-btn--ghost fl-btn--sm"
@@ -162,7 +181,7 @@ export function LayersPanel() {
               reorderElement(el.id, -1);
             }}
           >
-            ↓
+            <IconChevronDown size={15} />
           </button>
           <button
             className="fl-btn fl-btn--ghost fl-btn--sm"
@@ -172,7 +191,7 @@ export function LayersPanel() {
               duplicateElement(el.id);
             }}
           >
-            ⧉
+            <IconCopy size={15} />
           </button>
           <button
             className="fl-btn fl-btn--ghost fl-btn--sm"
@@ -182,11 +201,41 @@ export function LayersPanel() {
               removeElement(el.id);
             }}
           >
-            🗑️
+            <IconTrash size={15} />
           </button>
         </div>
       ))}
     </div>
+  );
+}
+
+/** Numeric geometry input as percentage of canvas. */
+function GeometryInput({
+  label,
+  value,
+  onChange,
+  min = -0.5,
+  max = 1.5,
+}: {
+  label: string;
+  value: number;
+  onChange: (v: number) => void;
+  min?: number;
+  max?: number;
+}) {
+  return (
+    <Field label={label}>
+      <input
+        className="fl-input"
+        type="number"
+        step={1}
+        value={Math.round(value * 100)}
+        onChange={(e) => {
+          const pct = Number(e.target.value);
+          if (Number.isFinite(pct)) onChange(Math.min(max, Math.max(min, pct / 100)));
+        }}
+      />
+    </Field>
   );
 }
 
@@ -197,22 +246,24 @@ export function PropertiesPanel() {
   if (!el) return <p className="fl-muted">{t('editor.properties')}: —</p>;
 
   const isText = el.kind === 'text' || el.kind === 'sacred-text' || el.kind === 'reference';
+  const patch = (p: Partial<TextElement> | Partial<ShapeElement> | Partial<CanvasElement>) =>
+    updateElement(el.id, p as Partial<CanvasElement>);
 
   return (
     <div className="fl-col">
       {isText && (
         <>
           {el.kind === 'sacred-text' ? (
-            <p className="fl-badge fl-badge--verified">{t('editor.locked')}</p>
+            <p className="fl-badge fl-badge--verified">
+              <IconLock size={13} /> {t('editor.locked')}
+            </p>
           ) : (
             <Field label={t('editor.addText')}>
               <textarea
                 className="fl-textarea"
                 rows={2}
                 value={(el as TextElement).text}
-                onChange={(e) =>
-                  updateElement(el.id, { text: e.target.value } as Partial<CanvasElement>)
-                }
+                onChange={(e) => patch({ text: e.target.value })}
               />
             </Field>
           )}
@@ -221,9 +272,7 @@ export function PropertiesPanel() {
               <select
                 className="fl-select"
                 value={(el as TextElement).fontFamily}
-                onChange={(e) =>
-                  updateElement(el.id, { fontFamily: e.target.value } as Partial<CanvasElement>)
-                }
+                onChange={(e) => patch({ fontFamily: e.target.value })}
               >
                 {FONTS.map((f) => (
                   <option key={f.label} value={f.value}>
@@ -240,42 +289,43 @@ export function PropertiesPanel() {
                 max={0.12}
                 step={0.002}
                 value={(el as TextElement).fontScale}
-                onChange={(e) =>
-                  updateElement(el.id, {
-                    fontScale: Number(e.target.value),
-                  } as Partial<CanvasElement>)
-                }
+                onChange={(e) => patch({ fontScale: Number(e.target.value) })}
               />
             </Field>
             <Field label={t('editor.align')}>
               <select
                 className="fl-select"
                 value={(el as TextElement).align}
-                onChange={(e) =>
-                  updateElement(el.id, {
-                    align: e.target.value as TextElement['align'],
-                  } as Partial<CanvasElement>)
-                }
+                onChange={(e) => patch({ align: e.target.value as TextElement['align'] })}
               >
-                <option value="center">⬌</option>
-                <option value="right">⇤</option>
-                <option value="left">⇥</option>
+                <option value="center">{t('editor.alignCenter')}</option>
+                <option value="right">{t('editor.alignRight')}</option>
+                <option value="left">{t('editor.alignLeft')}</option>
               </select>
+            </Field>
+            <Field label={t('editor.lineHeight')}>
+              <input
+                className="fl-input"
+                type="range"
+                min={1}
+                max={3}
+                step={0.1}
+                value={(el as TextElement).lineHeight}
+                onChange={(e) => patch({ lineHeight: Number(e.target.value) })}
+              />
             </Field>
           </div>
           <ColorPicker
             label={t('editor.color')}
             value={(el as TextElement).color}
-            onChange={(color) => updateElement(el.id, { color } as Partial<CanvasElement>)}
+            onChange={(color) => patch({ color })}
           />
           <div className="fl-row fl-wrap">
             <label className="fl-chip" style={{ cursor: 'pointer' }}>
               <input
                 type="checkbox"
                 checked={(el as TextElement).bold}
-                onChange={(e) =>
-                  updateElement(el.id, { bold: e.target.checked } as Partial<CanvasElement>)
-                }
+                onChange={(e) => patch({ bold: e.target.checked })}
               />
               B
             </label>
@@ -283,9 +333,7 @@ export function PropertiesPanel() {
               <input
                 type="checkbox"
                 checked={(el as TextElement).shadow}
-                onChange={(e) =>
-                  updateElement(el.id, { shadow: e.target.checked } as Partial<CanvasElement>)
-                }
+                onChange={(e) => patch({ shadow: e.target.checked })}
               />
               {t('editor.shadow')}
             </label>
@@ -300,11 +348,7 @@ export function PropertiesPanel() {
               <select
                 className="fl-select"
                 value={(el as ShapeElement).shape}
-                onChange={(e) =>
-                  updateElement(el.id, {
-                    shape: e.target.value as ShapeElement['shape'],
-                  } as Partial<CanvasElement>)
-                }
+                onChange={(e) => patch({ shape: e.target.value as ShapeElement['shape'] })}
               >
                 <option value="rect">▭</option>
                 <option value="circle">◯</option>
@@ -319,28 +363,41 @@ export function PropertiesPanel() {
                 max={0.1}
                 step={0.005}
                 value={(el as ShapeElement).cornerRadius}
-                onChange={(e) =>
-                  updateElement(el.id, {
-                    cornerRadius: Number(e.target.value),
-                  } as Partial<CanvasElement>)
-                }
+                onChange={(e) => patch({ cornerRadius: Number(e.target.value) })}
               />
             </Field>
           </div>
           <ColorPicker
             label={t('editor.color')}
             value={(el as ShapeElement).fill}
-            onChange={(fill) => updateElement(el.id, { fill } as Partial<CanvasElement>)}
+            onChange={(fill) => patch({ fill })}
           />
           <ColorPicker
             label={t('editor.borderColor')}
             value={(el as ShapeElement).borderColor}
-            onChange={(borderColor) =>
-              updateElement(el.id, { borderColor } as Partial<CanvasElement>)
-            }
+            onChange={(borderColor) => patch({ borderColor })}
           />
         </>
       )}
+
+      <div className="editor__grid">
+        <GeometryInput label="X %" value={el.x} onChange={(x) => patch({ x })} />
+        <GeometryInput label="Y %" value={el.y} onChange={(y) => patch({ y })} />
+        <GeometryInput label="W %" value={el.w} min={0.02} onChange={(w) => patch({ w })} />
+        <GeometryInput label="H %" value={el.h} min={0.02} onChange={(h) => patch({ h })} />
+      </div>
+
+      <Field label={`${t('editor.rotation')} (${Math.round(el.rotation)}°)`}>
+        <input
+          className="fl-input"
+          type="range"
+          min={-180}
+          max={180}
+          step={1}
+          value={el.rotation}
+          onChange={(e) => patch({ rotation: Number(e.target.value) })}
+        />
+      </Field>
 
       <Field label={t('editor.opacity')}>
         <input
@@ -350,7 +407,7 @@ export function PropertiesPanel() {
           max={1}
           step={0.05}
           value={el.opacity}
-          onChange={(e) => updateElement(el.id, { opacity: Number(e.target.value) })}
+          onChange={(e) => patch({ opacity: Number(e.target.value) })}
         />
       </Field>
     </div>
@@ -393,7 +450,7 @@ export function BackgroundPanel() {
           className={`fl-chip ${bg.type === 'image' ? 'fl-chip--active' : ''}`}
           style={{ cursor: 'pointer' }}
         >
-          🖼️ {t('editor.addImage')}
+          <IconImage size={15} /> {t('editor.addImage')}
           <input type="file" accept="image/*" onChange={setImage} style={{ display: 'none' }} />
         </label>
       </div>
@@ -409,6 +466,63 @@ export function BackgroundPanel() {
           onChange={(gradientTo) => setBackground({ ...bg, gradientTo })}
         />
       )}
+    </div>
+  );
+}
+
+function TemplateSwatch({ template }: { template: DesignTemplate }) {
+  const bg = template.background;
+  const style =
+    bg.type === 'gradient' && bg.gradientTo
+      ? {
+          background: `linear-gradient(${bg.gradientAngle ?? 135}deg, ${bg.color}, ${bg.gradientTo})`,
+        }
+      : { background: bg.color };
+  return (
+    <span className="tpl-swatch" style={style} aria-hidden>
+      <span className="tpl-swatch__line" style={{ background: template.textColor }} />
+      <span
+        className="tpl-swatch__line tpl-swatch__line--short"
+        style={{ background: template.accentColor }}
+      />
+    </span>
+  );
+}
+
+export function TemplatesPanel() {
+  const t = useI18n((s) => s.t);
+  const { project, updateProject } = useEditor();
+  const { user } = useAuth();
+  if (!project) return null;
+  const premiumAllowed = entitlementsFor(user?.plan ?? 'free').premium_templates;
+
+  const apply = (template: DesignTemplate) => {
+    const styled = applyTemplate(project, template);
+    updateProject({ background: styled.background, elements: styled.elements });
+  };
+
+  return (
+    <div className="tpl-grid">
+      {TEMPLATES.map((template) => {
+        const locked = template.premium && !premiumAllowed;
+        return (
+          <button
+            key={template.id}
+            className="tpl-card"
+            onClick={() => !locked && apply(template)}
+            disabled={locked}
+            title={locked ? t('templates.premiumOnly') : template.nameAr}
+          >
+            <TemplateSwatch template={template} />
+            <span className="tpl-card__name">
+              {template.nameAr}
+              {template.premium && (
+                <span className="fl-badge fl-badge--pending">{t('templates.premium')}</span>
+              )}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }

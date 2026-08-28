@@ -14,13 +14,30 @@ import { renderVideo } from '@features/video/data/videoRenderer';
 import { ayahAudioUrl } from '@features/quran/data/quranRepository';
 import { RECITERS } from '@features/quran/domain/types';
 import type { TextElement } from '@core/models/content';
+import {
+  IconCalendar,
+  IconDownload,
+  IconRedo,
+  IconSave,
+  IconUndo,
+  IconVideo,
+  IconWatermark,
+} from '@core/ui/icons';
 import { useEditor } from '../domain/editorStore';
+import { newTextElement } from '../domain/projectFactory';
 import { exportPng, downloadBlob, renderThumbnail, sacredTexts } from '../data/exportService';
 import { CanvasStage } from './CanvasStage';
-import { BackgroundPanel, InsertBar, LayersPanel, PropertiesPanel } from './Panels';
+import { BackgroundPanel, InsertBar, LayersPanel, PropertiesPanel, TemplatesPanel } from './Panels';
 import './editor.css';
 
-type PanelTab = 'properties' | 'layers' | 'background';
+type PanelTab = 'properties' | 'layers' | 'background' | 'templates';
+
+const TAB_KEYS: Record<PanelTab, string> = {
+  properties: 'editor.properties',
+  layers: 'editor.layers',
+  background: 'editor.background',
+  templates: 'editor.templates',
+};
 
 const PLATFORMS: Platform[] = ['instagram', 'facebook', 'tiktok', 'youtube', 'telegram', 'x'];
 
@@ -181,7 +198,7 @@ function VideoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
           </div>
         ) : (
           <button className="fl-btn fl-btn--primary" onClick={render}>
-            🎬 {t('video.render')}
+            <IconVideo size={15} /> {t('video.render')}
           </button>
         )}
 
@@ -198,7 +215,7 @@ function VideoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
                 resultBlob && downloadBlob(resultBlob, `${project.title || 'falah-video'}.webm`)
               }
             >
-              ⬇️ {t('video.downloadWebm')}
+              <IconDownload size={15} /> {t('video.downloadWebm')}
             </button>
           </>
         )}
@@ -321,6 +338,69 @@ export function EditorPage() {
     // editor.load is stable (zustand); depending only on `id` is intentional.
   }, [id]);
 
+  // Keyboard shortcuts: Delete removes the selection, Ctrl+Z / Ctrl+Shift+Z (or Ctrl+Y)
+  // undo/redo, arrow keys nudge the selected element (Shift = larger step).
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.isContentEditable) {
+        return;
+      }
+      const state = useEditor.getState();
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) state.redo();
+        else state.undo();
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+        e.preventDefault();
+        state.redo();
+        return;
+      }
+      const selected = state.selectedId;
+      if (!selected) return;
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        e.preventDefault();
+        state.removeElement(selected);
+        return;
+      }
+      const step = e.shiftKey ? 0.02 : 0.005;
+      const el = state.project?.elements.find((item) => item.id === selected);
+      if (!el) return;
+      const nudge: Record<string, Partial<typeof el>> = {
+        ArrowUp: { y: el.y - step },
+        ArrowDown: { y: el.y + step },
+        ArrowLeft: { x: el.x - step },
+        ArrowRight: { x: el.x + step },
+      };
+      const patch = nudge[e.key];
+      if (patch) {
+        e.preventDefault();
+        state.updateElement(selected, patch);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
+
+  const addWatermark = () => {
+    const project = editor.project;
+    if (!project) return;
+    const watermark = newTextElement(user?.displayName ? `@${user.displayName}` : 'فلاح', {
+      x: 0.62,
+      y: 0.94,
+      w: 0.34,
+      h: 0.05,
+      fontScale: 0.02,
+      color: '#ffffff',
+      opacity: 0.45,
+      align: 'left',
+    });
+    editor.addElement(watermark);
+    editor.select(watermark.id);
+  };
+
   const save = async () => {
     const project = editor.project;
     if (!project) return;
@@ -381,7 +461,7 @@ export function EditorPage() {
             disabled={editor.past.length === 0}
             aria-label="undo"
           >
-            ↶
+            <IconUndo size={16} />
           </button>
           <button
             className="fl-btn fl-btn--ghost fl-btn--sm"
@@ -389,19 +469,22 @@ export function EditorPage() {
             disabled={editor.future.length === 0}
             aria-label="redo"
           >
-            ↷
+            <IconRedo size={16} />
           </button>
           <button className="fl-btn fl-btn--sm" onClick={save} disabled={saving}>
-            💾 {t('editor.save')}
+            <IconSave size={15} /> {t('editor.save')}
           </button>
           <button className="fl-btn fl-btn--sm" onClick={() => setApprovalOpen(true)}>
-            ⬇️ {t('editor.exportPng')}
+            <IconDownload size={15} /> {t('editor.exportPng')}
           </button>
           <button className="fl-btn fl-btn--sm" onClick={() => setVideoOpen(true)}>
-            🎬 {t('video.title')}
+            <IconVideo size={15} /> {t('video.title')}
           </button>
           <button className="fl-btn fl-btn--sm" onClick={() => setScheduleOpen(true)}>
-            🗓️ {t('library.schedule')}
+            <IconCalendar size={15} /> {t('library.schedule')}
+          </button>
+          <button className="fl-btn fl-btn--sm" onClick={addWatermark}>
+            <IconWatermark size={15} /> {t('editor.watermark')}
           </button>
         </div>
         <CanvasStage />
@@ -410,7 +493,7 @@ export function EditorPage() {
       <div className="editor__side">
         <InsertBar />
         <div className="editor__tabs" role="tablist">
-          {(['properties', 'layers', 'background'] as PanelTab[]).map((p) => (
+          {(['properties', 'layers', 'background', 'templates'] as PanelTab[]).map((p) => (
             <button
               key={p}
               role="tab"
@@ -418,9 +501,7 @@ export function EditorPage() {
               className={`fl-chip ${tab === p ? 'fl-chip--active' : ''}`}
               onClick={() => setTab(p)}
             >
-              {t(
-                `editor.${p === 'properties' ? 'properties' : p === 'layers' ? 'layers' : 'background'}`,
-              )}
+              {t(TAB_KEYS[p])}
             </button>
           ))}
         </div>
@@ -428,6 +509,7 @@ export function EditorPage() {
           {tab === 'properties' && <PropertiesPanel />}
           {tab === 'layers' && <LayersPanel />}
           {tab === 'background' && <BackgroundPanel />}
+          {tab === 'templates' && <TemplatesPanel />}
         </div>
       </div>
 

@@ -8,6 +8,7 @@ import { EmptyState, Field, Spinner } from '@core/ui/primitives';
 import { toast } from '@core/ui/Toast';
 import { useAuth } from '@features/auth/authStore';
 import { useAudio } from '@features/audio/audioStore';
+import { IconPause, IconPlay, IconVideo } from '@core/ui/icons';
 import {
   ayahAudioUrl,
   getAyahRange,
@@ -273,7 +274,7 @@ export function QuranCreatePage() {
         </label>
         <label className="fl-chip" style={{ cursor: 'pointer' }}>
           <input type="checkbox" checked={asVideo} onChange={(e) => setAsVideo(e.target.checked)} />
-          🎬 {t('create.makeVideo')}
+          <IconVideo size={15} /> {t('create.makeVideo')}
         </label>
       </div>
 
@@ -321,7 +322,11 @@ export function QuranCreatePage() {
 
       <div className="fl-row fl-wrap">
         <button className="fl-btn" onClick={listen} disabled={preview.length === 0}>
-          {audio.playing && audio.track?.ayahKey === firstAyah?.key ? '⏸' : '▶️'}{' '}
+          {audio.playing && audio.track?.ayahKey === firstAyah?.key ? (
+            <IconPause size={15} />
+          ) : (
+            <IconPlay size={15} />
+          )}{' '}
           {t('create.listen')}
         </button>
         <button

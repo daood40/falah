@@ -72,7 +72,9 @@
 }
 
 .shell__nav-icon {
-  font-size: 1.35rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   line-height: 1;
 }
 

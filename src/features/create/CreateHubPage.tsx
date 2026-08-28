@@ -1,6 +1,7 @@
 /** Create hub: choose Quran or Hadith as the (verified) content source. */
 import { Link } from 'react-router-dom';
 import { useI18n } from '@core/i18n';
+import { IconBook, IconScroll } from '@core/ui/icons';
 import './create.css';
 
 export function CreateHubPage() {
@@ -11,14 +12,14 @@ export function CreateHubPage() {
       <div className="create-hub">
         <Link to="/create/quran" className="fl-card create-hub__card create-hub__card--quran">
           <span className="create-hub__icon" aria-hidden>
-            📖
+            <IconBook size={44} />
           </span>
           <h2>{t('create.quran')}</h2>
           <p className="fl-muted">{t('create.quranDesc')}</p>
         </Link>
         <Link to="/create/hadith" className="fl-card create-hub__card create-hub__card--hadith">
           <span className="create-hub__icon" aria-hidden>
-            📜
+            <IconScroll size={44} />
           </span>
           <h2>{t('create.hadith')}</h2>
           <p className="fl-muted">{t('create.hadithDesc')}</p>

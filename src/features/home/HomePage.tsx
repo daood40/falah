@@ -4,6 +4,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useI18n } from '@core/i18n';
 import type { ContentProject, ScheduledPost } from '@core/models/content';
 import { EmptyState, SkeletonList } from '@core/ui/primitives';
+import {
+  IconBook,
+  IconCalendar,
+  IconImage,
+  IconScroll,
+  IconStory,
+  IconVideo,
+} from '@core/ui/icons';
 import { useAuth } from '@features/auth/authStore';
 import { listProjects } from '@features/library/data/libraryRepository';
 import { listScheduled } from '@features/scheduler/domain/scheduler';
@@ -12,10 +20,10 @@ import type { CachedAyah } from '@features/quran/domain/types';
 import './home.css';
 
 const QUICK_ACTIONS = [
-  { key: 'home.quickQuran', icon: '📖', to: '/create/quran' },
-  { key: 'home.quickHadith', icon: '📜', to: '/create/hadith' },
-  { key: 'home.quickVideo', icon: '🎬', to: '/create/quran?video=1' },
-  { key: 'home.quickStory', icon: '📱', to: '/create/quran?format=ig-story' },
+  { key: 'home.quickQuran', icon: IconBook, to: '/create/quran' },
+  { key: 'home.quickHadith', icon: IconScroll, to: '/create/hadith' },
+  { key: 'home.quickVideo', icon: IconVideo, to: '/create/quran?video=1' },
+  { key: 'home.quickStory', icon: IconStory, to: '/create/quran?format=ig-story' },
 ];
 
 /** Deterministic "verse of the day": rotates through short verified surahs. */
@@ -68,7 +76,7 @@ export function HomePage() {
         {QUICK_ACTIONS.map((action) => (
           <Link key={action.key} to={action.to} className="fl-card home-quick__item">
             <span className="home-quick__icon" aria-hidden>
-              {action.icon}
+              <action.icon size={32} />
             </span>
             <span>{t(action.key)}</span>
           </Link>
@@ -131,7 +139,7 @@ export function HomePage() {
                   <img src={project.thumbnail} alt={project.title} loading="lazy" />
                 ) : (
                   <div className="home-grid__placeholder" aria-hidden>
-                    🖼️
+                    <IconImage size={30} />
                   </div>
                 )}
                 <span className="home-grid__title">{project.title}</span>
@@ -149,7 +157,9 @@ export function HomePage() {
           <div className="fl-col">
             {upcoming.map((post) => (
               <div key={post.id} className="fl-card fl-row">
-                <span aria-hidden>🗓️</span>
+                <span aria-hidden>
+                  <IconCalendar size={18} />
+                </span>
                 <span className="fl-grow">
                   {new Date(post.scheduled_at).toLocaleString()} — {post.platform}
                 </span>
