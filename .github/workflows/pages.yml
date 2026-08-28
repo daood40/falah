@@ -1,8 +1,10 @@
 name: Deploy demo to GitHub Pages
 
+# Deploys ONLY from main (Pages environment protection also enforces this).
+# In the dedicated quiz-app repository, every push to main goes live.
 on:
   push:
-    branches: [main, claude/quiz-platform-build-swm4wi]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
