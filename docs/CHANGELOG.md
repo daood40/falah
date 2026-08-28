@@ -1,5 +1,26 @@
 # Changelog
 
+## 1.3.0 — 2026-08-28
+
+Feature-complete release (closes the remaining master-directive items).
+
+### Added
+- **In-app notification center (Phase 12)**: bell with live unread badge in the
+  header, notification panel (mark read / clear), persisted per user in
+  IndexedDB; wired to publish success/failure, scheduling, and every export.
+- **Library export & share**: export PNG or share via the native share sheet
+  (Web Share API with files, graceful download fallback) directly from any
+  library card — always through the Source Lock approval gate.
+- **Video recitation voice**: the reciter chosen in the create flow now backs
+  the video audio, and can be switched from a reciter picker inside the video
+  modal.
+- **Home templates strip**: the eight design templates are browsable from the
+  home screen; tapping one opens the Quran create flow with that template
+  pre-applied to the generated design.
+
+### Tests
+55 passing (adds the notification-center suite).
+
 ## 1.2.0 — 2026-08-28
 
 Visual identity release.

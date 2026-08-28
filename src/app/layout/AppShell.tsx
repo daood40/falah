@@ -28,6 +28,7 @@ import {
   type IconProps,
 } from '@core/ui/icons';
 import { useAuth } from '@features/auth/authStore';
+import { useNotifications } from '@core/notifications/notifications';
 import { AudioBar } from '@features/audio/AudioBar';
 import './layout.css';
 
@@ -212,10 +213,19 @@ export function AppShell() {
   const online = useOnline();
   const { user, initializing, continueLocal } = useAuth();
   const [welcomeOpen, setWelcomeOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const notifications = useNotifications();
 
   useEffect(() => {
     if (!initializing && !user) setWelcomeOpen(true);
+    if (user) void notifications.refresh(user.id);
+    // notifications.refresh is stable (zustand); depending on user/init is intentional.
   }, [initializing, user]);
+
+  const openNotifications = () => {
+    setNotifOpen(true);
+    if (user) void notifications.markAllRead(user.id);
+  };
 
   return (
     <div className="shell">
@@ -231,6 +241,17 @@ export function AppShell() {
           <span className="shell__brand">
             <IconMosque size={22} /> {t('app.name')}
           </span>
+          <span className="fl-grow" />
+          <button
+            className="fl-btn fl-btn--ghost fl-btn--icon shell__bell"
+            aria-label={t('notifications.title')}
+            onClick={openNotifications}
+          >
+            <IconBell size={20} />
+            {notifications.unread > 0 && (
+              <span className="shell__bell-badge">{Math.min(notifications.unread, 99)}</span>
+            )}
+          </button>
         </header>
         {!online && <div className="offline-banner">{t('common.offline')}</div>}
         <main className="shell__main">
@@ -260,6 +281,46 @@ export function AppShell() {
       <AudioBar />
       <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
       <ToastHost />
+
+      <Modal
+        open={notifOpen}
+        onClose={() => setNotifOpen(false)}
+        title={t('notifications.title')}
+        sheet
+      >
+        {notifications.items.length === 0 ? (
+          <p className="fl-muted" style={{ textAlign: 'center', padding: 'var(--fl-sp-5)' }}>
+            {t('notifications.empty')}
+          </p>
+        ) : (
+          <div className="fl-col">
+            {notifications.items.map((n) => (
+              <div key={n.id} className="fl-card fl-row" style={{ padding: 'var(--fl-sp-3)' }}>
+                <span
+                  className={`fl-badge ${n.kind === 'publish_failed' ? 'fl-badge--blocked' : 'fl-badge--verified'}`}
+                >
+                  {t(n.titleKey)}
+                </span>
+                <span className="fl-grow" style={{ fontSize: 'var(--fl-fs-sm)' }}>
+                  {n.body}
+                </span>
+                <span className="fl-muted" style={{ fontSize: 'var(--fl-fs-xs)' }} dir="ltr">
+                  {new Date(n.created_at).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </span>
+              </div>
+            ))}
+            <button
+              className="fl-btn fl-btn--sm"
+              onClick={() => user && void notifications.clear(user.id)}
+            >
+              {t('notifications.clearAll')}
+            </button>
+          </div>
+        )}
+      </Modal>
 
       <Modal open={welcomeOpen} onClose={() => setWelcomeOpen(false)} title={t('auth.welcome')}>
         <p className="fl-muted" style={{ marginBottom: 'var(--fl-sp-4)' }}>

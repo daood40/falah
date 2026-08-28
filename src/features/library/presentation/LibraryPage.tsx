@@ -15,7 +15,20 @@ import {
   type LibrarySort,
 } from '../data/libraryRepository';
 import { cancelScheduled, listScheduled } from '@features/scheduler/domain/scheduler';
-import { IconCopy, IconEdit, IconImage, IconLibrary, IconStar, IconTrash } from '@core/ui/icons';
+import {
+  IconCopy,
+  IconDownload,
+  IconEdit,
+  IconImage,
+  IconLibrary,
+  IconShare,
+  IconStar,
+  IconTrash,
+} from '@core/ui/icons';
+import { Modal } from '@core/ui/primitives';
+import { downloadBlob, exportPng, sacredTexts } from '@features/editor/data/exportService';
+import { notify } from '@core/notifications/notifications';
+import { reportError } from '@core/errors/errors';
 import './library.css';
 
 const FILTERS: LibraryFilter[] = [
@@ -51,6 +64,37 @@ export function LibraryPage() {
   const [projects, setProjects] = useState<ContentProject[] | null>(null);
   const [scheduled, setScheduled] = useState<ScheduledPost[]>([]);
   const [deleting, setDeleting] = useState<ContentProject | null>(null);
+  const [exporting, setExporting] = useState<{ project: ContentProject; share: boolean } | null>(
+    null,
+  );
+  const [approved, setApproved] = useState(false);
+
+  /** Export/share through the Source Lock gate (explicit approval when sacred text present). */
+  const runExport = async () => {
+    if (!exporting || !user) return;
+    const { project, share } = exporting;
+    setExporting(null);
+    setApproved(false);
+    try {
+      const blob = await exportPng(project, true);
+      const filename = `${project.title || 'falah-design'}.png`;
+      const file = new File([blob], filename, { type: 'image/png' });
+      const canShare =
+        share &&
+        typeof navigator.share === 'function' &&
+        (typeof navigator.canShare !== 'function' || navigator.canShare({ files: [file] }));
+      if (canShare) {
+        await navigator.share({ files: [file], title: project.title });
+        toast('success', t('library.shared'));
+      } else {
+        if (share) toast('info', t('library.shareUnsupported'));
+        downloadBlob(blob, filename);
+      }
+      await notify(user.id, 'export_done', `${project.title} (PNG)`);
+    } catch (error) {
+      if ((error as DOMException)?.name !== 'AbortError') reportError(error, 'rendering');
+    }
+  };
 
   const reload = useCallback(() => {
     if (!user) return;
@@ -163,6 +207,20 @@ export function LibraryPage() {
                   </button>
                   <button
                     className="fl-btn fl-btn--ghost fl-btn--sm"
+                    title={t('library.export')}
+                    onClick={() => setExporting({ project, share: false })}
+                  >
+                    <IconDownload size={15} />
+                  </button>
+                  <button
+                    className="fl-btn fl-btn--ghost fl-btn--sm"
+                    title={t('library.share')}
+                    onClick={() => setExporting({ project, share: true })}
+                  >
+                    <IconShare size={15} />
+                  </button>
+                  <button
+                    className="fl-btn fl-btn--ghost fl-btn--sm"
                     title={t('library.delete')}
                     onClick={() => setDeleting(project)}
                   >
@@ -215,6 +273,43 @@ export function LibraryPage() {
           </div>
         </section>
       )}
+
+      <Modal
+        open={exporting !== null}
+        onClose={() => {
+          setExporting(null);
+          setApproved(false);
+        }}
+        title={t('source.approve')}
+      >
+        {exporting && (
+          <div className="fl-col">
+            {sacredTexts(exporting.project).map((locked, i) => (
+              <div key={i} className="fl-card">
+                <p className="fl-naskh" dir="rtl">
+                  {locked.text.length > 150 ? `${locked.text.slice(0, 150)}…` : locked.text}
+                </p>
+                <span className="fl-badge fl-badge--verified">{locked.source.source_name}</span>
+              </div>
+            ))}
+            <label className="fl-row" style={{ cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={approved}
+                onChange={(e) => setApproved(e.target.checked)}
+              />
+              <span>{t('source.approveDesc')}</span>
+            </label>
+            <button
+              className="fl-btn fl-btn--primary"
+              disabled={sacredTexts(exporting.project).length > 0 && !approved}
+              onClick={runExport}
+            >
+              {exporting.share ? t('library.share') : t('library.export')}
+            </button>
+          </div>
+        )}
+      </Modal>
 
       <ConfirmDialog
         open={deleting !== null}

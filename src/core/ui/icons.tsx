@@ -371,3 +371,12 @@ export const IconMosque = (p: IconProps) => (
     <path d="M10 21v-4a2 2 0 0 1 4 0v4" />
   </Svg>
 );
+
+export const IconShare = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="6" cy="12" r="2.6" />
+    <circle cx="17.5" cy="6" r="2.6" />
+    <circle cx="17.5" cy="18" r="2.6" />
+    <path d="M8.4 10.8 15.1 7.2M8.4 13.2l6.7 3.6" />
+  </Svg>
+);

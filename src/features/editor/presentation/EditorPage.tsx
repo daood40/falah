@@ -7,6 +7,7 @@ import type { Platform, RepeatRule } from '@core/models/content';
 import { Modal, Field, Spinner, ErrorState } from '@core/ui/primitives';
 import { toast } from '@core/ui/Toast';
 import { auditLog } from '@core/audit/audit';
+import { notify } from '@core/notifications/notifications';
 import { useAuth } from '@features/auth/authStore';
 import { getProject, saveProject } from '@features/library/data/libraryRepository';
 import { schedulePost } from '@features/scheduler/domain/scheduler';
@@ -110,10 +111,11 @@ function VideoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
       el.kind === 'sacred-text' && Boolean(el.sacred?.sacredKind === 'translation'),
   )?.text;
 
+  const reciter = RECITERS.find((r) => r.id === settings.reciterId) ?? RECITERS[0]!;
   const audioUrl = settings.audioAyahKey
     ? (() => {
         const [s, a] = settings.audioAyahKey.split(':').map(Number);
-        return s && a ? ayahAudioUrl(RECITERS[0]!, s, a) : undefined;
+        return s && a ? ayahAudioUrl(reciter, s, a) : undefined;
       })()
     : undefined;
 
@@ -130,8 +132,10 @@ function VideoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
       const url = URL.createObjectURL(result.blob);
       setResultUrl(url);
       setResultBlob(result.blob);
-      if (user)
+      if (user) {
         await auditLog(user.id, 'content_exported', { project_id: project.id, kind: 'video' });
+        await notify(user.id, 'export_done', `${project.title} (WebM)`);
+      }
       toast('success', t('video.done'));
     } catch (error) {
       if (error instanceof AppError && error.kind === 'rendering') {
@@ -180,6 +184,23 @@ function VideoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
               <option value="typewriter">{t('video.anim.typewriter')}</option>
             </select>
           </Field>
+          {settings.audioAyahKey && (
+            <Field label={t('video.reciter')}>
+              <select
+                className="fl-select"
+                value={reciter.id}
+                onChange={(e) =>
+                  updateProject({ video: { ...settings, reciterId: e.target.value } })
+                }
+              >
+                {RECITERS.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.nameAr}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          )}
         </div>
         <label className="fl-chip" style={{ cursor: 'pointer', alignSelf: 'flex-start' }}>
           <input
@@ -424,8 +445,10 @@ export function EditorPage() {
     try {
       const blob = await exportPng(project, true);
       downloadBlob(blob, `${project.title || 'falah-design'}.png`);
-      if (user)
+      if (user) {
         await auditLog(user.id, 'content_exported', { project_id: project.id, kind: 'png' });
+        await notify(user.id, 'export_done', `${project.title} (PNG)`);
+      }
       toast('success', t('editor.export') + ' ✓');
     } catch (error) {
       reportError(error, error instanceof AppError ? error.kind : 'rendering');

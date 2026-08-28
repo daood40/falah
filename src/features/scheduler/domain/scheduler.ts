@@ -7,6 +7,7 @@
  */
 import { db } from '@core/db/localdb';
 import { auditLog } from '@core/audit/audit';
+import { notify } from '@core/notifications/notifications';
 import { AppError, reportError } from '@core/errors/errors';
 import type { Platform, RepeatRule, ScheduledPost } from '@core/models/content';
 import { newId } from '@core/utils/id';
@@ -36,6 +37,7 @@ export async function schedulePost(input: {
   };
   await db.scheduledPosts.add(post);
   await setProjectStatus(input.projectId, 'scheduled');
+  await notify(input.userId, 'schedule_created', `${input.platform} — ${post.scheduled_at}`);
   await auditLog(input.userId, 'schedule_created', {
     post_id: post.id,
     project_id: input.projectId,
@@ -104,6 +106,7 @@ export async function processDuePosts(
       });
       await db.scheduledPosts.update(post.id, { status: 'published', last_error: null });
       await setProjectStatus(post.project_id, 'published');
+      await notify(post.user_id, 'publish_success', post.platform);
       await auditLog(post.user_id, 'content_published', {
         post_id: post.id,
         platform: post.platform,
@@ -122,6 +125,7 @@ export async function processDuePosts(
       const appError = reportError(error, 'publishing');
       await db.scheduledPosts.update(post.id, { status: 'failed', last_error: appError.message });
       await setProjectStatus(post.project_id, 'failed');
+      await notify(post.user_id, 'publish_failed', post.platform);
       await auditLog(post.user_id, 'publish_failed', { post_id: post.id, error: appError.message });
     }
   }

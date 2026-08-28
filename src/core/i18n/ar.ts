@@ -22,6 +22,14 @@ export const ar: Record<string, string> = {
   'menu.privacy': 'الخصوصية',
   'menu.terms': 'الشروط',
   'menu.logout': 'تسجيل الخروج',
+  'notifications.title': 'الإشعارات',
+  'notifications.empty': 'لا إشعارات بعد',
+  'notifications.markRead': 'تحديد الكل كمقروء',
+  'notifications.clearAll': 'مسح الكل',
+  'notifications.publishSuccess': 'تم النشر بنجاح',
+  'notifications.publishFailed': 'فشل النشر',
+  'notifications.scheduleCreated': 'تمت جدولة منشور',
+  'notifications.exportDone': 'تم تصدير التصميم',
   'menu.login': 'تسجيل الدخول',
 
   // Home
@@ -117,6 +125,7 @@ export const ar: Record<string, string> = {
   'video.downloadWebm': 'تنزيل WebM',
   'video.preview': 'معاينة',
   'video.subtitles': 'الترجمة النصية',
+  'video.reciter': 'صوت التلاوة',
   'video.notSupported': 'متصفحك لا يدعم تسجيل الفيديو — جرّب Chrome أو Edge',
 
   // Library
@@ -138,6 +147,10 @@ export const ar: Record<string, string> = {
   'library.edit': 'تعديل',
   'library.duplicate': 'نسخ',
   'library.delete': 'حذف',
+  'library.export': 'تصدير PNG',
+  'library.share': 'مشاركة',
+  'library.shared': 'تمت المشاركة',
+  'library.shareUnsupported': 'المشاركة غير مدعومة هنا — تم التنزيل بدلًا منها',
   'library.schedule': 'جدولة',
   'library.favorite': 'مفضلة',
   'library.deleteConfirm': 'هل تريد حذف هذا التصميم نهائيًا؟',

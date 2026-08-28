@@ -168,3 +168,45 @@
   border-top: none;
   border-end-end-radius: 10px;
 }
+
+/* ---------- Templates strip ---------- */
+.home-tpl-row {
+  display: flex;
+  gap: var(--fl-sp-3);
+  overflow-x: auto;
+  padding-bottom: var(--fl-sp-2);
+  scrollbar-width: thin;
+}
+.home-tpl {
+  flex: 0 0 auto;
+  width: 96px;
+  aspect-ratio: 4 / 5;
+  border-radius: var(--fl-r-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  box-shadow: var(--fl-shadow-1);
+  transition:
+    transform var(--fl-t-fast),
+    box-shadow var(--fl-t-fast);
+}
+.home-tpl:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--fl-shadow-2);
+}
+.home-tpl__line {
+  width: 55%;
+  height: 4px;
+  border-radius: 2px;
+}
+.home-tpl__line--short {
+  width: 30%;
+  height: 3px;
+}
+.home-tpl__name {
+  margin-top: var(--fl-sp-1);
+  font-size: 0.62rem;
+  font-weight: 700;
+}

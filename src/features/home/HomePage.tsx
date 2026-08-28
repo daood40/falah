@@ -15,6 +15,7 @@ import {
 } from '@core/ui/icons';
 import { useAuth } from '@features/auth/authStore';
 import { listProjects } from '@features/library/data/libraryRepository';
+import { TEMPLATES } from '@features/templates/templates';
 import { listScheduled } from '@features/scheduler/domain/scheduler';
 import { getSurahAyahs, listSurahs } from '@features/quran/data/quranRepository';
 import type { CachedAyah } from '@features/quran/domain/types';
@@ -108,6 +109,37 @@ export function HomePage() {
           </div>
         </section>
       )}
+
+      <section>
+        <h2 className="fl-subtitle" style={{ marginBottom: 'var(--fl-sp-3)' }}>
+          {t('home.templates')}
+        </h2>
+        <div className="home-tpl-row">
+          {TEMPLATES.map((tpl) => (
+            <Link
+              key={tpl.id}
+              to={`/create/quran?template=${tpl.id}`}
+              className="home-tpl"
+              style={
+                tpl.background.type === 'gradient' && tpl.background.gradientTo
+                  ? {
+                      background: `linear-gradient(${tpl.background.gradientAngle ?? 135}deg, ${tpl.background.color}, ${tpl.background.gradientTo})`,
+                    }
+                  : { background: tpl.background.color }
+              }
+            >
+              <span className="home-tpl__line" style={{ background: tpl.textColor }} />
+              <span
+                className="home-tpl__line home-tpl__line--short"
+                style={{ background: tpl.accentColor }}
+              />
+              <span className="home-tpl__name" style={{ color: tpl.textColor }}>
+                {tpl.nameAr}
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
 
       <section>
         <div className="fl-row" style={{ marginBottom: 'var(--fl-sp-3)' }}>

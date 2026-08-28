@@ -20,6 +20,7 @@ import { enrichAyah } from '@features/quran/data/quranApi';
 import { RECITERS, RIWAYAT, type CachedAyah } from '@features/quran/domain/types';
 import { projectFromAyahs } from '@features/editor/domain/projectFactory';
 import { saveProject } from '@features/library/data/libraryRepository';
+import { applyTemplate, templateById } from '@features/templates/templates';
 import './create.css';
 
 export function QuranCreatePage() {
@@ -119,10 +120,12 @@ export function QuranCreatePage() {
     if (!user || preview.length === 0) return;
     setCreating(true);
     try {
-      const project = await projectFromAyahs(user.id, formatId, preview, {
+      let project = await projectFromAyahs(user.id, formatId, preview, {
         includeTranslation,
         includeTafsir,
       });
+      const template = templateById(params.get('template') ?? '');
+      if (template) project = applyTemplate(project, template);
       if (asVideo) {
         project.type = 'video';
         project.video = {
@@ -130,6 +133,7 @@ export function QuranCreatePage() {
           animation: 'fade',
           showSubtitles: includeTranslation,
           audioAyahKey: firstAyah?.key,
+          reciterId,
         };
       }
       await saveProject(project);
@@ -139,7 +143,19 @@ export function QuranCreatePage() {
     } finally {
       setCreating(false);
     }
-  }, [user, preview, formatId, includeTranslation, includeTafsir, asVideo, firstAyah, navigate, t]);
+  }, [
+    user,
+    preview,
+    formatId,
+    includeTranslation,
+    includeTafsir,
+    asVideo,
+    firstAyah,
+    reciterId,
+    params,
+    navigate,
+    t,
+  ]);
 
   return (
     <div className="fl-col" style={{ gap: 'var(--fl-sp-4)' }}>

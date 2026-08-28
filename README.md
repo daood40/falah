@@ -62,7 +62,7 @@ npm run dev        # افتح http://localhost:5173
 | الأمر | الوظيفة |
 |---|---|
 | `npm run build` | بناء نسخة الإنتاج في `dist/` |
-| `npm test` | تشغيل الاختبارات (52 اختبارًا) |
+| `npm test` | تشغيل الاختبارات (55 اختبارًا) |
 | `npm run lint` / `npm run typecheck` | فحوصات الجودة |
 | `npm run db:validate` | التحقق من مخطط قاعدة البيانات على PostgreSQL حقيقي |
 

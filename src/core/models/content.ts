@@ -174,6 +174,8 @@ export interface VideoSettings {
   animation: TextAnimation;
   showSubtitles: boolean;
   audioAyahKey?: string;
+  /** Reciter id (see RECITERS) whose audio backs the video. */
+  reciterId?: string;
 }
 
 export type Platform = 'instagram' | 'facebook' | 'tiktok' | 'youtube' | 'telegram' | 'x';

@@ -2,7 +2,7 @@
 
 ## Automated suite (Vitest + Testing Library + fake-indexeddb)
 
-`npm test` — 52 tests across 9 files:
+`npm test` — 55 tests across 10 files:
 
 | File | Covers |
 |---|---|
@@ -15,6 +15,7 @@
 | `core/core.test.ts` | i18n ar/en + runtime locale registration, entitlements, error mapping, text wrapping |
 | `app/app.test.tsx` | RTL/LTR document switching, dark mode attribute, create hub rendering, library empty state |
 | `features/templates/templates.test.ts` | template catalog, styling-only guarantee (sacred text + checksum untouched, publish gate still passes), decoration replacement |
+| `core/notifications/notifications.test.ts` | persistence per user, live unread badge, mark-all-read, clear |
 
 Also validated:
 

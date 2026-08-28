@@ -242,3 +242,24 @@
 .drawer > .fl-card .fl-muted {
   color: #b9cec4;
 }
+
+/* ---------- Notifications bell ---------- */
+.shell__bell {
+  position: relative;
+}
+.shell__bell-badge {
+  position: absolute;
+  top: 2px;
+  inset-inline-end: 2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: var(--fl-r-full);
+  background: var(--fl-danger);
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
