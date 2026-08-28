@@ -14,7 +14,7 @@
 
 | ماذا | أين |
 |---|---|
-| 🌐 **معاينة التطبيق من المتصفح** (بعد تفعيل Pages — انظر الأسفل) | https://daood40.github.io/-/ |
+| 🌐 **معاينة التطبيق من المتصفح** (بعد تفعيل Pages — انظر الأسفل) | https://daood40.github.io/falah/ |
 | 📱 **تحميل APK للأندرويد** | تبويب **Actions** ← آخر تشغيلة **Build Android APK** ← قسم **Artifacts** ← `falah-apk` |
 | ⚙️ حالة الفحوصات والبناء | تبويب **Actions** في المستودع |
 
@@ -51,7 +51,7 @@
 يتطلب [Node.js](https://nodejs.org) (النسخة 20 أو أحدث):
 
 ```bash
-git clone https://github.com/daood40/-.git falah
+git clone https://github.com/daood40/falah.git falah
 cd falah
 npm install
 npm run dev        # افتح http://localhost:5173
