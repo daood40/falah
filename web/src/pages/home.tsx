@@ -52,7 +52,7 @@ export function HomePage() {
           {t('guestBanner')} <Link to="/register">{t('register')}</Link>
         </div>
       )}
-      <div className="card">
+      <div className="card hero">
         <div className="row between">
           <div>
             <h1>{t('greeting')}, {user.displayName || user.username} 👋</h1>
@@ -62,7 +62,11 @@ export function HomePage() {
               <span className="badge warn">🔥 {user.currentStreak} {t('days')}</span>
             </div>
           </div>
-          <button className="btn lg" onClick={() => nav('/play')}>▶ {t('quickQuiz')}</button>
+          <button
+            className="btn lg"
+            style={{ background: '#fff', color: 'var(--primary-strong)', boxShadow: '0 6px 20px rgb(0 0 0 / 18%)' }}
+            onClick={() => nav('/play')}
+          >▶ {t('quickQuiz')}</button>
         </div>
         {progress && (
           <div style={{ marginTop: 14 }}>

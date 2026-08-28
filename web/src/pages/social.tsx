@@ -35,6 +35,22 @@ export function LeaderboardPage() {
       </div>
       <div className="card">
         {!data ? <Spinner /> : data.entries.length === 0 ? <EmptyState /> : (
+          <>
+          {data.entries.length >= 3 && (
+            <div className="podium">
+              {[[1, 'second', '🥈'], [0, 'first', '🥇'], [2, 'third', '🥉']].map(([idx, cls, medal]) => {
+                const e = data.entries[idx as number];
+                return (
+                  <div key={e.userId} className={`spot ${cls}`}>
+                    <span className="medal">{medal}</span>
+                    <Avatar name={e.displayName || e.username} />
+                    <span className="who">{e.displayName || e.username}</span>
+                    <span className="pts">{e.points.toLocaleString()}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
           <table className="tbl">
             <thead><tr><th>#</th><th>{t('username')}</th><th>{t('level')}</th><th>{t('points')}</th><th>{t('totalTime')}</th></tr></thead>
             <tbody>
@@ -49,6 +65,7 @@ export function LeaderboardPage() {
               ))}
             </tbody>
           </table>
+          </>
         )}
         {data?.me && !data.entries.some((e) => e.userId === user?.id) && (
           <p className="banner info" style={{ marginTop: 10 }}>{t('rank')}: #{data.me.rank} · {data.me.points.toLocaleString()} {t('points')}</p>

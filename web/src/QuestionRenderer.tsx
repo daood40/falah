@@ -53,20 +53,25 @@ function SubmitBar({ onSubmit, canSubmit, disabled, children }: { onSubmit: () =
 }
 
 // ---------------------------------------------------------------- families
+const KEYS_EN = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+const KEYS_AR = ['أ', 'ب', 'ج', 'د', 'هـ', 'و', 'ز', 'ح'];
+
 function SingleChoice({ question, onSubmit, disabled, withConfidence }: Props & { withConfidence?: boolean }) {
-  const { t, pick } = useI18n();
+  const { t, pick, lang } = useI18n();
   const [selected, setSelected] = useState<string | null>(null);
   const [confidence, setConfidence] = useState(3);
   const options = arr(question.content.options);
+  const keys = lang === 'ar' ? KEYS_AR : KEYS_EN;
   return (
     <div className="stack">
-      {options.map((o) => (
+      {options.map((o, i) => (
         <button
           key={str(o.id)}
           className={`option ${selected === o.id ? 'selected' : ''}`}
           onClick={() => !disabled && setSelected(str(o.id))}
           disabled={disabled}
         >
+          <span className="opt-key">{keys[i] ?? i + 1}</span>
           {o.media ? <img src={str((o.media as Record<string, unknown>).url)} alt="" style={{ maxHeight: 80, borderRadius: 8 }} /> : null}
           {pick(o.text)}
         </button>
@@ -88,9 +93,10 @@ function SingleChoice({ question, onSubmit, disabled, withConfidence }: Props & 
 }
 
 function MultiChoice({ question, onSubmit, disabled }: Props) {
-  const { pick } = useI18n();
+  const { pick, lang } = useI18n();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const options = arr(question.content.options);
+  const keys = lang === 'ar' ? KEYS_AR : KEYS_EN;
   const toggle = (id: string) =>
     setSelected((s) => {
       const n = new Set(s);
@@ -100,9 +106,9 @@ function MultiChoice({ question, onSubmit, disabled }: Props) {
     });
   return (
     <div className="stack">
-      {options.map((o) => (
+      {options.map((o, i) => (
         <button key={str(o.id)} className={`option ${selected.has(str(o.id)) ? 'selected' : ''}`} onClick={() => !disabled && toggle(str(o.id))} disabled={disabled}>
-          <input type="checkbox" readOnly checked={selected.has(str(o.id))} style={{ width: 18, height: 18, pointerEvents: 'none' }} />
+          <span className="opt-key">{selected.has(str(o.id)) ? '✓' : keys[i] ?? i + 1}</span>
           {pick(o.text)}
         </button>
       ))}

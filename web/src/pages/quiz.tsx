@@ -195,18 +195,20 @@ export function QuizPlayer({ session }: { session: StartResponse }) {
   if (summary) return <ResultView summary={summary} />;
   if (!specs || !question) return <Spinner />;
 
-  const pct = (timeLeft / (question.timeLimitSec || 1)) * 100;
-
   return (
     <div style={{ maxWidth: 640, margin: '0 auto' }}>
       {!online && <div className="banner warn" style={{ marginBottom: 10 }}>{t('offline')}</div>}
       <div className="quiz-top">
-        <span className="badge primary">{t('question')} {index + 1} / {total}</span>
-        <span className={`timer-ring ${timeLeft <= 5 ? 'error-text' : ''}`} aria-live="polite">⏱ {timeLeft}s</span>
-        <span className="badge">{t('score')}: {score}</span>
+        <div className="stack" style={{ gap: 6, flex: 1 }}>
+          <div className="row between">
+            <span className="badge primary">{t('question')} {index + 1} / {total}</span>
+            <span className="badge">{t('score')}: {score}</span>
+          </div>
+          <div className="progress" aria-hidden="true"><div style={{ width: `${((index + 1) / total) * 100}%` }} /></div>
+        </div>
+        <TimerRing left={timeLeft} total={question.timeLimitSec || 1} />
       </div>
-      <div className={`timer-bar ${pct < 25 ? 'low' : ''}`}><div style={{ width: `${pct}%` }} /></div>
-      <div className="card" style={{ marginTop: 14 }}>
+      <div className="card quiz-card">
         <QuestionRenderer key={question.id} question={question} specs={specs} onSubmit={submitAnswer} disabled={submitting} />
         <div className="divider" />
         <div className="row between">
@@ -218,10 +220,68 @@ export function QuizPlayer({ session }: { session: StartResponse }) {
   );
 }
 
+function TimerRing({ left, total }: { left: number; total: number }) {
+  const r = 25;
+  const c = 2 * Math.PI * r;
+  const frac = Math.max(0, Math.min(1, left / total));
+  return (
+    <div className={`timer-wrap ${left <= 5 ? 'low' : ''}`} aria-live="polite" aria-label={`${left}s`}>
+      <svg width={58} height={58} aria-hidden="true">
+        <circle className="track" cx={29} cy={29} r={r} fill="none" strokeWidth={5} />
+        <circle
+          className="arc" cx={29} cy={29} r={r} fill="none" strokeWidth={5} strokeLinecap="round"
+          strokeDasharray={c} strokeDashoffset={c * (1 - frac)}
+        />
+      </svg>
+      <span className="num">{left}</span>
+    </div>
+  );
+}
+
+function useCountUp(target: number, ms = 900): number {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    if (target <= 0 || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      setValue(target);
+      return;
+    }
+    const start = performance.now();
+    let raf = 0;
+    const tick = (now: number) => {
+      const p = Math.min(1, (now - start) / ms);
+      setValue(Math.round(target * (1 - Math.pow(1 - p, 3))));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, ms]);
+  return value;
+}
+
+function AccuracyRing({ pct }: { pct: number }) {
+  const r = 50;
+  const c = 2 * Math.PI * r;
+  const [offset, setOffset] = useState(c);
+  useEffect(() => {
+    const id = setTimeout(() => setOffset(c * (1 - Math.max(0, Math.min(100, pct)) / 100)), 60);
+    return () => clearTimeout(id);
+  }, [pct, c]);
+  return (
+    <div className="accuracy-ring">
+      <svg width={118} height={118} aria-hidden="true">
+        <circle className="track" cx={59} cy={59} r={r} fill="none" strokeWidth={9} />
+        <circle className="arc" cx={59} cy={59} r={r} fill="none" strokeWidth={9} strokeLinecap="round" strokeDasharray={c} strokeDashoffset={offset} />
+      </svg>
+      <span className="num">{pct}%<small>accuracy</small></span>
+    </div>
+  );
+}
+
 export function ResultView({ summary }: { summary: Summary }) {
   const { t, pick } = useI18n();
   const nav = useNavigate();
   const toast = useToast();
+  const shownScore = useCountUp(summary.score);
   const share = async () => {
     const text = `🧠 ${t('appName')} — ${t('score')}: ${summary.score}/${summary.maxScore} (${summary.accuracy}%)`;
     try {
@@ -236,14 +296,15 @@ export function ResultView({ summary }: { summary: Summary }) {
   };
   return (
     <div className="card center" style={{ maxWidth: 560, margin: '0 auto' }}>
-      <div style={{ fontSize: 56 }}>{summary.isPerfect ? '🏆' : summary.accuracy >= 60 ? '🎉' : '💪'}</div>
+      <div className="result-emoji">{summary.isPerfect ? '🏆' : summary.accuracy >= 60 ? '🎉' : '💪'}</div>
       {summary.isPerfect && <h2>{t('perfect')}</h2>}
-      <h1>{summary.score} <span className="muted" style={{ fontSize: 18 }}>/ {summary.maxScore}</span></h1>
+      <p className="result-score">{shownScore} <span className="of">/ {summary.maxScore}</span></p>
+      <AccuracyRing pct={summary.accuracy} />
       <div className="grid cols-4" style={{ margin: '18px 0' }}>
         <StatBox value={summary.correct} label={t('correct')} />
-        <StatBox value={summary.incorrect + summary.partial} label={t('incorrect')} />
+        <StatBox value={summary.partial} label={t('partial')} />
+        <StatBox value={summary.incorrect} label={t('incorrect')} />
         <StatBox value={summary.timeout + summary.skipped} label={t('skipped')} />
-        <StatBox value={`${summary.accuracy}%`} label={t('accuracy')} />
       </div>
       <div className="row" style={{ justifyContent: 'center' }}>
         <span className="badge primary">+{summary.xpAwarded} {t('xp')}</span>
