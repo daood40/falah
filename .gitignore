@@ -7,3 +7,13 @@ coverage/
 *.log
 .DS_Store
 *.tsbuildinfo
+
+# --- Secrets & signing (never commit) ---
+*.pem
+*.p12
+*.jks
+*.keystore
+key.properties
+*.mobileprovision
+supabase/.temp/
+.claude/settings.local.json
