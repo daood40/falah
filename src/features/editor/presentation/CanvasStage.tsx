@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { CanvasBackground, CanvasElement, TextElement } from '@core/models/content';
 import { formatById } from '@core/models/content';
+import { IconLock } from '@core/ui/icons';
 import { useEditor } from '../domain/editorStore';
 
 const SNAP_THRESHOLD = 0.018;
@@ -152,9 +153,7 @@ export function CanvasStage() {
           return (
             <div
               key={el.id}
-              className={`stage__el ${selected ? 'stage__el--selected' : ''} ${
-                el.kind === 'sacred-text' ? 'stage__el--locked-text' : ''
-              }`}
+              className={`stage__el ${selected ? 'stage__el--selected' : ''}`}
               style={style}
               onPointerDown={(e) => onPointerDown(e, el, 'move')}
             >
@@ -186,6 +185,11 @@ export function CanvasStage() {
                 />
               ) : (
                 <TextView el={el} stageWidth={stageWidth} />
+              )}
+              {selected && el.kind === 'sacred-text' && (
+                <span className="stage__lock" title="نص موثوق">
+                  <IconLock size={12} />
+                </span>
               )}
               {selected && (
                 <div

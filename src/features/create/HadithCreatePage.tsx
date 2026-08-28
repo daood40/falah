@@ -7,6 +7,7 @@ import { debounce } from '@core/utils/debounce';
 import { EmptyState, Field, Spinner } from '@core/ui/primitives';
 import { toast } from '@core/ui/Toast';
 import { useAuth } from '@features/auth/authStore';
+import { IconSearch } from '@core/ui/icons';
 import { searchHadiths, getHadith } from '@features/hadith/data/hadithRepository';
 import type { HadithRecord } from '@features/hadith/domain/types';
 import { projectFromHadith } from '@features/editor/domain/projectFactory';
@@ -140,7 +141,7 @@ export function HadithCreatePage() {
       {hadiths === null ? (
         <Spinner label={t('common.loading')} />
       ) : hadiths.length === 0 ? (
-        <EmptyState icon="🔍" text={t('common.noResults')} />
+        <EmptyState icon={<IconSearch size={44} />} text={t('common.noResults')} />
       ) : (
         <div className="fl-col">
           {hadiths.map((h) => (

@@ -58,6 +58,15 @@ export function newShapeElement(overrides: Partial<ShapeElement> = {}): ShapeEle
   };
 }
 
+/**
+ * Auto-fit font scale: long texts (e.g. Ayat al-Kursi) shrink so they stay
+ * inside their box instead of overflowing the layout.
+ */
+export function autoFontScale(text: string, base: number, min: number, refLength = 140): number {
+  const length = Math.max(1, text.length);
+  return Math.max(min, Math.min(base, base * Math.sqrt(refLength / length)));
+}
+
 function sacredTextElement(
   locked: LockedText,
   sacredKind: SacredKind,
@@ -116,7 +125,13 @@ export async function projectFromAyahs(
   const arabicText = ayahs.map((a) => `${a.text} ﴿${a.ayah}﴾`).join(' ');
   const locked = await lockText(arabicText, first.source);
 
-  const elements: CanvasElement[] = [sacredTextElement(locked, 'quran', { y: 0.18, h: 0.4 })];
+  const elements: CanvasElement[] = [
+    sacredTextElement(locked, 'quran', {
+      y: 0.14,
+      h: 0.44,
+      fontScale: autoFontScale(arabicText, 0.055, 0.026),
+    }),
+  ];
 
   if (options.includeTranslation && first.translation) {
     const translationText = ayahs
@@ -129,10 +144,10 @@ export async function projectFromAyahs(
     });
     elements.push(
       sacredTextElement(lockedTr, 'translation', {
-        y: 0.6,
-        h: 0.18,
+        y: 0.62,
+        h: 0.2,
         fontFamily: UI_FONT,
-        fontScale: 0.03,
+        fontScale: autoFontScale(translationText, 0.028, 0.016, 220),
         lineHeight: 1.6,
         color: '#e8e2cf',
       }),
@@ -149,7 +164,7 @@ export async function projectFromAyahs(
         y: 0.62,
         h: 0.2,
         fontFamily: NASKH_FONT,
-        fontScale: 0.028,
+        fontScale: autoFontScale(first.tafsir, 0.026, 0.016, 220),
         color: '#e8e2cf',
       }),
     );
@@ -187,7 +202,7 @@ export async function projectFromHadith(
     sacredTextElement(locked, 'hadith', {
       y: 0.12,
       h: 0.5,
-      fontScale: 0.034,
+      fontScale: autoFontScale(hadith.arabic, 0.038, 0.019, 180),
       lineHeight: 1.9,
     }),
   ];
@@ -201,7 +216,7 @@ export async function projectFromHadith(
         y: 0.64,
         h: 0.18,
         fontFamily: UI_FONT,
-        fontScale: 0.024,
+        fontScale: autoFontScale(hadith.english, 0.024, 0.015, 260),
         lineHeight: 1.5,
         color: '#e8e2cf',
       }),

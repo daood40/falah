@@ -93,19 +93,59 @@ export function ConfirmDialog({
   );
 }
 
+function StateIconInbox() {
+  return (
+    <svg
+      width="52"
+      height="52"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M4 4h16v16H4z" opacity="0" />
+      <path d="M3 13h5l1.5 2.5h5L16 13h5" />
+      <path d="M5 5h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" />
+    </svg>
+  );
+}
+
+function StateIconAlert() {
+  return (
+    <svg
+      width="52"
+      height="52"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M12 3 2.5 20h19z" />
+      <path d="M12 9.5V14" />
+      <circle cx="12" cy="17" r="0.4" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
 export function EmptyState({
-  icon = '📭',
+  icon,
   text,
   action,
 }: {
-  icon?: string;
+  icon?: ReactNode;
   text: string;
   action?: ReactNode;
 }) {
   return (
     <div className="fl-state">
       <div className="fl-state__icon" aria-hidden>
-        {icon}
+        {icon ?? <StateIconInbox />}
       </div>
       <p>{text}</p>
       {action}
@@ -118,7 +158,7 @@ export function ErrorState({ text, onRetry }: { text: string; onRetry?: () => vo
   return (
     <div className="fl-state" role="alert">
       <div className="fl-state__icon" aria-hidden>
-        ⚠️
+        <StateIconAlert />
       </div>
       <p>{text}</p>
       {onRetry && (

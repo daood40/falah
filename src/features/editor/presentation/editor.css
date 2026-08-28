@@ -52,13 +52,22 @@
   outline: 2px dashed var(--fl-accent);
   outline-offset: 2px;
 }
-.stage__el--locked-text::after {
-  content: '🔒';
+/* Small "verified/locked" chip shown only while the element is selected,
+   so it never visually pollutes the design itself. */
+.stage__lock {
   position: absolute;
-  top: 2px;
-  inset-inline-end: 2px;
-  font-size: 11px;
-  opacity: 0.75;
+  top: -10px;
+  inset-inline-start: -6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--fl-r-full);
+  background: var(--fl-gold-500);
+  color: #14201b;
+  box-shadow: var(--fl-shadow-1);
+  pointer-events: none;
 }
 .stage__text {
   width: 100%;

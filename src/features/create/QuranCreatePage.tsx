@@ -8,7 +8,7 @@ import { EmptyState, Field, Spinner } from '@core/ui/primitives';
 import { toast } from '@core/ui/Toast';
 import { useAuth } from '@features/auth/authStore';
 import { useAudio } from '@features/audio/audioStore';
-import { IconPause, IconPlay, IconVideo } from '@core/ui/icons';
+import { IconPause, IconPlay, IconSearch, IconVideo } from '@core/ui/icons';
 import {
   ayahAudioUrl,
   getAyahRange,
@@ -158,7 +158,7 @@ export function QuranCreatePage() {
       {results !== null && !searching && (
         <div className="fl-col">
           {results.length === 0 ? (
-            <EmptyState icon="🔍" text={t('common.noResults')} />
+            <EmptyState icon={<IconSearch size={44} />} text={t('common.noResults')} />
           ) : (
             results.map((r) => (
               <button

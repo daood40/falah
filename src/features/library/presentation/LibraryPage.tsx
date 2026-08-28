@@ -15,7 +15,7 @@ import {
   type LibrarySort,
 } from '../data/libraryRepository';
 import { cancelScheduled, listScheduled } from '@features/scheduler/domain/scheduler';
-import { IconCopy, IconEdit, IconImage, IconStar, IconTrash } from '@core/ui/icons';
+import { IconCopy, IconEdit, IconImage, IconLibrary, IconStar, IconTrash } from '@core/ui/icons';
 import './library.css';
 
 const FILTERS: LibraryFilter[] = [
@@ -105,7 +105,7 @@ export function LibraryPage() {
       {projects === null ? (
         <SkeletonList count={3} height={96} />
       ) : projects.length === 0 ? (
-        <EmptyState icon="🗂️" text={t('library.empty')} />
+        <EmptyState icon={<IconLibrary size={44} />} text={t('library.empty')} />
       ) : (
         <div className="library-grid">
           {projects.map((project) => (

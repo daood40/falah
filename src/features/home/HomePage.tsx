@@ -7,6 +7,7 @@ import { EmptyState, SkeletonList } from '@core/ui/primitives';
 import {
   IconBook,
   IconCalendar,
+  IconEdit,
   IconImage,
   IconScroll,
   IconStory,
@@ -119,7 +120,7 @@ export function HomePage() {
           <SkeletonList count={2} />
         ) : recent.length === 0 ? (
           <EmptyState
-            icon="🎨"
+            icon={<IconEdit size={44} />}
             text={t('home.noRecent')}
             action={
               <Link to="/create" className="fl-btn fl-btn--primary">
