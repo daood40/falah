@@ -59,13 +59,14 @@ export async function pickQuestions(filter: PoolFilter): Promise<PoolQuestion[]>
       params,
     );
     if (fresh.rows.length >= filter.count) return fresh.rows;
-    // top up with previously-answered questions
+    // top up with previously-answered questions (fresh params — pg rejects unused ones)
     const missing = filter.count - fresh.rows.length;
     const excludeIds = fresh.rows.map((r) => r.id);
+    const baseParams = params.slice(0, params.length - 2); // drop user + count params
     const topUp = await query<PoolQuestion>(
-      `SELECT ${cols} ${base} AND NOT (q.id = ANY($${params.length + 1}::uuid[]))
-       ORDER BY random() LIMIT $${params.length + 2}`,
-      [...params, excludeIds, missing],
+      `SELECT ${cols} ${base} AND NOT (q.id = ANY($${baseParams.length + 1}::uuid[]))
+       ORDER BY random() LIMIT $${baseParams.length + 2}`,
+      [...baseParams, excludeIds, missing],
     );
     return [...fresh.rows, ...topUp.rows];
   }

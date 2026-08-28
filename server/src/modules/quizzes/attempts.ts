@@ -1,6 +1,6 @@
 import type { PoolClient } from 'pg';
 import { audit, trackEvent } from '../../core/audit.js';
-import { badRequest, conflict, forbidden, notFound } from '../../core/errors.js';
+import { AppError, badRequest, conflict, forbidden, notFound } from '../../core/errors.js';
 import { getSettings, type AppSettings } from '../../core/settings.js';
 import { query, withTransaction } from '../../db/pool.js';
 import { awardXp, evaluateAchievements, touchStreak, localDate } from '../gamification/service.js';
@@ -212,14 +212,60 @@ async function flagSuspicious(
   );
 }
 
+/** Thrown inside the answer transaction; the flag is persisted after rollback. */
+class FlaggedRejection extends Error {
+  constructor(
+    public readonly appError: AppError,
+    public readonly attempt: AttemptRow,
+    public readonly kind: string,
+    public readonly details: Record<string, unknown>,
+  ) {
+    super(appError.message);
+  }
+}
+
+/** Persists a flag outside any transaction (used after a rejected request). */
+async function persistFlag(attempt: AttemptRow, kind: string, details: Record<string, unknown>): Promise<void> {
+  await query('INSERT INTO suspicious_events (user_id, attempt_id, kind, details) VALUES ($1,$2,$3,$4)', [
+    attempt.user_id,
+    attempt.id,
+    kind,
+    JSON.stringify(details),
+  ]);
+  await query(
+    `UPDATE attempts SET flags = flags || $2::jsonb,
+       suspicion = CASE WHEN jsonb_array_length(flags) + 1 >= 3 THEN 'suspicious' ELSE 'flagged' END
+     WHERE id = $1`,
+    [attempt.id, JSON.stringify([{ kind, at: new Date().toISOString(), ...details }])],
+  );
+}
+
 export async function answerQuestion(attemptId: string, userId: string, questionId: string, answer: unknown) {
   const settings = await getSettings();
+  try {
+    return await answerQuestionTx(attemptId, userId, questionId, answer, settings);
+  } catch (err) {
+    if (err instanceof FlaggedRejection) {
+      // transaction rolled back and locks released — now persist the flag
+      await persistFlag(err.attempt, err.kind, err.details).catch(() => undefined);
+      throw err.appError;
+    }
+    throw err;
+  }
+}
+
+async function answerQuestionTx(
+  attemptId: string,
+  userId: string,
+  questionId: string,
+  answer: unknown,
+  settings: Awaited<ReturnType<typeof getSettings>>,
+) {
   return withTransaction(async (client) => {
     const attempt = await getOwnedAttempt(client, attemptId, userId);
     if (attempt.status !== 'in_progress') throw conflict('Attempt is no longer in progress');
     if (!attempt.question_ids.includes(questionId)) {
-      await flagSuspicious(client, attempt, 'foreign_question', { questionId });
-      throw badRequest('Question is not part of this attempt');
+      throw new FlaggedRejection(badRequest('Question is not part of this attempt'), attempt, 'foreign_question', { questionId });
     }
 
     const dup = await client.query('SELECT 1 FROM attempt_answers WHERE attempt_id = $1 AND question_id = $2', [
@@ -227,8 +273,7 @@ export async function answerQuestion(attemptId: string, userId: string, question
       questionId,
     ]);
     if (dup.rowCount) {
-      await flagSuspicious(client, attempt, 'duplicate_submission', { questionId });
-      throw conflict('Answer already submitted for this question');
+      throw new FlaggedRejection(conflict('Answer already submitted for this question'), attempt, 'duplicate_submission', { questionId });
     }
 
     const now = Date.now();
@@ -477,6 +522,13 @@ export async function submitAttempt(attemptId: string, userId: string) {
         [userId, scope, key, score, Number(t.correct), timeMs],
       );
     }
+
+    // write-through cache invalidation so boards reflect this result immediately
+    await client.query(
+      `DELETE FROM leaderboard_snapshots WHERE (scope, scope_key) IN
+         (SELECT unnest($1::text[]), unnest($2::text[]))`,
+      [scopes.map((s) => s[0]), scopes.map((s) => s[1])],
+    );
 
     const achievements = await evaluateAchievements(client, userId, settings);
     for (const a of achievements) {

@@ -162,12 +162,14 @@ export async function leaderboardRoutes(app: FastifyInstance): Promise<void> {
     if (scope === 'group') {
       if (!key) throw badRequest('Group leaderboard requires key=<groupId>');
       const { rows } = await query(
-        `SELECT ls.user_id, ls.points, ls.correct, ls.total_time_ms, u.username, u.display_name, u.avatar, u.level
+        `SELECT gm.user_id, COALESCE(ls.points, 0) AS points, COALESCE(ls.correct, 0) AS correct,
+                COALESCE(ls.total_time_ms, 0) AS total_time_ms,
+                u.username, u.display_name, u.avatar, u.level
          FROM group_members gm
-         JOIN leaderboard_scores ls ON ls.user_id = gm.user_id AND ls.scope = 'global' AND ls.scope_key = ''
          JOIN users u ON u.id = gm.user_id AND u.status = 'active'
+         LEFT JOIN leaderboard_scores ls ON ls.user_id = gm.user_id AND ls.scope = 'global' AND ls.scope_key = ''
          WHERE gm.group_id = $1
-         ORDER BY ls.points DESC, ls.total_time_ms ASC, ls.correct DESC LIMIT $2`,
+         ORDER BY COALESCE(ls.points, 0) DESC, COALESCE(ls.total_time_ms, 0) ASC LIMIT $2`,
         [key, limit],
       );
       return {
