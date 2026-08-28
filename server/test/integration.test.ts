@@ -139,7 +139,7 @@ describe('quiz flow (server-authoritative)', () => {
   it('server-side timeout: answers after the per-question limit score 0', async () => {
     const u = await registerUser('slowpoke');
     await seedQuestion({ timeLimitSec: 5 });
-    const start = await api('/quizzes/start', { method: 'POST', token: u.token, body: { questionCount: 1 } });
+    const start = await api('/quizzes/start', { method: 'POST', token: u.token, body: { mode: 'timed', questionCount: 1 } });
     const { attemptId, questions } = start.body as { attemptId: string; questions: Array<{ id: string }> };
     // simulate elapsed time server-side: shift lastEventAt into the past beyond limit+grace
     await query(
@@ -555,5 +555,130 @@ describe('admin quiz management (scheduled quizzes)', () => {
     const s2 = await api(`/quizzes/${quizId}/start`, { method: 'POST', token: player2.token });
     const q2 = (s2.body as { questions: Array<{ id: string }> }).questions.map((q) => q.id).sort();
     expect(q1).toEqual(q2);
+  });
+});
+
+describe('market-parity features', () => {
+  beforeEach(resetDb);
+
+  it('daily quiz: same set for everyone, one attempt per day', async () => {
+    for (let i = 0; i < 12; i++) await seedQuestion({});
+    const u1 = await registerUser('daily1');
+    const u2 = await registerUser('daily2');
+    const s1 = await api('/quizzes/start', { method: 'POST', token: u1.token, body: { mode: 'daily' } });
+    const s2 = await api('/quizzes/start', { method: 'POST', token: u2.token, body: { mode: 'daily' } });
+    expect(s1.status).toBe(200);
+    const q1 = (s1.body as { questions: Array<{ id: string }> }).questions.map((q) => q.id).sort();
+    const q2 = (s2.body as { questions: Array<{ id: string }> }).questions.map((q) => q.id).sort();
+    expect(q1).toEqual(q2); // shared question-of-the-day set
+    // second attempt today → rejected
+    const again = await api('/quizzes/start', { method: 'POST', token: u1.token, body: { mode: 'daily' } });
+    expect(again.status).toBe(409);
+    const status = await api('/quizzes/daily', { token: u1.token });
+    expect((status.body as { available: boolean }).available).toBe(true);
+  });
+
+  it('practice mode is untimed and returns instant feedback', async () => {
+    const u = await registerUser('learner');
+    await seedQuestion({ timeLimitSec: 5 });
+    const start = await api('/quizzes/start', { method: 'POST', token: u.token, body: { mode: 'practice', questionCount: 1 } });
+    expect((start.body as { untimed: boolean }).untimed).toBe(true);
+    const { attemptId, questions } = start.body as { attemptId: string; questions: Array<{ id: string }> };
+    // simulate answering long past the per-question limit — no timeout in practice
+    await query(
+      `UPDATE attempts SET question_meta = jsonb_set(question_meta, '{lastEventAt}', to_jsonb((now() - interval '60 seconds')::text)) WHERE id = $1`,
+      [attemptId],
+    );
+    const res = await api(`/quizzes/attempts/${attemptId}/answers`, { method: 'POST', token: u.token, body: { questionId: questions[0].id, answer: 'o1' } });
+    const body = res.body as { outcome: string; feedback?: { correctAnswer: unknown; explanation: unknown } };
+    expect(body.outcome).toBe('correct');
+    expect(body.feedback?.correctAnswer).toBe('o1'); // instant feedback (post-answer only)
+  });
+
+  it('timed mode never returns feedback mid-quiz', async () => {
+    const u = await registerUser('speedy');
+    await seedQuestion({});
+    const start = await api('/quizzes/start', { method: 'POST', token: u.token, body: { mode: 'timed', questionCount: 1 } });
+    const { attemptId, questions } = start.body as { attemptId: string; questions: Array<{ id: string }> };
+    const res = await api(`/quizzes/attempts/${attemptId}/answers`, { method: 'POST', token: u.token, body: { questionId: questions[0].id, answer: 'o2' } });
+    expect((res.body as { feedback?: unknown }).feedback).toBeUndefined();
+  });
+
+  it('50/50 removes two wrong options server-side without leaking the answer', async () => {
+    const u = await registerUser('powerp');
+    await seedQuestion({
+      content: {
+        prompt: { en: 'Pick the right one' },
+        options: [
+          { id: 'o1', text: 'Right' }, { id: 'o2', text: 'Wrong A' },
+          { id: 'o3', text: 'Wrong B' }, { id: 'o4', text: 'Wrong C' },
+        ],
+      },
+    });
+    const start = await api('/quizzes/start', { method: 'POST', token: u.token, body: { mode: 'timed', questionCount: 1 } });
+    const { attemptId, questions, powerups } = start.body as { attemptId: string; questions: Array<{ id: string }>; powerups: { fiftyFifty: number } };
+    expect(powerups.fiftyFifty).toBeGreaterThan(0);
+    const use = await api(`/quizzes/attempts/${attemptId}/powerups`, { method: 'POST', token: u.token, body: { kind: 'fifty_fifty', questionId: questions[0].id } });
+    expect(use.status).toBe(200);
+    const removed = (use.body as { removedOptionIds: string[] }).removedOptionIds;
+    expect(removed).toHaveLength(2);
+    expect(removed).not.toContain('o1'); // never eliminates the correct option
+    // idempotent per question, no double spend
+    const again = await api(`/quizzes/attempts/${attemptId}/powerups`, { method: 'POST', token: u.token, body: { kind: 'fifty_fifty', questionId: questions[0].id } });
+    expect((again.body as { remaining: number }).remaining).toBe((use.body as { remaining: number }).remaining);
+  });
+
+  it('review mode replays only questions the user got wrong', async () => {
+    const u = await registerUser('reviewer');
+    for (let i = 0; i < 4; i++) await seedQuestion({});
+    const s1 = await api('/quizzes/start', { method: 'POST', token: u.token, body: { mode: 'timed', questionCount: 3 } });
+    const first = s1.body as { attemptId: string; questions: Array<{ id: string }> };
+    // wrong, wrong, correct
+    const answers = ['o2', 'o2', 'o1'];
+    for (let i = 0; i < first.questions.length; i++) {
+      await api(`/quizzes/attempts/${first.attemptId}/answers`, { method: 'POST', token: u.token, body: { questionId: first.questions[i].id, answer: answers[i] } });
+    }
+    await api(`/quizzes/attempts/${first.attemptId}/submit`, { method: 'POST', token: u.token });
+
+    const review = await api('/quizzes/start', { method: 'POST', token: u.token, body: { mode: 'review', questionCount: 10 } });
+    expect(review.status).toBe(200);
+    const wrongIds = first.questions.slice(0, 2).map((q) => q.id).sort();
+    const reviewIds = (review.body as { questions: Array<{ id: string }> }).questions.map((q) => q.id).sort();
+    expect(reviewIds).toEqual(wrongIds);
+  });
+
+  it('streak freeze absorbs a single missed day', async () => {
+    const u = await registerUser('freezer');
+    await seedQuestion({});
+    // simulate an existing 5-day streak that last played 2 days ago, with 1 freeze
+    await query(
+      `UPDATE users SET current_streak = 5, longest_streak = 5, streak_freezes = 1,
+         last_activity_date = current_date - 2 WHERE id = $1`,
+      [u.id],
+    );
+    const start = await api('/quizzes/start', { method: 'POST', token: u.token, body: { questionCount: 1 } });
+    const { attemptId } = start.body as { attemptId: string };
+    const submit = await api(`/quizzes/attempts/${attemptId}/submit`, { method: 'POST', token: u.token });
+    expect((submit.body as { streak: number }).streak).toBe(6); // survived via freeze
+    const row = await query('SELECT streak_freezes FROM users WHERE id = $1', [u.id]);
+    expect(row.rows[0].streak_freezes).toBe(0); // consumed
+  });
+
+  it('friends: request → accept → friends leaderboard → remove', async () => {
+    const a = await registerUser('frienda');
+    const b = await registerUser('friendb');
+    const reqRes = await api('/friends/request', { method: 'POST', token: a.token, body: { username: 'friendb' } });
+    expect(reqRes.status).toBe(200);
+    // b sees incoming
+    const list = await api('/friends', { token: b.token });
+    expect((list.body as { incoming: Array<{ username: string }> }).incoming[0].username).toBe('frienda');
+    const accept = await api('/friends/respond', { method: 'POST', token: b.token, body: { userId: a.id, accept: true } });
+    expect(accept.status).toBe(200);
+    const after = await api('/friends', { token: a.token });
+    expect((after.body as { friends: Array<{ username: string }> }).friends[0].username).toBe('friendb');
+    // duplicate request now conflicts
+    expect((await api('/friends/request', { method: 'POST', token: a.token, body: { username: 'friendb' } })).status).toBe(409);
+    const removed = await api(`/friends/${b.id}`, { method: 'DELETE', token: a.token });
+    expect(removed.status).toBe(200);
   });
 });

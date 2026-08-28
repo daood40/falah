@@ -95,6 +95,24 @@ export async function startAttempt(userId: string, isGuest: boolean, opts: Start
   let questionIds: string[];
   if (opts.fixedQuestionIds?.length) {
     questionIds = opts.fixedQuestionIds;
+  } else if (opts.mode === 'review') {
+    // spaced-repetition style: replay questions this user previously missed
+    const { rows } = await query<{ question_id: string }>(
+      `SELECT question_id FROM (
+         SELECT DISTINCT aa.question_id FROM attempt_answers aa
+         JOIN attempts a ON a.id = aa.attempt_id AND a.user_id = $1
+         JOIN questions q ON q.id = aa.question_id AND q.status = 'approved'
+         WHERE aa.outcome IN ('incorrect','timeout')
+           AND NOT EXISTS (
+             SELECT 1 FROM attempt_answers ok
+             JOIN attempts a2 ON a2.id = ok.attempt_id AND a2.user_id = $1
+             WHERE ok.question_id = aa.question_id AND ok.outcome = 'correct'
+               AND ok.answered_at > aa.answered_at)
+       ) missed ORDER BY random() LIMIT $2`,
+      [userId, count],
+    );
+    questionIds = rows.map((r) => r.question_id);
+    if (questionIds.length === 0) throw badRequest('No mistakes to review — well done!');
   } else {
     const picked = await pickQuestions({
       categoryId: opts.categoryId,
@@ -120,8 +138,16 @@ export async function startAttempt(userId: string, isGuest: boolean, opts: Start
     perQuestion[id] = { timeLimitSec: limit };
     totalSec += limit;
   }
-  const overallSec = opts.overallTimeLimitSec ?? totalSec;
+  // practice & review are untimed learning modes (self-paced, like Wayground
+  // homework mode): no per-question timeout, no speed bonus, instant feedback
+  const untimed = opts.mode === 'practice' || opts.mode === 'review';
+  const overallSec = untimed ? 6 * 3600 : opts.overallTimeLimitSec ?? totalSec;
   const graceMs = settings.antiCheatGraceMs;
+  const powerups = {
+    fiftyFifty: settings.powerupFiftyFifty,
+    timeExtend: untimed ? 0 : settings.powerupTimeExtend,
+    used: {} as Record<string, { fiftyFifty?: string[]; timeExtend?: boolean }>,
+  };
 
   const contextType = opts.contextType ?? 'solo';
   const { rows } = await query(
@@ -134,7 +160,7 @@ export async function startAttempt(userId: string, isGuest: boolean, opts: Start
       contextType,
       opts.contextId ?? null,
       ordered,
-      JSON.stringify({ perQuestion, lastEventAt: new Date().toISOString(), graceMs }),
+      JSON.stringify({ perQuestion, lastEventAt: new Date().toISOString(), graceMs, untimed, powerups }),
       overallSec + graceMs / 1000,
       ordered.reduce((sum, id) => {
         const q = questions.get(id)!;
@@ -157,6 +183,8 @@ export async function startAttempt(userId: string, isGuest: boolean, opts: Start
     startedAt: attempt.started_at,
     deadlineAt: attempt.deadline_at,
     mode: opts.mode,
+    untimed,
+    powerups: { fiftyFifty: powerups.fiftyFifty, timeExtend: powerups.timeExtend },
     questions: ordered.map((id) => presentQuestion(questions.get(id)!, perQuestion[id].timeLimitSec)),
   };
 }
@@ -172,6 +200,12 @@ interface AttemptRow {
     perQuestion: Record<string, { timeLimitSec: number }>;
     lastEventAt: string;
     graceMs: number;
+    untimed?: boolean;
+    powerups?: {
+      fiftyFifty: number;
+      timeExtend: number;
+      used: Record<string, { fiftyFifty?: string[]; timeExtend?: boolean }>;
+    };
   };
   status: string;
   started_at: string;
@@ -285,9 +319,10 @@ async function answerQuestionTx(
     const limitMs = per.timeLimitSec * 1000;
     const graceMs = meta.graceMs ?? settings.antiCheatGraceMs;
 
+    const untimed = meta.untimed === true;
     const overallDeadline = attempt.deadline_at ? new Date(attempt.deadline_at).getTime() : null;
     const pastOverall = overallDeadline !== null && now > overallDeadline;
-    const timedOut = elapsedMs > limitMs + graceMs || pastOverall;
+    const timedOut = untimed ? pastOverall : elapsedMs > limitMs + graceMs || pastOverall;
 
     const qRows = await client.query(
       `SELECT id, type, difficulty, content, correct_answer, configuration, points, explanation
@@ -324,7 +359,8 @@ async function answerQuestionTx(
         basePoints: q.points,
         difficulty: q.difficulty,
         result: { outcome, ratio, detail },
-        timeTakenMs: Math.min(elapsedMs, limitMs),
+        // untimed modes earn no speed bonus — learning pace is not penalized or gamed
+        timeTakenMs: untimed ? limitMs : Math.min(elapsedMs, limitMs),
         timeLimitMs: limitMs,
         scored,
       },
@@ -357,7 +393,79 @@ async function answerQuestionTx(
       [questionId, outcome, Math.min(elapsedMs, limitMs)],
     );
 
-    return { questionId, outcome, points, maxPoints, answered: true };
+    // instant feedback in self-paced modes (Wayground/Quizizz-style)
+    const feedback = untimed
+      ? { correctAnswer: q.correct_answer, explanation: q.explanation }
+      : undefined;
+
+    return { questionId, outcome, points, maxPoints, answered: true, feedback };
+  });
+}
+
+/**
+ * Power-ups (Trivia Crack-style), fully server-side so nothing leaks:
+ * 50/50 returns wrong option ids to hide; time-extend stretches this
+ * question's server deadline. Uses are stored in attempt metadata.
+ */
+export async function usePowerup(
+  attemptId: string,
+  userId: string,
+  questionId: string,
+  kind: 'fifty_fifty' | 'time_extend',
+) {
+  const settings = await getSettings();
+  return withTransaction(async (client) => {
+    const attempt = await getOwnedAttempt(client, attemptId, userId);
+    if (attempt.status !== 'in_progress') throw conflict('Attempt is no longer in progress');
+    if (!attempt.question_ids.includes(questionId)) throw badRequest('Question is not part of this attempt');
+    const answered = await client.query('SELECT 1 FROM attempt_answers WHERE attempt_id = $1 AND question_id = $2', [
+      attemptId,
+      questionId,
+    ]);
+    if (answered.rowCount) throw conflict('Question already answered');
+
+    const meta = attempt.question_meta;
+    const powerups = meta.powerups ?? { fiftyFifty: 0, timeExtend: 0, used: {} };
+    const used = powerups.used[questionId] ?? {};
+
+    if (kind === 'fifty_fifty') {
+      if (used.fiftyFifty) return { kind, removedOptionIds: used.fiftyFifty, remaining: powerups.fiftyFifty };
+      if (powerups.fiftyFifty <= 0) throw conflict('No 50/50 power-ups left');
+      const qRows = await client.query('SELECT type, content, correct_answer FROM questions WHERE id = $1', [questionId]);
+      const q = qRows.rows[0];
+      if (!q) throw notFound('Question not found');
+      const options = Array.isArray(q.content?.options) ? (q.content.options as Array<{ id: string }>) : [];
+      const correct =
+        typeof q.correct_answer === 'string'
+          ? q.correct_answer
+          : String((q.correct_answer as { optionId?: string })?.optionId ?? '');
+      const wrong = options.map((o) => o.id).filter((id) => id !== correct);
+      if (options.length < 3 || !correct) throw badRequest('50/50 is not available for this question');
+      const removed = wrong.sort(() => Math.random() - 0.5).slice(0, Math.min(2, wrong.length - 1));
+      powerups.fiftyFifty -= 1;
+      powerups.used[questionId] = { ...used, fiftyFifty: removed };
+      await client.query(
+        `UPDATE attempts SET question_meta = jsonb_set(question_meta, '{powerups}', $2::jsonb) WHERE id = $1`,
+        [attemptId, JSON.stringify(powerups)],
+      );
+      return { kind, removedOptionIds: removed, remaining: powerups.fiftyFifty };
+    }
+
+    // time_extend
+    if (used.timeExtend) throw conflict('Time already extended for this question');
+    if (powerups.timeExtend <= 0) throw conflict('No time extensions left');
+    const addSec = settings.timeExtendSec;
+    powerups.timeExtend -= 1;
+    powerups.used[questionId] = { ...used, timeExtend: true };
+    meta.perQuestion[questionId].timeLimitSec += addSec;
+    await client.query(
+      `UPDATE attempts SET
+         question_meta = jsonb_set(jsonb_set(question_meta, '{powerups}', $2::jsonb), '{perQuestion}', $3::jsonb),
+         deadline_at = deadline_at + make_interval(secs => $4)
+       WHERE id = $1`,
+      [attemptId, JSON.stringify(powerups), JSON.stringify(meta.perQuestion), addSec],
+    );
+    return { kind, addedSec: addSec, remaining: powerups.timeExtend };
   });
 }
 

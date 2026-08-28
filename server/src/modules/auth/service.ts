@@ -40,6 +40,7 @@ export interface PublicUser {
   totalPoints: number;
   currentStreak: number;
   longestStreak: number;
+  streakFreezes: number;
   plan: string;
   emailVerified: boolean;
   createdAt: string;
@@ -62,6 +63,7 @@ export function toPublicUser(row: any): PublicUser {
     totalPoints: Number(row.total_points),
     currentStreak: row.current_streak,
     longestStreak: row.longest_streak,
+    streakFreezes: row.streak_freezes ?? 0,
     plan: row.plan,
     emailVerified: row.email_verified_at !== null,
     createdAt: row.created_at,

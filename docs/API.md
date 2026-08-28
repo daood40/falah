@@ -34,8 +34,10 @@ Base: `/api/v1`. Auth: `Authorization: Bearer <accessToken>`. Errors:
 | GET | /quizzes/question-types | registry: id, family, scored, media |
 | GET | /quizzes/scheduled | active admin-curated quizzes |
 | POST | /quizzes/:quizId/start | play a curated quiz (identical fixed set) |
-| POST | /quizzes/start | mode, categoryId?, difficulty?, language?, questionCount?, types? → attemptId + sanitized questions + deadline |
-| POST | /quizzes/attempts/:id/answers | { questionId, answer } → { outcome, points } (server-timed) |
+| POST | /quizzes/start | mode (practice·timed·review·daily·…), filters → attemptId + sanitized questions + `untimed` + granted `powerups`. `review` replays your unresolved mistakes; `daily` serves the shared question-of-the-day set (one attempt/day) |
+| GET | /quizzes/daily | today's shared quiz status + my attempt |
+| POST | /quizzes/attempts/:id/answers | { questionId, answer } → { outcome, points, feedback? } — `feedback` (correct answer + explanation) only in untimed modes |
+| POST | /quizzes/attempts/:id/powerups | { kind: fifty_fifty \| time_extend, questionId } — server-side; 50/50 returns wrong-option ids only |
 | POST | /quizzes/attempts/:id/submit | totals, XP, streak, achievements |
 | GET | /quizzes/attempts/:id | resume data (network recovery) |
 | GET | /quizzes/attempts/:id/review | questions + your/correct answers + explanations (post-submit only) |
@@ -66,6 +68,10 @@ Base: `/api/v1`. Auth: `Authorization: Bearer <accessToken>`. Errors:
 ## /groups
 - `POST /groups` · `GET /groups` (mine + discover) · `GET /groups/:id`
 - `POST /groups/join` (code or public id) · `POST /groups/:id/leave` · `POST /groups/:id/invite`
+
+## /friends
+- `GET /friends` — friends + incoming/outgoing requests
+- `POST /friends/request` { username } · `POST /friends/respond` { userId, accept } · `DELETE /friends/:userId`
 
 ## /achievements, /notifications
 - `GET /achievements` (+earned for auth) · `GET /achievements/progress` (XP/level curve)

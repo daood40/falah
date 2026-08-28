@@ -31,6 +31,7 @@ export function HomePage() {
   const [recent, setRecent] = useState<AttemptRow[] | null>(null);
   const [monthly, setMonthly] = useState<{ yearMonth: string; questionCount: number } | null>(null);
   const [progress, setProgress] = useState<{ xp: number; level: number; nextLevelAt: number; progress: number } | null>(null);
+  const [daily, setDaily] = useState<{ available: boolean; myAttempt: { status: string; score: number } | null } | null>(null);
 
   useEffect(() => {
     void get<{ categories: Category[] }>('/categories').then((r) => setCategories(r.categories)).catch(() => setCategories([]));
@@ -40,6 +41,9 @@ export function HomePage() {
       .catch(() => setMonthly(null));
     void get<{ xp: number; level: number; nextLevelAt: number; progress: number }>('/achievements/progress')
       .then(setProgress)
+      .catch(() => undefined);
+    void get<{ available: boolean; myAttempt: { status: string; score: number } | null }>('/quizzes/daily')
+      .then(setDaily)
       .catch(() => undefined);
   }, []);
 
@@ -60,6 +64,7 @@ export function HomePage() {
               <span className="badge primary">{t('level')} {user.level}</span>
               <span className="badge">{user.totalPoints.toLocaleString()} {t('points')}</span>
               <span className="badge warn">🔥 {user.currentStreak} {t('days')}</span>
+              {user.streakFreezes > 0 && <span className="badge">🧊 {user.streakFreezes}</span>}
             </div>
           </div>
           <button
@@ -79,8 +84,12 @@ export function HomePage() {
       <div className="grid cols-2">
         <div className="card">
           <h2>📅 {t('dailyChallenge')}</h2>
-          <p className="muted">10 {t('questions')}</p>
-          <button className="btn" onClick={() => nav('/play?mode=daily')}>{t('start')}</button>
+          <p className="muted">{t('sameForAll')}</p>
+          {daily?.myAttempt?.status === 'submitted' ? (
+            <span className="badge success">{t('playedToday')} · {daily.myAttempt.score} {t('points')}</span>
+          ) : (
+            <button className="btn" onClick={() => nav('/play?mode=daily')}>{t('start')}</button>
+          )}
         </div>
         <div className="card">
           <h2>🏆 {t('monthlyChallenge')}</h2>

@@ -29,6 +29,10 @@ export interface AppSettings {
   antiCheatMinAnswerMs: number;   // answers faster than this are flagged
   antiCheatGraceMs: number;       // allowed clock slack past deadline
   streakMilestones: number[];
+  streakFreezeCap: number;        // max banked streak freezes
+  powerupFiftyFifty: number;      // 50/50 uses granted per timed quiz
+  powerupTimeExtend: number;      // time-extension uses granted per timed quiz
+  timeExtendSec: number;          // seconds added by a time extension
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -56,6 +60,10 @@ export const DEFAULT_SETTINGS: AppSettings = {
   antiCheatMinAnswerMs: 350,
   antiCheatGraceMs: 3000,
   streakMilestones: [1, 3, 7, 14, 30, 100, 365],
+  streakFreezeCap: 3,
+  powerupFiftyFifty: 2,
+  powerupTimeExtend: 1,
+  timeExtendSec: 20,
 };
 
 let cache: { value: AppSettings; at: number } | null = null;

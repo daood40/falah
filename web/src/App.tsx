@@ -10,7 +10,7 @@ import { HomePage } from './pages/home';
 import { PlayPage, ReviewPage } from './pages/quiz';
 import { AchievementsPage, NotificationsPage, PublicProfilePage, SettingsPage, StatsPage } from './pages/profile';
 import {
-  ChallengeDetailPage, ChallengesPage, GroupDetailPage, GroupsPage,
+  ChallengeDetailPage, ChallengesPage, FriendsPage, GroupDetailPage, GroupsPage,
   LeaderboardPage, MonthlyPage, TournamentDetailPage, TournamentsPage,
 } from './pages/social';
 
@@ -29,7 +29,7 @@ function TopBar() {
   if (!user) return null;
   const links: Array<[string, string]> = [
     ['/', t('home')], ['/play', t('play')], ['/leaderboard', t('leaderboard')],
-    ['/challenges', t('challenges')], ['/tournaments', t('tournaments')], ['/groups', t('groups')],
+    ['/challenges', t('challenges')], ['/tournaments', t('tournaments')], ['/groups', t('groups')], ['/friends', t('friends')],
     ['/stats', t('stats')], ['/achievements', t('achievements')],
   ];
   return (
@@ -81,6 +81,7 @@ function Shell() {
           <Route path="/challenges" element={<Protected><ChallengesPage /></Protected>} />
           <Route path="/challenges/:id" element={<Protected><ChallengeDetailPage /></Protected>} />
           <Route path="/monthly" element={<Protected><MonthlyPage /></Protected>} />
+          <Route path="/friends" element={<Protected><FriendsPage /></Protected>} />
           <Route path="/groups" element={<Protected><GroupsPage /></Protected>} />
           <Route path="/groups/:id" element={<Protected><GroupDetailPage /></Protected>} />
           <Route path="/tournaments" element={<Protected><TournamentsPage /></Protected>} />

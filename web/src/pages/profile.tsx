@@ -5,6 +5,7 @@ import { Avatar, EmptyState, Spinner, StatBox, fmtMs, useToast } from '../compon
 import { useAuth } from '../ctx';
 import { useI18n, type Lang } from '../i18n';
 import { useTheme } from '../ctx';
+import { setSoundsEnabled, soundsEnabled } from '../sounds';
 
 export function PublicProfilePage() {
   const { t } = useI18n();
@@ -181,6 +182,8 @@ export function NotificationsPage() {
   );
 }
 
+const AVATAR_EMOJIS = ['🦊', '🐼', '🦁', '🐸', '🦉', '🐙', '🦋', '🐢', '🐬', '🌟', '🚀', '🎯', '🧠', '⚡', '🌙', '🔥', '🍀', '🎨', '🎮', '🏆'];
+
 export function SettingsPage() {
   const { t, lang, setLang } = useI18n();
   const { theme, toggle } = useTheme();
@@ -189,6 +192,8 @@ export function SettingsPage() {
   const toast = useToast();
   const [displayName, setDisplayName] = useState(user?.displayName ?? '');
   const [country, setCountry] = useState(user?.country ?? '');
+  const [avatar, setAvatar] = useState(user?.avatar ?? '');
+  const [sounds, setSounds] = useState(soundsEnabled());
   const [pw, setPw] = useState({ current: '', next: '' });
   const [delPw, setDelPw] = useState('');
 
@@ -196,7 +201,7 @@ export function SettingsPage() {
 
   const saveProfile = async () => {
     try {
-      await patch('/users/me', { displayName, country: country.toUpperCase() || '', language: lang });
+      await patch('/users/me', { displayName, country: country.toUpperCase() || '', language: lang, avatar });
       await refreshUser();
       toast('✓');
     } catch (err) {
@@ -231,6 +236,16 @@ export function SettingsPage() {
         <div className="stack">
           <div><label className="fld">{t('displayName')}</label><input value={displayName} onChange={(e) => setDisplayName(e.target.value)} /></div>
           <div><label className="fld">{t('country')} (ISO-2)</label><input value={country} onChange={(e) => setCountry(e.target.value)} maxLength={2} placeholder="SA" /></div>
+          <div>
+            <label className="fld">{t('avatarPick')}</label>
+            <div className="emoji-grid">
+              {AVATAR_EMOJIS.map((e) => (
+                <button key={e} type="button" className={avatar === e ? 'selected' : ''} onClick={() => setAvatar(avatar === e ? '' : e)} aria-label={e}>
+                  {e}
+                </button>
+              ))}
+            </div>
+          </div>
           <button className="btn" onClick={saveProfile}>{t('save')}</button>
         </div>
       </div>
@@ -242,6 +257,18 @@ export function SettingsPage() {
             <option value="ar">العربية</option>
           </select>
           <button className="btn secondary" onClick={toggle}>{theme === 'light' ? `🌙 ${t('dark')}` : `☀️ ${t('light')}`}</button>
+          <label className={`chip ${sounds ? 'selected' : ''}`} style={{ userSelect: 'none' }}>
+            <input
+              type="checkbox"
+              checked={sounds}
+              onChange={(e) => {
+                setSounds(e.target.checked);
+                setSoundsEnabled(e.target.checked);
+              }}
+              style={{ width: 16, marginInlineEnd: 6 }}
+            />
+            🔔 {t('sound')}
+          </label>
         </div>
       </div>
       {!user.isGuest && (

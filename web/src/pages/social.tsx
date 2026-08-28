@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ApiError, get, post } from '../api';
+import { ApiError, del, get, post } from '../api';
 import { Avatar, EmptyState, Spinner, fmtMs, useToast } from '../components';
 import { useAuth } from '../ctx';
 import { useI18n } from '../i18n';
@@ -549,6 +549,109 @@ export function TournamentDetailPage() {
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+interface FriendItem {
+  userId: string;
+  username: string;
+  displayName: string;
+  avatar: string;
+  level: number;
+  totalPoints: number;
+  currentStreak: number;
+}
+
+export function FriendsPage() {
+  const { t } = useI18n();
+  const toast = useToast();
+  const [data, setData] = useState<{ friends: FriendItem[]; incoming: FriendItem[]; outgoing: FriendItem[] } | null>(null);
+  const [name, setName] = useState('');
+
+  const load = useCallback(() => {
+    void get<NonNullable<typeof data>>('/friends').then(setData).catch(() => setData({ friends: [], incoming: [], outgoing: [] }));
+  }, []);
+  useEffect(load, [load]);
+
+  const request = async () => {
+    try {
+      await post('/friends/request', { username: name.trim() });
+      setName('');
+      toast('✓');
+      load();
+    } catch (err) {
+      toast(err instanceof ApiError ? err.message : t('error'));
+    }
+  };
+  const respond = async (userId: string, accept: boolean) => {
+    try {
+      await post('/friends/respond', { userId, accept });
+      load();
+    } catch (err) {
+      toast(err instanceof ApiError ? err.message : t('error'));
+    }
+  };
+  const remove = async (userId: string) => {
+    try {
+      await del(`/friends/${userId}`);
+      load();
+    } catch (err) {
+      toast(err instanceof ApiError ? err.message : t('error'));
+    }
+  };
+
+  if (!data) return <Spinner />;
+  const Row = ({ f, actions }: { f: FriendItem; actions: React.ReactNode }) => (
+    <div className="row between" style={{ padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
+      <div className="row">
+        <Avatar name={f.displayName || f.username} avatar={f.avatar} />
+        <div>
+          <strong>{f.displayName || f.username}</strong>
+          <p className="muted" style={{ margin: 0 }}>
+            {t('level')} {f.level} · {f.totalPoints.toLocaleString()} {t('points')} · 🔥 {f.currentStreak}
+          </p>
+        </div>
+      </div>
+      <div className="row" style={{ gap: 6 }}>{actions}</div>
+    </div>
+  );
+
+  return (
+    <div style={{ maxWidth: 620, margin: '0 auto' }}>
+      <h1>🤝 {t('friends')}</h1>
+      <div className="card">
+        <div className="row">
+          <input placeholder={t('username')} value={name} onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && name.trim() && request()} style={{ maxWidth: 240 }} />
+          <button className="btn" onClick={request} disabled={!name.trim()}>{t('addFriend')}</button>
+        </div>
+      </div>
+      {data.incoming.length > 0 && (
+        <div className="card">
+          <h2>{t('friendRequests')}</h2>
+          {data.incoming.map((f) => (
+            <Row key={f.userId} f={f} actions={<>
+              <button className="btn sm" onClick={() => respond(f.userId, true)}>{t('accept')}</button>
+              <button className="btn secondary sm" onClick={() => respond(f.userId, false)}>{t('decline')}</button>
+            </>} />
+          ))}
+        </div>
+      )}
+      <div className="card">
+        <h2>{t('friends')} ({data.friends.length})</h2>
+        {data.friends.length === 0 ? <EmptyState /> : data.friends.map((f) => (
+          <Row key={f.userId} f={f} actions={<>
+            <Link className="btn ghost sm" to={`/u/${f.username}`}>{t('profile')}</Link>
+            <button className="btn secondary sm" onClick={() => remove(f.userId)}>{t('remove')}</button>
+          </>} />
+        ))}
+        {data.outgoing.length > 0 && (
+          <p className="muted" style={{ marginTop: 10 }}>
+            ⏳ {data.outgoing.map((f) => f.username).join('، ')}
+          </p>
+        )}
+      </div>
     </div>
   );
 }

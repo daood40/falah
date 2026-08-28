@@ -9,9 +9,11 @@ export function EmptyState({ label }: { label?: string }) {
   return <p className="muted center" style={{ padding: 24 }}>{label ?? t('noData')}</p>;
 }
 
-export function Avatar({ name, size }: { name: string; size?: 'lg' }) {
+export function Avatar({ name, avatar, size }: { name: string; avatar?: string; size?: 'lg' }) {
+  // short avatar strings are emoji picks; anything else falls back to initials
+  const emoji = avatar && avatar.length <= 8 ? avatar : '';
   const initial = (name || '?').trim().charAt(0).toUpperCase();
-  return <span className={`avatar ${size ?? ''}`}>{initial}</span>;
+  return <span className={`avatar ${size ?? ''}`}>{emoji || initial}</span>;
 }
 
 export function StatBox({ value, label }: { value: ReactNode; label: string }) {

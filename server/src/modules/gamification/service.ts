@@ -53,35 +53,53 @@ export function localDate(tz: string, at: Date = new Date()): string {
 
 /**
  * Timezone-aware daily streak update. Same day → unchanged; consecutive day →
- * +1; gap → reset to 1. Returns milestones crossed (for notifications).
+ * +1; exactly one missed day with a banked streak freeze → freeze consumed and
+ * the streak survives (Duolingo-style); otherwise reset to 1. Milestones bank
+ * an extra freeze (capped) and are returned for notifications.
  */
 export async function touchStreak(
   client: PoolClient,
   userId: string,
   settings: AppSettings,
-): Promise<{ current: number; longest: number; milestone: number | null }> {
+): Promise<{ current: number; longest: number; milestone: number | null; freezeUsed: boolean }> {
   const { rows } = await client.query(
-    'SELECT current_streak, longest_streak, last_activity_date, timezone FROM users WHERE id = $1 FOR UPDATE',
+    `SELECT current_streak, longest_streak, timezone, streak_freezes,
+            to_char(last_activity_date, 'YYYY-MM-DD') AS last_date
+     FROM users WHERE id = $1 FOR UPDATE`,
     [userId],
   );
   const u = rows[0];
   const today = localDate(u.timezone);
-  const last = u.last_activity_date ? String(u.last_activity_date).slice(0, 10) : null;
+  const last: string | null = u.last_date;
   let current: number = u.current_streak;
   if (last === today) {
-    return { current, longest: u.longest_streak, milestone: null };
+    return { current, longest: u.longest_streak, milestone: null, freezeUsed: false };
   }
-  const yesterday = new Date(`${today}T12:00:00Z`);
-  yesterday.setUTCDate(yesterday.getUTCDate() - 1);
-  const yesterdayStr = yesterday.toISOString().slice(0, 10);
-  current = last === yesterdayStr ? current + 1 : 1;
+  const dayBefore = (iso: string, days: number): string => {
+    const d = new Date(`${iso}T12:00:00Z`);
+    d.setUTCDate(d.getUTCDate() - days);
+    return d.toISOString().slice(0, 10);
+  };
+  let freezeUsed = false;
+  let freezes: number = u.streak_freezes;
+  if (last === dayBefore(today, 1)) {
+    current = current + 1;
+  } else if (last === dayBefore(today, 2) && freezes > 0) {
+    freezes -= 1;
+    freezeUsed = true;
+    current = current + 1; // the missed day is absorbed by the freeze
+  } else {
+    current = 1;
+  }
   const longest = Math.max(current, u.longest_streak);
-  await client.query(
-    'UPDATE users SET current_streak = $2, longest_streak = $3, last_activity_date = $4, updated_at = now() WHERE id = $1',
-    [userId, current, longest, today],
-  );
   const milestone = settings.streakMilestones.includes(current) ? current : null;
-  return { current, longest, milestone };
+  if (milestone && milestone >= 3) freezes = Math.min(settings.streakFreezeCap, freezes + 1);
+  await client.query(
+    `UPDATE users SET current_streak = $2, longest_streak = $3, last_activity_date = $4,
+       streak_freezes = $5, updated_at = now() WHERE id = $1`,
+    [userId, current, longest, today, freezes],
+  );
+  return { current, longest, milestone, freezeUsed };
 }
 
 /**

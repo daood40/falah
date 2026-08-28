@@ -12,6 +12,7 @@ import { adminRoutes } from './modules/admin/routes.js';
 import { authRoutes } from './modules/auth/routes.js';
 import { categoryRoutes } from './modules/categories/routes.js';
 import { challengeRoutes } from './modules/challenges/routes.js';
+import { friendRoutes } from './modules/friends/routes.js';
 import { achievementRoutes } from './modules/gamification/routes.js';
 import { groupRoutes } from './modules/groups/routes.js';
 import { leaderboardRoutes } from './modules/leaderboards/routes.js';
@@ -74,6 +75,7 @@ export async function buildApp(): Promise<FastifyInstance> {
       await api.register(quizRoutes, { prefix: '/quizzes' });
       await api.register(leaderboardRoutes, { prefix: '/leaderboards' });
       await api.register(challengeRoutes, { prefix: '/challenges' });
+      await api.register(friendRoutes, { prefix: '/friends' });
       await api.register(monthlyRoutes, { prefix: '/monthly-challenges' });
       await api.register(groupRoutes, { prefix: '/groups' });
       await api.register(tournamentRoutes, { prefix: '/tournaments' });

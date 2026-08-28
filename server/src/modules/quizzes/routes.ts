@@ -5,11 +5,12 @@ import { rateLimit } from '../../core/rateLimit.js';
 import { query } from '../../db/pool.js';
 import { requireAuth } from '../../plugins/auth.js';
 import { registry } from '../questions/engine/registry.js';
-import { answerQuestion, getAttemptReview, startAttempt, submitAttempt } from './attempts.js';
+import { answerQuestion, getAttemptReview, startAttempt, submitAttempt, usePowerup } from './attempts.js';
+import { ensureDailyQuiz } from './daily.js';
 
 const startSchema = z.object({
   mode: z
-    .enum(['practice', 'timed', 'daily', 'challenge', 'competitive', 'random', 'category', 'difficulty'])
+    .enum(['practice', 'timed', 'daily', 'challenge', 'competitive', 'random', 'category', 'difficulty', 'review'])
     .default('practice'),
   categoryId: z.string().uuid().nullish(),
   difficulty: z.enum(['easy', 'medium', 'hard', 'expert']).nullish(),
@@ -38,15 +39,45 @@ export async function quizRoutes(app: FastifyInstance): Promise<void> {
     if (!parsed.success) throw badRequest('Invalid quiz options', parsed.error.issues);
     const opts = parsed.data;
     if (opts.mode === 'daily') {
-      // daily quiz: deterministic per-day random selection, competitive scope
+      // question of the day: one shared set per date — everyone competes equally
+      const daily = await ensureDailyQuiz();
+      if (!daily) throw badRequest('No questions available for today');
       return startAttempt(req.userId!, req.isGuest, {
-        ...opts,
         mode: 'daily',
         contextType: 'daily',
-        questionCount: opts.questionCount ?? 10,
+        contextId: daily.id,
+        fixedQuestionIds: daily.questionIds,
       });
     }
     return startAttempt(req.userId!, req.isGuest, opts);
+  });
+
+  /** Today's shared quiz status (played or not) + today's board key. */
+  app.get('/daily', { preHandler: [requireAuth] }, async (req) => {
+    const daily = await ensureDailyQuiz();
+    if (!daily) return { available: false };
+    const mine = await query(
+      `SELECT id, status, score FROM attempts
+       WHERE user_id = $1 AND context_type = 'daily' AND context_id = $2
+       ORDER BY created_at DESC LIMIT 1`,
+      [req.userId, daily.id],
+    );
+    return {
+      available: true,
+      day: daily.day,
+      questionCount: daily.questionIds.length,
+      myAttempt: mine.rows[0] ?? null,
+    };
+  });
+
+  /** Server-side power-ups: 50/50 and time extension. */
+  app.post('/attempts/:id/powerups', { preHandler: [requireAuth, answerLimiter] }, async (req) => {
+    const { id } = req.params as { id: string };
+    const parsed = z
+      .object({ kind: z.enum(['fifty_fifty', 'time_extend']), questionId: z.string().uuid() })
+      .safeParse(req.body);
+    if (!parsed.success) throw badRequest('Invalid power-up request', parsed.error.issues);
+    return usePowerup(id, req.userId!, parsed.data.questionId, parsed.data.kind);
   });
 
   /** Active admin-curated (scheduled) quizzes. */

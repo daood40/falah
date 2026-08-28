@@ -16,6 +16,7 @@ export interface User {
   totalPoints: number;
   currentStreak: number;
   longestStreak: number;
+  streakFreezes: number;
   plan: string;
   emailVerified: boolean;
 }
