@@ -1,4 +1,8 @@
+import { existsSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import cors from '@fastify/cors';
+import fastifyStatic from '@fastify/static';
 import Fastify, { type FastifyInstance } from 'fastify';
 import { env } from './config/env.js';
 import { AppError } from './core/errors.js';
@@ -74,6 +78,18 @@ export async function buildApp(): Promise<FastifyInstance> {
     },
     { prefix: '/api/v1' },
   );
+
+  // serve the built web app when present (single-server deployment)
+  const webDist = join(dirname(fileURLToPath(import.meta.url)), '../../web/dist');
+  if (existsSync(webDist)) {
+    await app.register(fastifyStatic, { root: webDist, wildcard: false });
+    app.setNotFoundHandler((req, reply) => {
+      if (req.raw.url?.startsWith('/api/')) {
+        return reply.status(404).send({ error: { code: 'not_found', message: 'Route not found' } });
+      }
+      return reply.sendFile('index.html'); // SPA fallback
+    });
+  }
 
   return app;
 }
