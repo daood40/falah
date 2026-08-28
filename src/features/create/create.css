@@ -68,3 +68,32 @@
 .format-row .fl-chip {
   flex-shrink: 0;
 }
+
+/* ---------- v1.2 create polish ---------- */
+.create-hub__card {
+  position: relative;
+  overflow: hidden;
+}
+.create-hub__card--quran {
+  background-image:
+    var(--fl-pattern), linear-gradient(165deg, var(--fl-green-800), var(--fl-green-900));
+  color: #f5f1e6;
+  border-top: none;
+}
+.create-hub__card--quran .fl-muted {
+  color: #b9cec4;
+}
+.create-hub__card--quran .create-hub__icon {
+  color: var(--fl-gold-500);
+}
+.create-hub__card--hadith {
+  background-image: var(--fl-pattern), linear-gradient(165deg, #3a3325, #211c12);
+  color: #f2e9d5;
+  border-top: none;
+}
+.create-hub__card--hadith .fl-muted {
+  color: #c9bfa4;
+}
+.create-hub__card--hadith .create-hub__icon {
+  color: var(--fl-gold-500);
+}

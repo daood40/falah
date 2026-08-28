@@ -377,3 +377,48 @@ a {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+/* ---------- v1.2 polish ---------- */
+.fl-btn {
+  transition:
+    background var(--fl-t-fast),
+    border-color var(--fl-t-fast),
+    color var(--fl-t-fast),
+    transform var(--fl-t-fast),
+    box-shadow var(--fl-t-fast);
+}
+.fl-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.fl-btn--primary {
+  background: var(--fl-grad-primary);
+  box-shadow: var(--fl-shadow-1);
+}
+.fl-btn--primary:hover {
+  filter: brightness(1.07);
+  box-shadow: var(--fl-glow-primary);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--fl-surface-3) transparent;
+}
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--fl-surface-3);
+  border-radius: 999px;
+}
+
+.fl-state__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  background: var(--fl-surface-2);
+  color: var(--fl-primary);
+}

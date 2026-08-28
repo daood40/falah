@@ -68,9 +68,9 @@ export function HomePage() {
 
   return (
     <div className="fl-col" style={{ gap: 'var(--fl-sp-5)' }}>
-      <header>
-        <h1 className="fl-title">{t('home.welcome')} 👋</h1>
-        <p className="fl-muted">{t('home.subtitle')}</p>
+      <header className="home-hero">
+        <h1>{t('home.welcome')}</h1>
+        <p>{t('home.subtitle')}</p>
       </header>
 
       <section className="home-quick" aria-label={t('home.subtitle')}>

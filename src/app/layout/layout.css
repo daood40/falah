@@ -196,3 +196,49 @@
     padding-bottom: var(--fl-sp-6);
   }
 }
+
+/* ---------- v1.2 shell polish ---------- */
+.shell__header {
+  backdrop-filter: blur(10px);
+  background: color-mix(in srgb, var(--fl-surface) 88%, transparent);
+}
+.shell__brand svg {
+  color: var(--fl-accent);
+}
+
+.shell__nav-item .shell__nav-icon {
+  padding: 4px 16px;
+  border-radius: var(--fl-r-full);
+  transition:
+    background var(--fl-t-med),
+    color var(--fl-t-fast);
+}
+.shell__nav-item[aria-current='page']:not(.shell__nav-item--create) .shell__nav-icon {
+  background: var(--fl-green-100);
+}
+[data-theme='dark']
+  .shell__nav-item[aria-current='page']:not(.shell__nav-item--create)
+  .shell__nav-icon {
+  background: rgba(23, 138, 96, 0.22);
+}
+.shell__nav-item--create .shell__nav-icon {
+  background: var(--fl-grad-primary);
+  box-shadow: var(--fl-glow-primary);
+  padding: 0;
+  transition:
+    transform var(--fl-t-fast),
+    box-shadow var(--fl-t-fast);
+}
+.shell__nav-item--create:hover .shell__nav-icon {
+  transform: translateY(-2px) scale(1.05);
+}
+
+/* Drawer identity card */
+.drawer > .fl-card {
+  background-image: var(--fl-pattern), var(--fl-grad-hero);
+  border: none;
+  color: #f5f1e6;
+}
+.drawer > .fl-card .fl-muted {
+  color: #b9cec4;
+}

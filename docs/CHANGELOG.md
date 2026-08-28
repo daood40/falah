@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.2.0 — 2026-08-28
+
+Visual identity release.
+
+### Added
+- Subtle Islamic geometric pattern (rub-el-hizb tile) woven into the hero,
+  verse-of-day card, create-hub cards, and drawer identity card.
+- Home hero: gradient emerald banner; quick actions with per-category tinted
+  icon chips (green/gold/blue/violet); verse card with golden corner ornaments.
+- Create hub: rich gradient cards (emerald Quran / golden-brown Hadith) with
+  gold icons.
+- Navigation: active pill indicator behind the current tab icon; glowing
+  gradient create button with hover lift; blurred translucent header.
+- Buttons: gradient primary with glow hover and press feedback; styled thin
+  scrollbars; circular tinted empty-state icons; dotted canvas backdrop and
+  card-style toolbar in the editor; gradient user bubbles in the assistant.
+
 ## 1.1.0 — 2026-08-28
 
 Professional polish release.

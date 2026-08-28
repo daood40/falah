@@ -46,3 +46,9 @@
     bottom: 0;
   }
 }
+
+/* ---------- v1.2 assistant polish ---------- */
+.assistant__msg--user {
+  background: var(--fl-grad-primary);
+  color: #ffffff;
+}

@@ -248,3 +248,17 @@
   height: 1.5px;
   top: 50%;
 }
+
+/* ---------- v1.2 editor polish ---------- */
+.editor__toolbar {
+  background: var(--fl-surface);
+  border: 1px solid var(--fl-border);
+  border-radius: var(--fl-r-lg);
+  padding: var(--fl-sp-2);
+  box-shadow: var(--fl-shadow-1);
+}
+.stage-wrap {
+  background:
+    radial-gradient(circle at 1px 1px, var(--fl-surface-3) 1px, transparent 0) 0 0 / 18px 18px,
+    var(--fl-surface-2);
+}
