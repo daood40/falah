@@ -1,8 +1,11 @@
 name: Deploy Web to GitHub Pages
 
+# Pages deployments are restricted to main (github-pages environment policy),
+# so only main pushes trigger a deploy; other branches would fail at the
+# deploy job. Manual runs stay available via workflow_dispatch.
 on:
   push:
-    branches: ['main', 'claude/**']
+    branches: ['main']
   workflow_dispatch:
 
 permissions:
