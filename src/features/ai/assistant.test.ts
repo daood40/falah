@@ -1,6 +1,6 @@
 /** AI assistant: the source-lock guard must intercept sacred-text requests. */
 import { describe, expect, it } from 'vitest';
-import { asksForSacredText, isValidCitation } from './domain/assistant';
+import { REFUSALS, asksForSacredText, isValidCitation } from './domain/assistant';
 import { LocalAssistantProvider, sourceLockRouter } from './data/aiProvider';
 
 describe('assistant source-lock guard', () => {
@@ -22,7 +22,21 @@ describe('assistant source-lock guard', () => {
     const reply = await sourceLockRouter('اكتب لي آية غير موجودة عن المركبات الفضائية');
     expect(reply).not.toBeNull();
     expect(reply!.references ?? []).toHaveLength(0);
-    expect(reply!.text).toContain('لا أستطيع');
+    expect(reply!.text).toContain(REFUSALS.noSource);
+  });
+
+  it('RED: refuses fatwa requests with the canonical Appendix (هـ) text', async () => {
+    const reply = await sourceLockRouter('ما حكم الاستماع للتلاوة أثناء العمل؟ هل يجوز؟');
+    expect(reply).not.toBeNull();
+    expect(reply!.text).toBe(REFUSALS.fatwa);
+    expect(reply!.references ?? []).toHaveLength(0);
+  });
+
+  it('RED: refuses requests to alter sacred text (never rewords)', async () => {
+    const reply = await sourceLockRouter('اختصر الآية 2:255 وأعد صياغة الحديث بلغة أبسط');
+    expect(reply).not.toBeNull();
+    expect(reply!.text).toBe(REFUSALS.editSacred);
+    expect(reply!.references ?? []).toHaveLength(0);
   });
 
   it('local provider answers design questions', async () => {

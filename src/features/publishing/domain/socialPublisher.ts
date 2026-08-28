@@ -17,6 +17,11 @@ export interface PublishPayload {
   /** Exported media blob (PNG/WebM) produced through the Source Lock gate. */
   media: Blob;
   caption: string;
+  /**
+   * Idempotency key from the scheduled post: adapters pass it to their edge
+   * function so a retried attempt after a timeout can never publish twice.
+   */
+  idempotencyKey?: string;
 }
 
 export interface PublishResult {

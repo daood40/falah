@@ -1,5 +1,25 @@
 # Changelog
 
+## 1.4.0 — 2026-08-28
+
+Master Directive v2 alignment (docs + incremental code, no rebuilds).
+
+### Added
+- Governance docs: `docs/adr/` (six binding ADRs), `MIGRATION.md` (staged Flutter
+  path — not executed), `ROADMAP.md`, `PROJECT_STATUS.md`, `SKILL_REGISTRY.md`,
+  `docs/AI_RULES.md`, `docs/SOURCE_POLICY.md`; ARCHITECTURE gained a v2 alignment map.
+- AI guard: canonical Appendix (هـ) refusal texts, fatwa-request detection and
+  sacred-text-alteration detection, with new red tests.
+- Scheduler: exponential-backoff retry (max 3 attempts) for transient publish
+  failures + per-post idempotency key honored by the publisher contract;
+  permanent errors (unconfigured platform, Source Lock, validation) still fail
+  fast and honestly.
+- `.env.example` server-secret names aligned with v2 Appendix (ب).
+
+### Tests
+58 passing (adds fatwa/alteration refusals and retry lifecycle).
+
+
 ## 1.3.0 — 2026-08-28
 
 Feature-complete release (closes the remaining master-directive items).

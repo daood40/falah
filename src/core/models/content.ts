@@ -191,6 +191,10 @@ export interface ScheduledPost {
   repeat: RepeatRule;
   status: ProjectStatus;
   last_error: string | null;
+  /** Publish attempts so far — transient failures retry with backoff, max 3 (v2 §20). */
+  attempts?: number;
+  /** Stable per-post key adapters forward server-side so a retry can never double-post. */
+  idempotency_key?: string;
   created_at: string;
 }
 

@@ -33,6 +33,8 @@ export async function schedulePost(input: {
     repeat: input.repeat,
     status: 'scheduled',
     last_error: null,
+    attempts: 0,
+    idempotency_key: newId(),
     created_at: new Date().toISOString(),
   };
   await db.scheduledPosts.add(post);
@@ -71,6 +73,10 @@ export async function updateScheduled(
   await db.scheduledPosts.update(id, patch);
 }
 
+/** v2 §20: exponential backoff, at most 3 attempts per post. */
+export const MAX_PUBLISH_ATTEMPTS = 3;
+const RETRY_BACKOFF_MINUTES = [1, 5];
+
 function nextOccurrence(iso: string, repeat: RepeatRule): string | null {
   if (repeat === 'none') return null;
   const date = new Date(iso);
@@ -97,12 +103,13 @@ export async function processDuePosts(
     await setProjectStatus(post.project_id, 'publishing');
     try {
       const exported = await exportMedia(post.project_id);
-      if (!exported) throw new AppError('publishing', `Project ${post.project_id} missing`);
+      if (!exported) throw new AppError('validation', `Project ${post.project_id} missing`);
       const project = await db.projects.get(post.project_id);
       const result = await publisherFor(post.platform).publish({
         project: project!,
         media: exported.media,
         caption: exported.caption,
+        idempotencyKey: post.idempotency_key,
       });
       await db.scheduledPosts.update(post.id, { status: 'published', last_error: null });
       await setProjectStatus(post.project_id, 'published');
@@ -119,11 +126,40 @@ export async function processDuePosts(
           id: newId(),
           scheduled_at: next,
           status: 'scheduled',
+          attempts: 0,
+          idempotency_key: newId(),
         });
       }
     } catch (error) {
       const appError = reportError(error, 'publishing');
-      await db.scheduledPosts.update(post.id, { status: 'failed', last_error: appError.message });
+      const attempts = (post.attempts ?? 0) + 1;
+      // Misconfiguration and Source-Lock rejections can't heal on their own —
+      // retrying would just repeat the same honest failure.
+      const permanent =
+        appError.kind === 'not_configured' ||
+        appError.kind === 'source_lock' ||
+        appError.kind === 'validation';
+      if (!permanent && attempts < MAX_PUBLISH_ATTEMPTS) {
+        const backoffMs = RETRY_BACKOFF_MINUTES[attempts - 1]! * 60_000;
+        await db.scheduledPosts.update(post.id, {
+          status: 'scheduled',
+          attempts,
+          last_error: appError.message,
+          scheduled_at: new Date(Date.now() + backoffMs).toISOString(),
+        });
+        await setProjectStatus(post.project_id, 'scheduled');
+        await auditLog(post.user_id, 'publish_retry_scheduled', {
+          post_id: post.id,
+          attempt: attempts,
+          error: appError.message,
+        });
+        continue;
+      }
+      await db.scheduledPosts.update(post.id, {
+        status: 'failed',
+        attempts,
+        last_error: appError.message,
+      });
       await setProjectStatus(post.project_id, 'failed');
       await notify(post.user_id, 'publish_failed', post.platform);
       await auditLog(post.user_id, 'publish_failed', { post_id: post.id, error: appError.message });

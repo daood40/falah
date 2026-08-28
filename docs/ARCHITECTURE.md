@@ -1,5 +1,10 @@
 # FALAH — Architecture
 
+> **Governing reference:** Master Directive **v2** (2026-08-28). Binding decisions live
+> in [`adr/`](adr/README.md); the Flutter target (ADR-001) is a staged migration
+> documented in [`MIGRATION.md`](../MIGRATION.md) — this document describes the
+> **current, live React PWA**, which remains the product until that migration ships.
+
 ## Layers (Clean Architecture)
 
 ```
@@ -91,6 +96,28 @@ Statuses: `draft → scheduled → publishing → published | failed` (+ repeat 
 - Debounced search (300ms); Dexie indexes on every hot query path.
 - Thumbnails are small JPEGs; canvas exports run at capped resolutions (entitlements).
 - CSS variables theming — zero runtime style recalculation on theme switch.
+
+## v2 alignment map
+
+How the running code maps to Directive v2's technical rules, and where the gaps are
+(tracked in `ROADMAP.md`):
+
+- **§4 SOURCE_LOCK enforcement** — locked read-only sacred blocks, content hashing and
+  the publish gate are live (see pipeline above). *Gap:* export files don't yet embed
+  `source_id`/`content_hash` metadata inside the PNG/WebM containers.
+- **§9 verification pipeline** — implemented as SOURCE→FETCH→NORMALIZE→VERIFY→DISPLAY→
+  APPROVAL→EXPORT; normalization-before-hash policy is documented in
+  [`SOURCE_POLICY.md`](SOURCE_POLICY.md). *Gap:* `verification_records` persistence and
+  the human-review workflow (§10) arrive with the v2 schema migration.
+- **§17 AI architecture** — client guard + server system prompt are live (ADR-005
+  layers 1–2); canonical refusal texts follow Appendix (هـ). *Gap:* server-side tool
+  calling + Output Guard + `ai_requests/ai_logs` (layer 3).
+- **§20 scheduling** — full status lifecycle plus exponential-backoff retry (≤3
+  attempts) and an idempotency key per post, honored by the publisher contract.
+- **§21 connectors** — the modular `PlatformPublisher` interface matches Appendix (د);
+  real OAuth connectors and KMS token encryption (ADR-006) are Phase 4.
+- **§29 database** — 21 tables with RLS today; the additional v2 tables land as an
+  additive migration (`0002_v2.sql`), never a rebuild.
 
 ## Extensibility contracts
 
