@@ -119,7 +119,9 @@ export class RemoteAssistantProvider implements AssistantProvider {
     try {
       // Cost control: only the last 6 turns travel to the server.
       const context = history.slice(-6).map((m) => ({ role: m.role, text: m.text }));
-      const { data, error } = await supabase().functions.invoke('ai-assistant', {
+      const { data, error } = await (
+        await supabase()
+      ).functions.invoke('ai-assistant', {
         body: { messages: context, userText },
       });
       if (error || typeof data?.reply !== 'string') {

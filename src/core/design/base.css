@@ -422,3 +422,30 @@ a {
   background: var(--fl-surface-2);
   color: var(--fl-primary);
 }
+
+/* ---------- Accessibility ---------- */
+.skip-link {
+  position: absolute;
+  inset-inline-start: var(--fl-sp-3);
+  top: -100px; /* parked off-screen until focused */
+  z-index: 200;
+  background: var(--fl-primary);
+  color: #fff;
+  padding: var(--fl-sp-2) var(--fl-sp-4);
+  border-radius: var(--fl-r-sm);
+  text-decoration: none;
+  transition: top 0.15s ease;
+}
+.skip-link:focus-visible {
+  top: var(--fl-sp-3);
+}
+
+/* Comfortable touch targets on touch devices (WCAG 2.5.5). */
+@media (pointer: coarse) {
+  .fl-btn--sm,
+  .fl-btn--icon,
+  .fl-chip {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}

@@ -7,6 +7,7 @@ import { ToastHost, toast } from '@core/ui/Toast';
 import { Modal } from '@core/ui/primitives';
 import {
   IconBell,
+  IconCalendar,
   IconCard,
   IconClose,
   IconFile,
@@ -45,6 +46,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/assistant', icon: IconSparkles, key: 'nav.ai' },
   { to: '/create', icon: IconPlus, key: 'nav.create', create: true },
   { to: '/library', icon: IconLibrary, key: 'nav.library' },
+  { to: '/publish', icon: IconCalendar, key: 'nav.publish' },
   { to: '/settings', icon: IconSettings, key: 'nav.settings' },
 ];
 
@@ -229,6 +231,9 @@ export function AppShell() {
 
   return (
     <div className="shell">
+      <a href="#main" className="skip-link">
+        {t('common.skipToContent')}
+      </a>
       <div className="shell__body">
         <header className="shell__header">
           <button
@@ -254,7 +259,7 @@ export function AppShell() {
           </button>
         </header>
         {!online && <div className="offline-banner">{t('common.offline')}</div>}
-        <main className="shell__main">
+        <main id="main" className="shell__main">
           <Outlet />
         </main>
       </div>

@@ -49,6 +49,13 @@ export function HomePage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [recent, setRecent] = useState<ContentProject[] | null>(null);
+  const [drafts, setDrafts] = useState<ContentProject[]>([]);
+  const [stats, setStats] = useState<{
+    drafts: number;
+    scheduled: number;
+    published: number;
+    total: number;
+  } | null>(null);
   const [upcoming, setUpcoming] = useState<ScheduledPost[]>([]);
   const [verse, setVerse] = useState<{ ayah: CachedAyah; surahName: string } | null>(null);
 
@@ -61,7 +68,17 @@ export function HomePage() {
       setRecent([]);
       return;
     }
-    void listProjects(user.id).then((projects) => setRecent(projects.slice(0, 6)));
+    void listProjects(user.id).then((projects) => {
+      setRecent(projects.slice(0, 6));
+      setDrafts(projects.filter((p) => p.status === 'draft').slice(0, 3));
+      setStats({
+        drafts: projects.filter((p) => p.status === 'draft').length,
+        scheduled: projects.filter((p) => p.status === 'scheduled' || p.status === 'publishing')
+          .length,
+        published: projects.filter((p) => p.status === 'published').length,
+        total: projects.length,
+      });
+    });
     void listScheduled(user.id).then((posts) =>
       setUpcoming(posts.filter((p) => p.status === 'scheduled').slice(0, 3)),
     );
@@ -71,8 +88,33 @@ export function HomePage() {
     <div className="fl-col" style={{ gap: 'var(--fl-sp-5)' }}>
       <header className="home-hero">
         <h1>{t('home.welcome')}</h1>
-        <p>{t('home.subtitle')}</p>
+        <p>
+          {user?.displayName ? `${user.displayName} — ` : ''}
+          {t('home.subtitle')}
+        </p>
       </header>
+
+      {stats !== null && stats.total > 0 && (
+        <section className="home-stats" aria-label={t('home.stats.total')}>
+          {(
+            [
+              ['drafts', stats.drafts],
+              ['scheduled', stats.scheduled],
+              ['published', stats.published],
+              ['total', stats.total],
+            ] as const
+          ).map(([key, value]) => (
+            <Link
+              key={key}
+              to={key === 'scheduled' ? '/publish' : '/library'}
+              className="fl-card home-stat"
+            >
+              <strong className="home-stat__value">{value}</strong>
+              <span className="fl-muted">{t(`home.stats.${key}`)}</span>
+            </Link>
+          ))}
+        </section>
+      )}
 
       <section className="home-quick" aria-label={t('home.subtitle')}>
         {QUICK_ACTIONS.map((action) => (
@@ -84,6 +126,47 @@ export function HomePage() {
           </Link>
         ))}
       </section>
+
+      {drafts.length > 0 && (
+        <section aria-label={t('home.continue')}>
+          <h2 className="fl-subtitle" style={{ marginBottom: 'var(--fl-sp-3)' }}>
+            {t('home.continue')}
+          </h2>
+          <div className="fl-col">
+            {drafts.map((project) => (
+              <button
+                key={project.id}
+                className="fl-card fl-row home-draft"
+                onClick={() => navigate(`/editor/${project.id}`)}
+              >
+                {project.thumbnail ? (
+                  <img
+                    src={project.thumbnail}
+                    alt=""
+                    className="home-draft__thumb"
+                    loading="lazy"
+                  />
+                ) : (
+                  <span className="home-draft__thumb home-draft__thumb--empty" aria-hidden>
+                    <IconImage size={20} />
+                  </span>
+                )}
+                <span className="fl-grow" style={{ textAlign: 'start' }}>
+                  <strong>{project.title}</strong>
+                  <span
+                    className="fl-muted"
+                    style={{ display: 'block', fontSize: 'var(--fl-fs-xs)' }}
+                    dir="ltr"
+                  >
+                    {new Date(project.updated_at).toLocaleString()}
+                  </span>
+                </span>
+                <span className="fl-badge fl-badge--pending">{t('schedule.status.draft')}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
 
       {verse && (
         <section
@@ -184,9 +267,12 @@ export function HomePage() {
 
       {upcoming.length > 0 && (
         <section>
-          <h2 className="fl-subtitle" style={{ marginBottom: 'var(--fl-sp-3)' }}>
-            {t('home.scheduled')}
-          </h2>
+          <div className="fl-row" style={{ marginBottom: 'var(--fl-sp-3)' }}>
+            <h2 className="fl-subtitle fl-grow">{t('home.scheduled')}</h2>
+            <Link to="/publish" className="fl-btn fl-btn--ghost fl-btn--sm">
+              {t('home.managePublishing')}
+            </Link>
+          </div>
           <div className="fl-col">
             {upcoming.map((post) => (
               <div key={post.id} className="fl-card fl-row">

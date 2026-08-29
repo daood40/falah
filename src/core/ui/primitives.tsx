@@ -1,8 +1,11 @@
 /** Shared UI primitives: modal, confirm dialog, empty/error states, spinner, field. */
 import type { ReactNode } from 'react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useI18n } from '../i18n';
 import { IconClose } from './icons';
+
+const FOCUSABLE =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 export function Modal({
   open,
@@ -17,27 +20,61 @@ export function Modal({
   children: ReactNode;
   sheet?: boolean;
 }) {
+  const t = useI18n((s) => s.t);
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  // Escape to close + focus trap (WCAG 2.4.3): Tab cycles inside the dialog,
+  // focus starts on the dialog, and returns to the opener when it closes.
   useEffect(() => {
     if (!open) return;
+    const opener = document.activeElement as HTMLElement | null;
+    dialogRef.current?.focus();
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+      if (e.key !== 'Tab' || !dialogRef.current) return;
+      const focusables = [...dialogRef.current.querySelectorAll<HTMLElement>(FOCUSABLE)].filter(
+        (el) => el.offsetParent !== null,
+      );
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (!first || !last) return;
+      const active = document.activeElement;
+      if (e.shiftKey && (active === first || active === dialogRef.current)) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      opener?.focus();
+    };
   }, [open, onClose]);
 
   if (!open) return null;
   const body = (
     <div
+      ref={dialogRef}
       className={sheet ? 'fl-sheet' : 'fl-modal'}
       role="dialog"
       aria-modal="true"
       aria-label={title}
+      tabIndex={-1}
       onClick={(e) => e.stopPropagation()}
     >
       <div className="fl-row" style={{ marginBottom: 'var(--fl-sp-4)' }}>
         <h2 className="fl-title fl-grow">{title}</h2>
-        <button className="fl-btn fl-btn--ghost fl-btn--icon" onClick={onClose} aria-label="close">
+        <button
+          className="fl-btn fl-btn--ghost fl-btn--icon"
+          onClick={onClose}
+          aria-label={t('common.close')}
+        >
           <IconClose size={18} />
         </button>
       </div>

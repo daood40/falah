@@ -59,6 +59,14 @@ export const router = createBrowserRouter(
           ),
         },
         {
+          path: 'publish',
+          element: page(() =>
+            import('@features/publishing/presentation/PublishPage').then((m) => ({
+              default: m.PublishPage,
+            })),
+          ),
+        },
+        {
           path: 'library',
           element: page(() =>
             import('@features/library/presentation/LibraryPage').then((m) => ({

@@ -1,5 +1,40 @@
 # Changelog
 
+## 1.5.0 — 2026-08-28
+
+Professional transformation release (full audit → targeted upgrades; see
+`docs/AUDIT.md` for the audit evidence).
+
+### Product & UX
+- **Home is now a real dashboard**: status stats (drafts/scheduled/published/all,
+  each linking to its destination), "pick up where you left off" drafts row,
+  personalized greeting, prioritized section order.
+- **New "Publish" destination** (6-item navigation per the product directive):
+  every scheduled post with live status, cancel/retry actions, repeat badges,
+  attempt counts, honest per-platform connection status.
+- **User templates**: save any design as a reusable template (structure only —
+  background, per-role text positions/styles, decorations; never the text),
+  apply it to any verse/hadith from the editor's Templates tab (tested:
+  sacred text and checksums byte-identical after apply).
+
+### Accessibility
+Focus trap + initial focus + focus return in all modals; skip-to-content link;
+translated dialog close labels; ≥44px touch targets on touch devices.
+
+### Performance
+Supabase SDK now loads lazily only when configured — main bundle cut from
+590 KB → 373 KB (gzip 179 → 124 KB, −31%). Robust Arabic font fallback stacks.
+
+### Security
+Content-Security-Policy meta (self-only scripts; allow-listed fonts, recitation
+CDN, and API hosts; `object-src 'none'`).
+
+### Testing
+60 passing (adds user-template structure guarantees) + a reusable live
+regression walkthrough (`scripts/regression-walkthrough.mjs`) that drives the
+production build in Chromium and asserts zero app console errors.
+
+
 ## 1.4.0 — 2026-08-28
 
 Master Directive v2 alignment (docs + incremental code, no rebuilds).

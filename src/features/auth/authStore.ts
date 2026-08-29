@@ -40,7 +40,7 @@ export const useAuth = create<AuthState>((set, get) => ({
   init: async () => {
     try {
       if (hasSupabase()) {
-        const { data } = await supabase().auth.getSession();
+        const { data } = await (await supabase()).auth.getSession();
         const session = data.session;
         if (session?.user) {
           set({
@@ -65,7 +65,7 @@ export const useAuth = create<AuthState>((set, get) => ({
   },
 
   signIn: async (email, password) => {
-    const { error } = await supabase().auth.signInWithPassword({ email, password });
+    const { error } = await (await supabase()).auth.signInWithPassword({ email, password });
     if (error) throw toAppError(error, 'auth');
     await get().init();
     const user = get().user;
@@ -73,7 +73,7 @@ export const useAuth = create<AuthState>((set, get) => ({
   },
 
   signUp: async (email, password) => {
-    const { error } = await supabase().auth.signUp({ email, password });
+    const { error } = await (await supabase()).auth.signUp({ email, password });
     if (error) throw toAppError(error, 'auth');
     await get().init();
   },
@@ -95,7 +95,7 @@ export const useAuth = create<AuthState>((set, get) => ({
   signOut: async () => {
     const user = get().user;
     if (user && !user.isLocal && hasSupabase()) {
-      await supabase().auth.signOut();
+      await (await supabase()).auth.signOut();
     }
     if (user?.isLocal) await kvSet(LOCAL_USER_KEY, null);
     if (user) await auditLog(user.id, 'auth_logout', {});

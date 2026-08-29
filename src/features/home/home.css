@@ -210,3 +210,51 @@
   font-size: 0.62rem;
   font-weight: 700;
 }
+
+/* ---------- Dashboard stats ---------- */
+.home-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--fl-sp-3);
+}
+.home-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--fl-sp-1);
+  padding: var(--fl-sp-3);
+  text-decoration: none;
+  color: inherit;
+  text-align: center;
+}
+.home-stat__value {
+  font-size: var(--fl-fs-xl);
+  color: var(--fl-primary);
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 420px) {
+  .home-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ---------- Continue-working drafts ---------- */
+.home-draft {
+  text-align: start;
+  cursor: pointer;
+}
+.home-draft__thumb {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--fl-r-sm);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.home-draft__thumb--empty {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--fl-surface-2);
+  color: var(--fl-text-2);
+  border: 1px dashed var(--fl-border);
+}
