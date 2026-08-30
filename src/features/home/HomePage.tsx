@@ -5,13 +5,14 @@ import { useI18n } from '@core/i18n';
 import type { ContentProject, ScheduledPost } from '@core/models/content';
 import { EmptyState, SkeletonList } from '@core/ui/primitives';
 import {
-  IconBook,
+  IconAiChat,
   IconCalendar,
   IconEdit,
+  IconFeather,
   IconImage,
-  IconScroll,
-  IconStory,
-  IconVideo,
+  IconQuranBook,
+  IconSend,
+  IconShelf,
 } from '@core/ui/icons';
 import { useAuth } from '@features/auth/authStore';
 import { listProjects } from '@features/library/data/libraryRepository';
@@ -22,11 +23,36 @@ import type { CachedAyah } from '@features/quran/domain/types';
 import './home.css';
 
 const QUICK_ACTIONS = [
-  { key: 'home.quickQuran', icon: IconBook, to: '/create/quran' },
-  { key: 'home.quickHadith', icon: IconScroll, to: '/create/hadith' },
-  { key: 'home.quickVideo', icon: IconVideo, to: '/create/quran?video=1' },
-  { key: 'home.quickStory', icon: IconStory, to: '/create/quran?format=ig-story' },
-];
+  {
+    key: 'home.qa.quran',
+    desc: 'home.qa.quranDesc',
+    icon: IconQuranBook,
+    to: '/create/quran',
+    tone: 'emerald',
+  },
+  {
+    key: 'home.qa.hadith',
+    desc: 'home.qa.hadithDesc',
+    icon: IconFeather,
+    to: '/create/hadith',
+    tone: 'gold',
+  },
+  { key: 'home.qa.ai', desc: 'home.qa.aiDesc', icon: IconAiChat, to: '/assistant', tone: 'blue' },
+  {
+    key: 'home.qa.publish',
+    desc: 'home.qa.publishDesc',
+    icon: IconSend,
+    to: '/publish',
+    tone: 'violet',
+  },
+  {
+    key: 'home.qa.library',
+    desc: 'home.qa.libraryDesc',
+    icon: IconShelf,
+    to: '/library',
+    tone: 'sand',
+  },
+] as const;
 
 /** Deterministic "verse of the day": rotates through short verified surahs. */
 async function verseOfDay(): Promise<{ ayah: CachedAyah; surahName: string } | null> {
@@ -88,10 +114,7 @@ export function HomePage() {
     <div className="fl-col" style={{ gap: 'var(--fl-sp-5)' }}>
       <header className="home-hero">
         <h1>{t('home.welcome')}</h1>
-        <p>
-          {user?.displayName ? `${user.displayName} — ` : ''}
-          {t('home.subtitle')}
-        </p>
+        <p className="home-hero__welcome">{t('home.welcomeText')}</p>
       </header>
 
       {stats !== null && stats.total > 0 && (
@@ -118,11 +141,16 @@ export function HomePage() {
 
       <section className="home-quick" aria-label={t('home.subtitle')}>
         {QUICK_ACTIONS.map((action) => (
-          <Link key={action.key} to={action.to} className="fl-card home-quick__item">
+          <Link
+            key={action.key}
+            to={action.to}
+            className={`home-quick__item home-quick__item--${action.tone}`}
+          >
             <span className="home-quick__icon" aria-hidden>
-              <action.icon size={32} />
+              <action.icon size={26} />
             </span>
-            <span>{t(action.key)}</span>
+            <span className="home-quick__title">{t(action.key)}</span>
+            <span className="home-quick__desc">{t(action.desc)}</span>
           </Link>
         ))}
       </section>

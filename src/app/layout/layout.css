@@ -263,3 +263,51 @@
   align-items: center;
   justify-content: center;
 }
+
+/* ---------- Brand logo chip + header search ---------- */
+.shell__logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  background: var(
+    --fl-grad-hero,
+    linear-gradient(150deg, var(--fl-green-700), var(--fl-green-900))
+  );
+  color: var(--fl-gold-500);
+  box-shadow: var(--fl-shadow-1);
+}
+.shell__search {
+  display: flex;
+  align-items: center;
+  gap: var(--fl-sp-2);
+  background: var(--fl-surface-2);
+  border: 1px solid var(--fl-border);
+  border-radius: var(--fl-r-full);
+  padding: 0 var(--fl-sp-3);
+  height: 38px;
+  min-width: 0;
+  flex: 0 1 260px;
+  color: var(--fl-text-2);
+  transition: border-color var(--fl-t-fast);
+}
+.shell__search:focus-within {
+  border-color: var(--fl-primary);
+}
+.shell__search input {
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--fl-text);
+  width: 100%;
+  min-width: 0;
+  font: inherit;
+  font-size: var(--fl-fs-sm);
+}
+@media (max-width: 430px) {
+  .shell__search {
+    flex-basis: 150px;
+  }
+}

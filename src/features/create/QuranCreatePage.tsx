@@ -92,6 +92,13 @@ export function QuranCreatePage() {
     runSearch(text);
   };
 
+  // Deep link from the header search bar (?q=...): run the search once on entry.
+  useEffect(() => {
+    const q = params.get('q');
+    if (q) onQueryChange(q);
+    // intentionally runs once with the initial URL
+  }, []);
+
   const pickResult = (ayah: CachedAyah) => {
     setSurah(ayah.surah);
     setFromAyah(ayah.ayah);

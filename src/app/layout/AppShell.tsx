@@ -10,6 +10,7 @@ import {
   IconCalendar,
   IconCard,
   IconClose,
+  IconFalah,
   IconFile,
   IconHelp,
   IconHome,
@@ -21,6 +22,7 @@ import {
   IconMoon,
   IconMosque,
   IconPlus,
+  IconSearch,
   IconSettings,
   IconShield,
   IconSparkles,
@@ -112,7 +114,10 @@ function Drawer({ open, onClose }: { open: boolean; onClose: () => void }) {
       <nav className="drawer" aria-label={t('common.menu')}>
         <div className="fl-row" style={{ marginBottom: 'var(--fl-sp-3)' }}>
           <span className="shell__brand fl-grow">
-            <IconMosque size={22} /> {t('app.name')}
+            <span className="shell__logo" aria-hidden>
+              <IconFalah size={20} />
+            </span>
+            {t('app.name')}
           </span>
           <button
             className="fl-btn fl-btn--ghost fl-btn--icon"
@@ -211,6 +216,8 @@ function Drawer({ open, onClose }: { open: boolean; onClose: () => void }) {
 
 export function AppShell() {
   const t = useI18n((s) => s.t);
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
   const [drawerOpen, setDrawerOpen] = useState(false);
   const online = useOnline();
   const { user, initializing, continueLocal } = useAuth();
@@ -244,9 +251,33 @@ export function AppShell() {
             <IconMenu size={20} />
           </button>
           <span className="shell__brand">
-            <IconMosque size={22} /> {t('app.name')}
+            <span className="shell__logo" aria-hidden>
+              <IconFalah size={20} />
+            </span>
+            {t('app.name')}
           </span>
           <span className="fl-grow" />
+          <form
+            className="shell__search"
+            role="search"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const q = searchQuery.trim();
+              if (q) {
+                navigate(`/create/quran?q=${encodeURIComponent(q)}`);
+                setSearchQuery('');
+              }
+            }}
+          >
+            <IconSearch size={16} aria-hidden />
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              type="search"
+              placeholder={t('shell.search')}
+              aria-label={t('shell.search')}
+            />
+          </form>
           <button
             className="fl-btn fl-btn--ghost fl-btn--icon shell__bell"
             aria-label={t('notifications.title')}

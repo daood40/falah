@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { useI18n } from '@core/i18n';
 import { newId } from '@core/utils/id';
 import { useAuth } from '@features/auth/authStore';
-import { IconSparkles } from '@core/ui/icons';
+import { IconAiChat, IconFalah } from '@core/ui/icons';
 import { entitlementsFor } from '@core/entitlements/entitlements';
 import type { AssistantMessage } from '../domain/assistant';
 import { defaultAssistantProvider } from '../data/aiProvider';
@@ -51,24 +51,31 @@ export function AiAssistantPage() {
 
   return (
     <div className="assistant">
-      <header>
+      <header className="assistant__head">
         <h1 className="fl-title fl-row" style={{ gap: 'var(--fl-sp-2)' }}>
-          <IconSparkles size={24} /> {t('ai.title')}
+          <span className="assistant__brandicon" aria-hidden>
+            <IconFalah size={18} />
+          </span>
+          {t('ai.title')}
         </h1>
-        <p className="fl-muted">{t('ai.disclaimer')}</p>
       </header>
 
       <div className="assistant__log" role="log" aria-live="polite">
         {messages.length === 0 && (
-          <div className="fl-col" style={{ alignItems: 'flex-start' }}>
-            <span className="fl-muted">{t('ai.suggestions')}:</span>
-            <div className="fl-row fl-wrap">
+          <div className="assistant__welcome">
+            <span className="assistant__welcome-icon" aria-hidden>
+              <IconAiChat size={34} />
+            </span>
+            <h2>{t('ai.welcomeTitle')}</h2>
+            <p className="fl-muted">{t('ai.welcomeText')}</p>
+            <div className="assistant__sugs">
               {SUGGESTIONS.map((key) => (
                 <button key={key} className="fl-chip" onClick={() => send(t(key))}>
                   {t(key)}
                 </button>
               ))}
             </div>
+            <p className="fl-muted assistant__disclaimer">{t('ai.disclaimer')}</p>
           </div>
         )}
         {messages.map((m) => (

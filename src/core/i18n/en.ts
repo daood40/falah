@@ -4,7 +4,7 @@ export const en: Record<string, string> = {
   'app.tagline': 'Trusted Islamic content creation platform',
 
   'nav.home': 'Home',
-  'nav.ai': 'AI Assistant',
+  'nav.ai': 'FALAH AI',
   'nav.create': 'Create',
   'nav.library': 'Library',
   'nav.settings': 'Settings',
@@ -44,11 +44,20 @@ export const en: Record<string, string> = {
   'menu.login': 'Sign in',
 
   'home.welcome': 'Assalamu alaikum',
+  'home.welcomeText':
+    'Welcome to FALAH — your calm space to craft verified verses and hadiths beautifully, and share them with confidence.',
+  'home.qa.quran': 'Holy Quran',
+  'home.qa.quranDesc': 'Browse, search and design a verified verse',
+  'home.qa.hadith': 'Hadith',
+  'home.qa.hadithDesc': 'Hadiths with sources and grades',
+  'home.qa.ai': 'FALAH AI',
+  'home.qa.aiDesc': 'Ideas, titles and design — never authoring texts',
+  'home.qa.publish': 'Scheduling & auto-publish',
+  'home.qa.publishDesc': 'Schedule content and let it publish itself',
+  'home.qa.library': 'My library',
+  'home.qa.libraryDesc': 'All your work, drafts and templates',
+  'shell.search': 'Search for a verse…',
   'home.subtitle': 'What would you like to create today?',
-  'home.quickQuran': 'Ayah design',
-  'home.quickHadith': 'Hadith design',
-  'home.quickVideo': 'Short video',
-  'home.quickStory': 'Story',
   'home.recent': 'Recent work',
   'home.templates': 'Templates',
   'home.scheduled': 'Upcoming scheduled',
@@ -194,7 +203,10 @@ export const en: Record<string, string> = {
   'schedule.notConnected': 'Platform not connected — link your account in Settings',
   'schedule.pastTime': 'Pick a future time',
 
-  'ai.title': 'FALAH Assistant',
+  'ai.title': 'FALAH AI',
+  'ai.welcomeTitle': 'How can I help you today?',
+  'ai.welcomeText':
+    'I help with content ideas, titles, captions, hashtags, colors and layout — and fetch sacred texts exclusively from verified sources.',
   'ai.placeholder': 'Ask me about design, ideas, titles…',
   'ai.disclaimer':
     'The assistant never authors religious texts — scripture comes exclusively from verified sources',

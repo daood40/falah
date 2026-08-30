@@ -5,7 +5,7 @@ export const ar: Record<string, string> = {
 
   // Navigation
   'nav.home': 'الرئيسية',
-  'nav.ai': 'مساعد AI',
+  'nav.ai': 'فلاح AI',
   'nav.create': 'إنشاء',
   'nav.library': 'مكتبتي',
   'nav.settings': 'الإعدادات',
@@ -47,11 +47,20 @@ export const ar: Record<string, string> = {
 
   // Home
   'home.welcome': 'السلام عليكم',
+  'home.welcomeText':
+    'أهلًا بك في فلاح — مساحتك الهادئة لصياغة آيات وأحاديث موثقة بتصميم يليق بها، ومشاركتها بطمأنينة.',
+  'home.qa.quran': 'القرآن الكريم',
+  'home.qa.quranDesc': 'تصفح وابحث وصمم آية موثقة',
+  'home.qa.hadith': 'الحديث الشريف',
+  'home.qa.hadithDesc': 'أحاديث بمصادرها ودرجاتها',
+  'home.qa.ai': 'فلاح AI',
+  'home.qa.aiDesc': 'أفكار وعناوين وتصميم — بلا تأليف نصوص',
+  'home.qa.publish': 'الجدولة والنشر التلقائي',
+  'home.qa.publishDesc': 'جدول محتواك ودعه يُنشر تلقائيًا',
+  'home.qa.library': 'مكتبتي',
+  'home.qa.libraryDesc': 'كل أعمالك ومسوداتك وقوالبك',
+  'shell.search': 'ابحث عن آية…',
   'home.subtitle': 'ماذا تريد أن تصنع اليوم؟',
-  'home.quickQuran': 'تصميم آية',
-  'home.quickHadith': 'تصميم حديث',
-  'home.quickVideo': 'فيديو قصير',
-  'home.quickStory': 'قصة (Story)',
   'home.recent': 'آخر أعمالك',
   'home.templates': 'قوالب جاهزة',
   'home.scheduled': 'المجدولة القادمة',
@@ -203,7 +212,10 @@ export const ar: Record<string, string> = {
   'schedule.pastTime': 'اختر وقتًا في المستقبل',
 
   // AI
-  'ai.title': 'مساعد فلاح',
+  'ai.title': 'فلاح AI',
+  'ai.welcomeTitle': 'كيف أساعدك اليوم؟',
+  'ai.welcomeText':
+    'أساعدك في أفكار المحتوى والعناوين والوصف والوسوم والألوان والتخطيط — وأجلب النصوص الشرعية حصريًا من المصادر الموثقة.',
   'ai.placeholder': 'اسألني عن التصميم، الأفكار، العناوين…',
   'ai.disclaimer': 'المساعد لا يؤلف نصوصًا دينية — النصوص الشرعية تأتي حصريًا من المصادر الموثقة',
   'ai.send': 'إرسال',
