@@ -59,6 +59,14 @@ export const router = createBrowserRouter(
           ),
         },
         {
+          path: 'tasbih',
+          element: page(() =>
+            import('@features/tasbih/presentation/TasbihPage').then((m) => ({
+              default: m.TasbihPage,
+            })),
+          ),
+        },
+        {
           path: 'publish',
           element: page(() =>
             import('@features/publishing/presentation/PublishPage').then((m) => ({

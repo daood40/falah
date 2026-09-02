@@ -1,0 +1,52 @@
+.tasbih {
+  align-items: center;
+}
+
+.tasbih__pad {
+  position: relative;
+  width: min(78vw, 320px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1px solid var(--fl-border);
+  background: conic-gradient(
+    var(--fl-primary) calc(var(--tasbih-progress, 0) * 360deg),
+    var(--fl-surface-2) 0
+  );
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--fl-sp-1);
+  cursor: pointer;
+  transition: transform var(--fl-t-fast);
+  padding: 8px;
+}
+.tasbih__pad:active {
+  transform: scale(0.97);
+}
+.tasbih__pad::before {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: var(--fl-surface);
+}
+.tasbih__pad > * {
+  position: relative;
+}
+.tasbih__dhikr {
+  font-size: var(--fl-fs-xl);
+  color: var(--fl-text);
+  padding: 0 var(--fl-sp-4);
+  text-align: center;
+}
+.tasbih__count {
+  font-size: 3.4rem;
+  font-weight: 800;
+  color: var(--fl-primary);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.tasbih__target {
+  font-size: var(--fl-fs-sm);
+}

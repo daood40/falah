@@ -8,7 +8,13 @@ import { EmptyState, Field, Spinner } from '@core/ui/primitives';
 import { toast } from '@core/ui/Toast';
 import { useAuth } from '@features/auth/authStore';
 import { useAudio } from '@features/audio/audioStore';
-import { IconPause, IconPlay, IconSearch, IconVideo } from '@core/ui/icons';
+import { IconCopy, IconPause, IconPlay, IconSearch, IconStar, IconVideo } from '@core/ui/icons';
+import {
+  isFavoriteAyah,
+  listFavoriteAyahs,
+  toggleFavoriteAyah,
+  type FavoriteAyah,
+} from '@features/quran/data/favoritesRepository';
 import {
   ayahAudioUrl,
   getAyahRange,
@@ -46,6 +52,42 @@ export function QuranCreatePage() {
   const [preview, setPreview] = useState<CachedAyah[]>([]);
   const [loadingPreview, setLoadingPreview] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [favorites, setFavorites] = useState<FavoriteAyah[]>([]);
+  const [isFav, setIsFav] = useState(false);
+
+  useEffect(() => {
+    if (user) void listFavoriteAyahs(user.id).then(setFavorites);
+  }, [user]);
+
+  useEffect(() => {
+    if (user) void isFavoriteAyah(user.id, surah, fromAyah).then(setIsFav);
+  }, [user, surah, fromAyah]);
+
+  const toggleFav = async () => {
+    const first = preview[0];
+    if (!user || !first) return;
+    const now = await toggleFavoriteAyah(user.id, {
+      surah,
+      ayah: fromAyah,
+      surahName: surahMeta?.name ?? String(surah),
+      text: first.text,
+    });
+    setIsFav(now);
+    setFavorites(await listFavoriteAyahs(user.id));
+    toast('success', t(now ? 'create.favAdded' : 'create.favRemoved'));
+  };
+
+  const copyAyah = async () => {
+    const first = preview[0];
+    if (!first) return;
+    const text = `${preview.map((a) => `${a.text} ﴿${a.ayah}﴾`).join(' ')}\n[سورة ${surahMeta?.name} ${fromAyah}${count > 1 ? `-${fromAyah + count - 1}` : ''}] — ${first.source.source_name}`;
+    try {
+      await navigator.clipboard.writeText(text);
+      toast('success', t('create.copied'));
+    } catch {
+      toast('error', t('errors.unknown'));
+    }
+  };
 
   const surahMeta = surahByNumber(surah);
   const maxAyah = surahMeta?.ayahCount ?? 1;
@@ -321,10 +363,50 @@ export function QuranCreatePage() {
             )}
             <div className="ayah-card__meta">
               <span>{preview[0]?.source.source_name}</span>
+              <span className="fl-grow" />
+              <button
+                className="fl-btn fl-btn--ghost fl-btn--icon"
+                aria-label={t('create.copyAyah')}
+                title={t('create.copyAyah')}
+                onClick={() => void copyAyah()}
+              >
+                <IconCopy size={17} />
+              </button>
+              <button
+                className="fl-btn fl-btn--ghost fl-btn--icon"
+                aria-label={t(isFav ? 'create.favRemoved' : 'create.favAdd')}
+                title={t('create.favAdd')}
+                aria-pressed={isFav}
+                style={isFav ? { color: 'var(--fl-gold-500)' } : undefined}
+                onClick={() => void toggleFav()}
+              >
+                <IconStar size={17} />
+              </button>
               <span className="fl-badge fl-badge--verified">{t('source.verified')}</span>
             </div>
           </div>
         )
+      )}
+
+      {favorites.length > 0 && (
+        <div className="fl-row fl-wrap" aria-label={t('create.favorites')}>
+          <span className="fl-muted" style={{ fontSize: 'var(--fl-fs-sm)' }}>
+            <IconStar size={14} /> {t('create.favorites')}:
+          </span>
+          {favorites.slice(0, 8).map((f) => (
+            <button
+              key={f.id}
+              className="fl-chip"
+              onClick={() => {
+                setSurah(f.surah);
+                setFromAyah(f.ayah);
+                setCount(1);
+              }}
+            >
+              {f.surahName} {f.ayah}
+            </button>
+          ))}
+        </div>
       )}
 
       <Field label={t('create.format')}>

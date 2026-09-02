@@ -10,6 +10,7 @@ import type { CachedAyah, CachedSurah } from '@features/quran/domain/types';
 import type { HadithRecord } from '@features/hadith/domain/types';
 import type { AppNotification } from '../notifications/types';
 import type { UserTemplate } from '@features/templates/userTemplates';
+import type { FavoriteAyah } from '@features/quran/data/favoritesRepository';
 
 export interface KvEntry {
   key: string;
@@ -25,6 +26,7 @@ export class FalahDb extends Dexie {
   auditLogs!: Table<AuditEntry, string>;
   notifications!: Table<AppNotification, string>;
   userTemplates!: Table<UserTemplate, string>;
+  ayahFavorites!: Table<FavoriteAyah, string>;
   kv!: Table<KvEntry, string>;
 
   constructor() {
@@ -43,6 +45,9 @@ export class FalahDb extends Dexie {
     });
     this.version(3).stores({
       userTemplates: 'id, user_id, updated_at',
+    });
+    this.version(4).stores({
+      ayahFavorites: 'id, user_id, added_at',
     });
   }
 }

@@ -22,6 +22,7 @@ import {
   IconMoon,
   IconMosque,
   IconPlus,
+  IconRepeat,
   IconSearch,
   IconSettings,
   IconShield,
@@ -145,6 +146,9 @@ function Drawer({ open, onClose }: { open: boolean; onClose: () => void }) {
           label={t('menu.notifications')}
           onClick={() => go('/settings')}
         />
+
+        <div className="drawer__section">{t('menu.tools')}</div>
+        <DrawerItem icon={IconRepeat} label={t('tasbih.title')} onClick={() => go('/tasbih')} />
 
         <div className="drawer__section">{t('menu.theme')}</div>
         <div className="fl-row fl-wrap" role="radiogroup" aria-label={t('menu.theme')}>

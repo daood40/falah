@@ -1,5 +1,28 @@
 # Changelog
 
+## 1.6.0 — 2026-09-02
+
+Market-parity release: the daily-companion features users love in the
+most-downloaded Islamic apps, minus their documented problems (ads,
+location-data selling, broken offline, paywalled sacred content). Research
+and evidence in `docs/MARKET.md`.
+
+### Added
+- **Hijri date** (Umm al-Qura via Intl, fully on-device) in the home hero.
+- **Upcoming occasions strip** with day countdowns (Ramadan, both Eids,
+  Arafah, Ashura, Hijri new year) linking straight into content creation.
+- **Hadith of the day** on home from the verified seed, opening in the creator.
+- **Ayah favorites**: star any verse, jump back to it from saved-verse chips
+  in the Quran creator (offline, per user).
+- **Copy with attribution**: one tap copies the verse text + [surah:ayah]
+  + source name.
+- **Tasbih (السبحة)**: circular counter with target rounds (33/34/100),
+  haptic tick, persisted daily total; phrases occurring verbatim in the
+  verified Quran text carry their ayah reference. In the drawer under Tools.
+
+### Tests
+65 passing (adds hijri/occasions and favorites suites).
+
 ## 1.5.0 — 2026-08-28
 
 Professional transformation release (full audit → targeted upgrades; see
