@@ -10,7 +10,10 @@ import { hasSupabase, supabase } from '@core/supabase/client';
 import { newId } from '@core/utils/id';
 import type { AssistantMessage } from '../domain/assistant';
 import {
+  REFUSALS,
+  asksForFatwa,
   asksForSacredText,
+  asksToAlterSacred,
   extractSearchPhrase,
   findVerifiedReferences,
 } from '../domain/assistant';
@@ -27,11 +30,15 @@ function message(text: string, references?: AssistantMessage['references']): Ass
 /* ---------- Source Lock router (shared by all providers) ---------- */
 
 export async function sourceLockRouter(userText: string): Promise<AssistantMessage | null> {
+  // Canonical refusals (v2 Appendix هـ) come first: fatwa and sacred-text
+  // alteration are refused outright, never searched.
+  if (asksForFatwa(userText)) return message(REFUSALS.fatwa);
+  if (asksToAlterSacred(userText)) return message(REFUSALS.editSacred);
   if (!asksForSacredText(userText)) return null;
   const references = await findVerifiedReferences(extractSearchPhrase(userText));
   if (references.length === 0) {
     return message(
-      'لا أستطيع كتابة نص ديني من عندي — هذه قاعدة ثابتة في فلاح. لم أجد نتيجة مطابقة في المصادر الموثقة المتاحة. جرّب البحث برقم الآية (مثل ٢:٢٥٥) أو بكلمات من النص نفسه، أو أضف مصدرًا موثقًا من الإعدادات.',
+      `${REFUSALS.noSource}\nلا أؤلف نصًا دينيًا من عندي — جرّب البحث برقم الآية (مثل ٢:٢٥٥) أو بكلمات من النص نفسه.`,
     );
   }
   return message(
@@ -112,7 +119,9 @@ export class RemoteAssistantProvider implements AssistantProvider {
     try {
       // Cost control: only the last 6 turns travel to the server.
       const context = history.slice(-6).map((m) => ({ role: m.role, text: m.text }));
-      const { data, error } = await supabase().functions.invoke('ai-assistant', {
+      const { data, error } = await (
+        await supabase()
+      ).functions.invoke('ai-assistant', {
         body: { messages: context, userText },
       });
       if (error || typeof data?.reply !== 'string') {

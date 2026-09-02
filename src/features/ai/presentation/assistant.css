@@ -52,3 +52,54 @@
   background: var(--fl-grad-primary);
   color: #ffffff;
 }
+
+/* ---------- FALAH AI: simple welcoming layout ---------- */
+.assistant__brandicon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--fl-grad-hero);
+  color: var(--fl-gold-500);
+}
+.assistant__welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--fl-sp-3);
+  padding: var(--fl-sp-6) var(--fl-sp-4);
+  margin: auto 0;
+}
+.assistant__welcome h2 {
+  font-size: var(--fl-fs-xl);
+  font-weight: 800;
+}
+.assistant__welcome > .fl-muted {
+  max-width: 30rem;
+  line-height: 1.8;
+}
+.assistant__welcome-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 68px;
+  height: 68px;
+  border-radius: 45%;
+  background: var(--fl-grad-hero);
+  color: var(--fl-gold-500);
+  box-shadow: var(--fl-shadow-2);
+}
+.assistant__sugs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--fl-sp-2);
+  max-width: 34rem;
+}
+.assistant__disclaimer {
+  font-size: var(--fl-fs-xs);
+  opacity: 0.85;
+}

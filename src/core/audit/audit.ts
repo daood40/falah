@@ -12,6 +12,7 @@ export type AuditAction =
   | 'content_exported'
   | 'content_published'
   | 'publish_failed'
+  | 'publish_retry_scheduled'
   | 'schedule_created'
   | 'schedule_cancelled'
   | 'account_settings_changed'

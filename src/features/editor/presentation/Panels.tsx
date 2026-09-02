@@ -1,5 +1,5 @@
 /** Editor side panels: insert, layers, element properties, background, templates. */
-import type { ChangeEvent } from 'react';
+import { useEffect, useState, type ChangeEvent } from 'react';
 import { useI18n } from '@core/i18n';
 import type { CanvasElement, ShapeElement, TextElement } from '@core/models/content';
 import { Field } from '@core/ui/primitives';
@@ -17,6 +17,15 @@ import { newShapeElement, newTextElement } from '../domain/projectFactory';
 import { useEditor } from '../domain/editorStore';
 import { newId } from '@core/utils/id';
 import { TEMPLATES, applyTemplate, type DesignTemplate } from '@features/templates/templates';
+import {
+  applyUserTemplate,
+  deleteUserTemplate,
+  listUserTemplates,
+  saveUserTemplate,
+  templateFromProject,
+  type UserTemplate,
+} from '@features/templates/userTemplates';
+import { toast } from '@core/ui/Toast';
 import { useAuth } from '@features/auth/authStore';
 import { entitlementsFor } from '@core/entitlements/entitlements';
 
@@ -493,6 +502,14 @@ export function TemplatesPanel() {
   const t = useI18n((s) => s.t);
   const { project, updateProject } = useEditor();
   const { user } = useAuth();
+  const [mine, setMine] = useState<UserTemplate[]>([]);
+  const [name, setName] = useState('');
+  const userId = user?.id;
+
+  useEffect(() => {
+    if (userId) void listUserTemplates(userId).then(setMine);
+  }, [userId]);
+
   if (!project) return null;
   const premiumAllowed = entitlementsFor(user?.plan ?? 'free').premium_templates;
 
@@ -501,28 +518,100 @@ export function TemplatesPanel() {
     updateProject({ background: styled.background, elements: styled.elements });
   };
 
+  const saveCurrent = async () => {
+    if (!userId) return;
+    const tpl = templateFromProject(project, userId, name.trim() || project.title);
+    await saveUserTemplate(tpl);
+    setMine(await listUserTemplates(userId));
+    setName('');
+    toast('success', t('templates.saved'));
+  };
+
+  const applyMine = (tpl: UserTemplate) => {
+    const styled = applyUserTemplate(project, tpl);
+    updateProject({ background: styled.background, elements: styled.elements });
+  };
+
+  const removeMine = async (id: string) => {
+    if (!userId) return;
+    await deleteUserTemplate(id);
+    setMine(await listUserTemplates(userId));
+    toast('info', t('templates.deleted'));
+  };
+
   return (
-    <div className="tpl-grid">
-      {TEMPLATES.map((template) => {
-        const locked = template.premium && !premiumAllowed;
-        return (
-          <button
-            key={template.id}
-            className="tpl-card"
-            onClick={() => !locked && apply(template)}
-            disabled={locked}
-            title={locked ? t('templates.premiumOnly') : template.nameAr}
-          >
-            <TemplateSwatch template={template} />
-            <span className="tpl-card__name">
-              {template.nameAr}
-              {template.premium && (
-                <span className="fl-badge fl-badge--pending">{t('templates.premium')}</span>
-              )}
-            </span>
+    <div className="fl-col" style={{ gap: 'var(--fl-sp-4)' }}>
+      <section aria-label={t('templates.mine')}>
+        <h3 className="fl-subtitle" style={{ marginBottom: 'var(--fl-sp-2)' }}>
+          {t('templates.mine')}
+        </h3>
+        <div className="fl-row" style={{ marginBottom: 'var(--fl-sp-2)' }}>
+          <input
+            className="fl-input fl-grow"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder={t('templates.namePlaceholder')}
+            aria-label={t('templates.namePlaceholder')}
+          />
+          <button className="fl-btn fl-btn--sm fl-btn--primary" onClick={() => void saveCurrent()}>
+            {t('editor.save')}
           </button>
-        );
-      })}
+        </div>
+        {mine.length === 0 ? (
+          <p className="fl-muted" style={{ margin: 0, fontSize: 'var(--fl-fs-xs)' }}>
+            {t('templates.mineEmpty')}
+          </p>
+        ) : (
+          <div className="fl-col">
+            {mine.map((tpl) => (
+              <div key={tpl.id} className="fl-row fl-card" style={{ padding: 'var(--fl-sp-2)' }}>
+                <button
+                  className="fl-btn fl-btn--ghost fl-btn--sm fl-grow"
+                  style={{ justifyContent: 'flex-start' }}
+                  onClick={() => applyMine(tpl)}
+                >
+                  {tpl.name}
+                </button>
+                <button
+                  className="fl-btn fl-btn--ghost fl-btn--icon"
+                  aria-label={`${t('editor.delete')} — ${tpl.name}`}
+                  onClick={() => void removeMine(tpl.id)}
+                >
+                  <IconTrash size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section aria-label={t('editor.templates')}>
+        <h3 className="fl-subtitle" style={{ marginBottom: 'var(--fl-sp-2)' }}>
+          {t('editor.templates')}
+        </h3>
+        <div className="tpl-grid">
+          {TEMPLATES.map((template) => {
+            const locked = template.premium && !premiumAllowed;
+            return (
+              <button
+                key={template.id}
+                className="tpl-card"
+                onClick={() => !locked && apply(template)}
+                disabled={locked}
+                title={locked ? t('templates.premiumOnly') : template.nameAr}
+              >
+                <TemplateSwatch template={template} />
+                <span className="tpl-card__name">
+                  {template.nameAr}
+                  {template.premium && (
+                    <span className="fl-badge fl-badge--pending">{t('templates.premium')}</span>
+                  )}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </section>
     </div>
   );
 }

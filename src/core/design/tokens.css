@@ -39,8 +39,13 @@
 
   /* Typography */
   --fl-font-ui: 'Cairo', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  --fl-font-quran: 'Amiri Quran', 'Scheherazade New', 'Amiri', serif;
-  --fl-font-naskh: 'Scheherazade New', 'Amiri', serif;
+  /* Robust Arabic fallbacks: if webfonts fail, system Arabic faces keep the
+     text fully shaped and readable instead of falling to a Latin serif. */
+  --fl-font-quran:
+    'Amiri Quran', 'Scheherazade New', 'Amiri', 'Noto Naskh Arabic', 'Traditional Arabic',
+    'Geeza Pro', serif;
+  --fl-font-naskh:
+    'Scheherazade New', 'Amiri', 'Noto Naskh Arabic', 'Traditional Arabic', 'Geeza Pro', serif;
   --fl-fs-xs: 0.75rem;
   --fl-fs-sm: 0.875rem;
   --fl-fs-md: 1rem;

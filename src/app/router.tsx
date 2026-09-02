@@ -18,74 +18,84 @@ const basename = import.meta.env.BASE_URL.replace(/\/$/, '') || '/';
 
 export const router = createBrowserRouter(
   [
-  {
-    path: '/',
-    element: <AppShell />,
-    children: [
-      {
-        index: true,
-        element: page(() =>
-          import('@features/home/HomePage').then((m) => ({ default: m.HomePage })),
-        ),
-      },
-      {
-        path: 'create',
-        element: page(() =>
-          import('@features/create/CreateHubPage').then((m) => ({ default: m.CreateHubPage })),
-        ),
-      },
-      {
-        path: 'create/quran',
-        element: page(() =>
-          import('@features/create/QuranCreatePage').then((m) => ({ default: m.QuranCreatePage })),
-        ),
-      },
-      {
-        path: 'create/hadith',
-        element: page(() =>
-          import('@features/create/HadithCreatePage').then((m) => ({
-            default: m.HadithCreatePage,
-          })),
-        ),
-      },
-      {
-        path: 'editor/:id',
-        element: page(() =>
-          import('@features/editor/presentation/EditorPage').then((m) => ({
-            default: m.EditorPage,
-          })),
-        ),
-      },
-      {
-        path: 'library',
-        element: page(() =>
-          import('@features/library/presentation/LibraryPage').then((m) => ({
-            default: m.LibraryPage,
-          })),
-        ),
-      },
-      {
-        path: 'assistant',
-        element: page(() =>
-          import('@features/ai/presentation/AiAssistantPage').then((m) => ({
-            default: m.AiAssistantPage,
-          })),
-        ),
-      },
-      {
-        path: 'settings',
-        element: page(() =>
-          import('@features/settings/SettingsPage').then((m) => ({ default: m.SettingsPage })),
-        ),
-      },
-      {
-        path: 'auth',
-        element: page(() =>
-          import('@features/auth/AuthPage').then((m) => ({ default: m.AuthPage })),
-        ),
-      },
-    ],
-  },
-],
+    {
+      path: '/',
+      element: <AppShell />,
+      children: [
+        {
+          index: true,
+          element: page(() =>
+            import('@features/home/HomePage').then((m) => ({ default: m.HomePage })),
+          ),
+        },
+        {
+          path: 'create',
+          element: page(() =>
+            import('@features/create/CreateHubPage').then((m) => ({ default: m.CreateHubPage })),
+          ),
+        },
+        {
+          path: 'create/quran',
+          element: page(() =>
+            import('@features/create/QuranCreatePage').then((m) => ({
+              default: m.QuranCreatePage,
+            })),
+          ),
+        },
+        {
+          path: 'create/hadith',
+          element: page(() =>
+            import('@features/create/HadithCreatePage').then((m) => ({
+              default: m.HadithCreatePage,
+            })),
+          ),
+        },
+        {
+          path: 'editor/:id',
+          element: page(() =>
+            import('@features/editor/presentation/EditorPage').then((m) => ({
+              default: m.EditorPage,
+            })),
+          ),
+        },
+        {
+          path: 'publish',
+          element: page(() =>
+            import('@features/publishing/presentation/PublishPage').then((m) => ({
+              default: m.PublishPage,
+            })),
+          ),
+        },
+        {
+          path: 'library',
+          element: page(() =>
+            import('@features/library/presentation/LibraryPage').then((m) => ({
+              default: m.LibraryPage,
+            })),
+          ),
+        },
+        {
+          path: 'assistant',
+          element: page(() =>
+            import('@features/ai/presentation/AiAssistantPage').then((m) => ({
+              default: m.AiAssistantPage,
+            })),
+          ),
+        },
+        {
+          path: 'settings',
+          element: page(() =>
+            import('@features/settings/SettingsPage').then((m) => ({ default: m.SettingsPage })),
+          ),
+        },
+        {
+          path: 'auth',
+          element: page(() =>
+            import('@features/auth/AuthPage').then((m) => ({ default: m.AuthPage })),
+          ),
+        },
+      ],
+    },
+  ],
   { basename },
 );

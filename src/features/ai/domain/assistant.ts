@@ -31,6 +31,38 @@ export interface SacredReference {
   href: string;
 }
 
+/**
+ * Canonical refusal texts — Master Directive v2, Appendix (هـ). Verbatim;
+ * never reworded. A trailing hint may follow, the canonical sentence leads.
+ */
+export const REFUSALS = {
+  noSource: 'لم أجد مصدرًا موثوقًا كافيًا للتحقق.',
+  fatwa: 'هذا خارج نطاق المساعد. يمكنك الرجوع إلى جهة إفتاء معتمدة.',
+  editSacred: 'لا يمكن تعديل النص الشرعي؛ يمكنني تعديل التصميم أو الصياغة المصاحبة فقط.',
+} as const;
+
+/** Detects fatwa / religious-ruling requests (always refused — v2 §7, §17). */
+export function asksForFatwa(prompt: string): boolean {
+  return [
+    /فتوى|فتاوى|أفتني|افتني/,
+    /هل يجوز|هل يجب|هل يحرم|أيجوز/,
+    /ما حكم|حكم الشرع|حكم الدين|الحكم الشرعي/,
+    /حلال أم حرام|حرام أم حلال|حلال ولا حرام/,
+    /\bfatwa\b|is it (haram|halal|permissible)/i,
+  ].some((p) => p.test(prompt));
+}
+
+/** Detects requests to alter sacred text (rewording, shortening, "simplifying"). */
+export function asksToAlterSacred(prompt: string): boolean {
+  // Deliberately verb-specific: bare «غير»/«عدل» are common non-alteration words
+  // (negation, "justice"), so only explicit alteration forms match.
+  const alter =
+    /(^|\s)(عدّل|غيّر|حرّف|اختصر|بسّط)\s|تعديل|تحريف|إعادة صياغة|أعد صياغة|اعد صياغة|احذف كلمة|أضف كلمة|paraphrase|reword|shorten|simplify/i;
+  const sacred =
+    /الآية|آية|الحديث|حديث|السورة|سورة|النص القرآني|النص الشرعي|verse|ayah|hadith|surah/i;
+  return alter.test(prompt) && sacred.test(prompt);
+}
+
 /** Detects prompts that ask the model to produce religious text. */
 export function asksForSacredText(prompt: string): boolean {
   const patterns = [

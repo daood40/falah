@@ -7,8 +7,10 @@ import { ToastHost, toast } from '@core/ui/Toast';
 import { Modal } from '@core/ui/primitives';
 import {
   IconBell,
+  IconCalendar,
   IconCard,
   IconClose,
+  IconFalah,
   IconFile,
   IconHelp,
   IconHome,
@@ -20,6 +22,7 @@ import {
   IconMoon,
   IconMosque,
   IconPlus,
+  IconSearch,
   IconSettings,
   IconShield,
   IconSparkles,
@@ -28,6 +31,7 @@ import {
   type IconProps,
 } from '@core/ui/icons';
 import { useAuth } from '@features/auth/authStore';
+import { useNotifications } from '@core/notifications/notifications';
 import { AudioBar } from '@features/audio/AudioBar';
 import './layout.css';
 
@@ -44,6 +48,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/assistant', icon: IconSparkles, key: 'nav.ai' },
   { to: '/create', icon: IconPlus, key: 'nav.create', create: true },
   { to: '/library', icon: IconLibrary, key: 'nav.library' },
+  { to: '/publish', icon: IconCalendar, key: 'nav.publish' },
   { to: '/settings', icon: IconSettings, key: 'nav.settings' },
 ];
 
@@ -109,7 +114,10 @@ function Drawer({ open, onClose }: { open: boolean; onClose: () => void }) {
       <nav className="drawer" aria-label={t('common.menu')}>
         <div className="fl-row" style={{ marginBottom: 'var(--fl-sp-3)' }}>
           <span className="shell__brand fl-grow">
-            <IconMosque size={22} /> {t('app.name')}
+            <span className="shell__logo" aria-hidden>
+              <IconFalah size={20} />
+            </span>
+            {t('app.name')}
           </span>
           <button
             className="fl-btn fl-btn--ghost fl-btn--icon"
@@ -208,17 +216,31 @@ function Drawer({ open, onClose }: { open: boolean; onClose: () => void }) {
 
 export function AppShell() {
   const t = useI18n((s) => s.t);
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
   const [drawerOpen, setDrawerOpen] = useState(false);
   const online = useOnline();
   const { user, initializing, continueLocal } = useAuth();
   const [welcomeOpen, setWelcomeOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const notifications = useNotifications();
 
   useEffect(() => {
     if (!initializing && !user) setWelcomeOpen(true);
+    if (user) void notifications.refresh(user.id);
+    // notifications.refresh is stable (zustand); depending on user/init is intentional.
   }, [initializing, user]);
+
+  const openNotifications = () => {
+    setNotifOpen(true);
+    if (user) void notifications.markAllRead(user.id);
+  };
 
   return (
     <div className="shell">
+      <a href="#main" className="skip-link">
+        {t('common.skipToContent')}
+      </a>
       <div className="shell__body">
         <header className="shell__header">
           <button
@@ -229,11 +251,46 @@ export function AppShell() {
             <IconMenu size={20} />
           </button>
           <span className="shell__brand">
-            <IconMosque size={22} /> {t('app.name')}
+            <span className="shell__logo" aria-hidden>
+              <IconFalah size={20} />
+            </span>
+            {t('app.name')}
           </span>
+          <span className="fl-grow" />
+          <form
+            className="shell__search"
+            role="search"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const q = searchQuery.trim();
+              if (q) {
+                navigate(`/create/quran?q=${encodeURIComponent(q)}`);
+                setSearchQuery('');
+              }
+            }}
+          >
+            <IconSearch size={16} aria-hidden />
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              type="search"
+              placeholder={t('shell.search')}
+              aria-label={t('shell.search')}
+            />
+          </form>
+          <button
+            className="fl-btn fl-btn--ghost fl-btn--icon shell__bell"
+            aria-label={t('notifications.title')}
+            onClick={openNotifications}
+          >
+            <IconBell size={20} />
+            {notifications.unread > 0 && (
+              <span className="shell__bell-badge">{Math.min(notifications.unread, 99)}</span>
+            )}
+          </button>
         </header>
         {!online && <div className="offline-banner">{t('common.offline')}</div>}
-        <main className="shell__main">
+        <main id="main" className="shell__main">
           <Outlet />
         </main>
       </div>
@@ -260,6 +317,46 @@ export function AppShell() {
       <AudioBar />
       <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
       <ToastHost />
+
+      <Modal
+        open={notifOpen}
+        onClose={() => setNotifOpen(false)}
+        title={t('notifications.title')}
+        sheet
+      >
+        {notifications.items.length === 0 ? (
+          <p className="fl-muted" style={{ textAlign: 'center', padding: 'var(--fl-sp-5)' }}>
+            {t('notifications.empty')}
+          </p>
+        ) : (
+          <div className="fl-col">
+            {notifications.items.map((n) => (
+              <div key={n.id} className="fl-card fl-row" style={{ padding: 'var(--fl-sp-3)' }}>
+                <span
+                  className={`fl-badge ${n.kind === 'publish_failed' ? 'fl-badge--blocked' : 'fl-badge--verified'}`}
+                >
+                  {t(n.titleKey)}
+                </span>
+                <span className="fl-grow" style={{ fontSize: 'var(--fl-fs-sm)' }}>
+                  {n.body}
+                </span>
+                <span className="fl-muted" style={{ fontSize: 'var(--fl-fs-xs)' }} dir="ltr">
+                  {new Date(n.created_at).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </span>
+              </div>
+            ))}
+            <button
+              className="fl-btn fl-btn--sm"
+              onClick={() => user && void notifications.clear(user.id)}
+            >
+              {t('notifications.clearAll')}
+            </button>
+          </div>
+        )}
+      </Modal>
 
       <Modal open={welcomeOpen} onClose={() => setWelcomeOpen(false)} title={t('auth.welcome')}>
         <p className="fl-muted" style={{ marginBottom: 'var(--fl-sp-4)' }}>

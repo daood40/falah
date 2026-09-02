@@ -371,3 +371,59 @@ export const IconMosque = (p: IconProps) => (
     <path d="M10 21v-4a2 2 0 0 1 4 0v4" />
   </Svg>
 );
+
+export const IconShare = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="6" cy="12" r="2.6" />
+    <circle cx="17.5" cy="6" r="2.6" />
+    <circle cx="17.5" cy="18" r="2.6" />
+    <path d="M8.4 10.8 15.1 7.2M8.4 13.2l6.7 3.6" />
+  </Svg>
+);
+
+/** FALAH brand mark: rub-el-hizb (two squares) cradling a crescent. */
+export const IconFalah = (p: IconProps) => (
+  <Svg {...p}>
+    <rect x="5.6" y="5.6" width="12.8" height="12.8" rx="1.4" />
+    <rect x="5.6" y="5.6" width="12.8" height="12.8" rx="1.4" transform="rotate(45 12 12)" />
+    <path d="M14.6 12a3.1 3.1 0 1 1-2.4-3.9 3.9 3.9 0 1 0 2.4 3.9z" />
+  </Svg>
+);
+
+export const IconQuranBook = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 6.5C10.2 5 7.8 4.4 4 4.5v13c3.8-.1 6.2.5 8 2 1.8-1.5 4.2-2.1 8-2v-13c-3.8-.1-6.2.5-8 2z" />
+    <path d="M12 6.5v13" />
+    <path d="M9.3 9.6a1.9 1.9 0 1 1-1.5-2.4 2.4 2.4 0 1 0 1.5 2.4z" />
+  </Svg>
+);
+
+export const IconFeather = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M20 4c-6 0-11 3.5-12.5 9L5 21" />
+    <path d="M20 4c.5 5-1.5 10.5-7.5 11.5H8.6" />
+    <path d="M14 10h5" />
+  </Svg>
+);
+
+export const IconAiChat = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 4v-4H6.5A2.5 2.5 0 0 1 4 14.5z" />
+    <path d="M12 7.2l.9 2 2 .9-2 .9-.9 2-.9-2-2-.9 2-.9z" />
+  </Svg>
+);
+
+export const IconSend = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M21 3 3.6 10.3a.6.6 0 0 0 .05 1.13L10 13.5l2.1 6.4a.6.6 0 0 0 1.12.04z" />
+    <path d="M21 3l-11 10.5" />
+  </Svg>
+);
+
+export const IconShelf = (p: IconProps) => (
+  <Svg {...p}>
+    <rect x="4" y="4" width="3.6" height="16" rx="0.8" />
+    <rect x="9.4" y="7" width="3.6" height="13" rx="0.8" />
+    <path d="M14.6 5.2l3.4-.9 4 14.7-3.4 1z" />
+  </Svg>
+);

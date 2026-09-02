@@ -8,6 +8,8 @@ import type { AuditEntry } from '../audit/audit';
 import type { ContentProject, ScheduledPost } from '../models/content';
 import type { CachedAyah, CachedSurah } from '@features/quran/domain/types';
 import type { HadithRecord } from '@features/hadith/domain/types';
+import type { AppNotification } from '../notifications/types';
+import type { UserTemplate } from '@features/templates/userTemplates';
 
 export interface KvEntry {
   key: string;
@@ -21,6 +23,8 @@ export class FalahDb extends Dexie {
   quranAyahs!: Table<CachedAyah, string>;
   hadiths!: Table<HadithRecord, string>;
   auditLogs!: Table<AuditEntry, string>;
+  notifications!: Table<AppNotification, string>;
+  userTemplates!: Table<UserTemplate, string>;
   kv!: Table<KvEntry, string>;
 
   constructor() {
@@ -33,6 +37,12 @@ export class FalahDb extends Dexie {
       hadiths: 'id, collection_id, *searchTerms',
       auditLogs: 'id, user_id, action, timestamp',
       kv: 'key',
+    });
+    this.version(2).stores({
+      notifications: 'id, user_id, read, created_at',
+    });
+    this.version(3).stores({
+      userTemplates: 'id, user_id, updated_at',
     });
   }
 }

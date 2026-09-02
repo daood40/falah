@@ -174,6 +174,8 @@ export interface VideoSettings {
   animation: TextAnimation;
   showSubtitles: boolean;
   audioAyahKey?: string;
+  /** Reciter id (see RECITERS) whose audio backs the video. */
+  reciterId?: string;
 }
 
 export type Platform = 'instagram' | 'facebook' | 'tiktok' | 'youtube' | 'telegram' | 'x';
@@ -189,6 +191,10 @@ export interface ScheduledPost {
   repeat: RepeatRule;
   status: ProjectStatus;
   last_error: string | null;
+  /** Publish attempts so far — transient failures retry with backoff, max 3 (v2 §20). */
+  attempts?: number;
+  /** Stable per-post key adapters forward server-side so a retry can never double-post. */
+  idempotency_key?: string;
   created_at: string;
 }
 

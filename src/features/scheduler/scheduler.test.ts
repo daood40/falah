@@ -3,7 +3,14 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '@core/db/localdb';
 import { emptyProject } from '@features/editor/domain/projectFactory';
 import { saveProject, getProject } from '@features/library/data/libraryRepository';
-import { cancelScheduled, listScheduled, processDuePosts, schedulePost } from './domain/scheduler';
+import { AppError } from '@core/errors/errors';
+import {
+  MAX_PUBLISH_ATTEMPTS,
+  cancelScheduled,
+  listScheduled,
+  processDuePosts,
+  schedulePost,
+} from './domain/scheduler';
 
 const USER = 'sched-user';
 
@@ -75,5 +82,38 @@ describe('scheduler', () => {
     expect(updated?.status).toBe('failed');
     expect(updated?.last_error).toContain('not connected');
     expect((await getProject(project.id))?.status).toBe('failed');
+  });
+
+  it('retries transient failures with backoff, then fails after MAX attempts (v2 §20)', async () => {
+    const project = await makeProject();
+    const post = await schedulePost({
+      userId: USER,
+      projectId: project.id,
+      platform: 'telegram',
+      scheduledAt: new Date(Date.now() + 50),
+      repeat: 'none',
+    });
+    expect(post.idempotency_key).toBeTruthy();
+    await new Promise((r) => setTimeout(r, 80));
+
+    const failingExport = async () => {
+      throw new AppError('network', 'temporary network drop');
+    };
+    for (let attempt = 1; attempt < MAX_PUBLISH_ATTEMPTS; attempt++) {
+      await processDuePosts(failingExport);
+      const retried = await db.scheduledPosts.get(post.id);
+      // Transient error → back to scheduled at a later time, attempt recorded.
+      expect(retried?.status).toBe('scheduled');
+      expect(retried?.attempts).toBe(attempt);
+      expect(new Date(retried!.scheduled_at).getTime()).toBeGreaterThan(Date.now());
+      // Make it due again without waiting out the real backoff.
+      await db.scheduledPosts.update(post.id, {
+        scheduled_at: new Date(Date.now() - 1000).toISOString(),
+      });
+    }
+    await processDuePosts(failingExport);
+    const final = await db.scheduledPosts.get(post.id);
+    expect(final?.status).toBe('failed');
+    expect(final?.attempts).toBe(MAX_PUBLISH_ATTEMPTS);
   });
 });

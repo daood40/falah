@@ -67,7 +67,7 @@ export function autoFontScale(text: string, base: number, min: number, refLength
   return Math.max(min, Math.min(base, base * Math.sqrt(refLength / length)));
 }
 
-function sacredTextElement(
+export function sacredTextElement(
   locked: LockedText,
   sacredKind: SacredKind,
   overrides: Partial<TextElement> = {},

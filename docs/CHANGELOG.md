@@ -1,5 +1,81 @@
 # Changelog
 
+## 1.5.0 — 2026-08-28
+
+Professional transformation release (full audit → targeted upgrades; see
+`docs/AUDIT.md` for the audit evidence).
+
+### Product & UX
+- **Home is now a real dashboard**: status stats (drafts/scheduled/published/all,
+  each linking to its destination), "pick up where you left off" drafts row,
+  personalized greeting, prioritized section order.
+- **New "Publish" destination** (6-item navigation per the product directive):
+  every scheduled post with live status, cancel/retry actions, repeat badges,
+  attempt counts, honest per-platform connection status.
+- **User templates**: save any design as a reusable template (structure only —
+  background, per-role text positions/styles, decorations; never the text),
+  apply it to any verse/hadith from the editor's Templates tab (tested:
+  sacred text and checksums byte-identical after apply).
+
+### Accessibility
+Focus trap + initial focus + focus return in all modals; skip-to-content link;
+translated dialog close labels; ≥44px touch targets on touch devices.
+
+### Performance
+Supabase SDK now loads lazily only when configured — main bundle cut from
+590 KB → 373 KB (gzip 179 → 124 KB, −31%). Robust Arabic font fallback stacks.
+
+### Security
+Content-Security-Policy meta (self-only scripts; allow-listed fonts, recitation
+CDN, and API hosts; `object-src 'none'`).
+
+### Testing
+60 passing (adds user-template structure guarantees) + a reusable live
+regression walkthrough (`scripts/regression-walkthrough.mjs`) that drives the
+production build in Chromium and asserts zero app console errors.
+
+
+## 1.4.0 — 2026-08-28
+
+Master Directive v2 alignment (docs + incremental code, no rebuilds).
+
+### Added
+- Governance docs: `docs/adr/` (six binding ADRs), `MIGRATION.md` (staged Flutter
+  path — not executed), `ROADMAP.md`, `PROJECT_STATUS.md`, `SKILL_REGISTRY.md`,
+  `docs/AI_RULES.md`, `docs/SOURCE_POLICY.md`; ARCHITECTURE gained a v2 alignment map.
+- AI guard: canonical Appendix (هـ) refusal texts, fatwa-request detection and
+  sacred-text-alteration detection, with new red tests.
+- Scheduler: exponential-backoff retry (max 3 attempts) for transient publish
+  failures + per-post idempotency key honored by the publisher contract;
+  permanent errors (unconfigured platform, Source Lock, validation) still fail
+  fast and honestly.
+- `.env.example` server-secret names aligned with v2 Appendix (ب).
+
+### Tests
+58 passing (adds fatwa/alteration refusals and retry lifecycle).
+
+
+## 1.3.0 — 2026-08-28
+
+Feature-complete release (closes the remaining master-directive items).
+
+### Added
+- **In-app notification center (Phase 12)**: bell with live unread badge in the
+  header, notification panel (mark read / clear), persisted per user in
+  IndexedDB; wired to publish success/failure, scheduling, and every export.
+- **Library export & share**: export PNG or share via the native share sheet
+  (Web Share API with files, graceful download fallback) directly from any
+  library card — always through the Source Lock approval gate.
+- **Video recitation voice**: the reciter chosen in the create flow now backs
+  the video audio, and can be switched from a reciter picker inside the video
+  modal.
+- **Home templates strip**: the eight design templates are browsable from the
+  home screen; tapping one opens the Quran create flow with that template
+  pre-applied to the generated design.
+
+### Tests
+55 passing (adds the notification-center suite).
+
 ## 1.2.0 — 2026-08-28
 
 Visual identity release.
