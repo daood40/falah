@@ -12,6 +12,8 @@ import { auditLog } from '@core/audit/audit';
 import { useAuth } from '@features/auth/authStore';
 import { listPublishers } from '@features/publishing/domain/socialPublisher';
 import { hasSupabase } from '@core/supabase/client';
+import { createBackup, restoreBackup } from '@core/backup/backup';
+import { useInstallPrompt } from '@core/pwa/installPrompt';
 
 interface SettingsPrefs {
   notifications: boolean;
@@ -52,6 +54,31 @@ export function SettingsPage() {
   const [prefs, setPrefs] = useState<SettingsPrefs>(DEFAULT_PREFS);
   const [storage, setStorage] = useState<{ usedMb: number; quotaMb: number } | null>(null);
   const [clearOpen, setClearOpen] = useState(false);
+  const installPrompt = useInstallPrompt();
+
+  const exportBackup = async () => {
+    const backup = await createBackup();
+    const blob = new Blob([JSON.stringify(backup, null, 1)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `falah-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+    toast('success', t('settings.backupDone'));
+  };
+
+  const importBackup = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+      const restored = await restoreBackup(JSON.parse(await file.text()));
+      toast('success', `${t('settings.backupRestored')} (${restored})`);
+    } catch {
+      toast('error', t('settings.backupInvalid'));
+    }
+  };
   const [connections, setConnections] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
@@ -205,10 +232,36 @@ export function SettingsPage() {
           {t('settings.storageUsed')}:{' '}
           {storage ? `${storage.usedMb.toFixed(1)} MB / ${storage.quotaMb.toFixed(0)} MB` : '—'}
         </p>
+        <div className="fl-row fl-wrap">
+          <button className="fl-btn" onClick={() => void exportBackup()}>
+            {t('settings.backupExport')}
+          </button>
+          <label className="fl-btn" style={{ cursor: 'pointer' }}>
+            {t('settings.backupImport')}
+            <input
+              type="file"
+              accept="application/json"
+              style={{ display: 'none' }}
+              onChange={(e) => void importBackup(e)}
+            />
+          </label>
+        </div>
+        <p className="fl-muted" style={{ fontSize: 'var(--fl-fs-xs)', margin: 0 }}>
+          {t('settings.backupNote')}
+        </p>
         <button className="fl-btn fl-btn--danger" onClick={() => setClearOpen(true)}>
           {t('settings.clearData')}
         </button>
       </Section>
+
+      {installPrompt.available && (
+        <Section title={t('settings.installTitle')}>
+          <p className="fl-muted">{t('settings.installDesc')}</p>
+          <button className="fl-btn fl-btn--primary" onClick={() => void installPrompt.install()}>
+            {t('settings.installButton')}
+          </button>
+        </Section>
+      )}
 
       <Section id="about" title={t('settings.about')}>
         <p className="fl-muted">{t('settings.aboutText')}</p>

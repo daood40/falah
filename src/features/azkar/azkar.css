@@ -1,0 +1,9 @@
+.azkar-card .fl-quran-text {
+  margin: var(--fl-sp-3) 0;
+  text-align: center;
+  line-height: 2.1;
+}
+.azkar-card__count {
+  min-width: 64px;
+  font-variant-numeric: tabular-nums;
+}

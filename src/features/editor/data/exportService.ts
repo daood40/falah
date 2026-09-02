@@ -3,6 +3,7 @@ import type { ContentProject } from '@core/models/content';
 import { formatById } from '@core/models/content';
 import { AppError } from '@core/errors/errors';
 import { assertPublishable, combineReviewStatus } from '@core/sourcelock/sourceLock';
+import { withPngMetadata } from '@core/sourcelock/pngMetadata';
 import type { LockedText } from '@core/sourcelock/types';
 import { preloadImages, renderFrame } from '../domain/renderEngine';
 
@@ -42,18 +43,31 @@ async function renderToCanvas(
   return canvas;
 }
 
-/** Full-resolution PNG blob. Runs the Source Lock gate first. */
+/**
+ * Full-resolution PNG blob. Runs the Source Lock gate first, then embeds the
+ * sources + content hashes of every sacred text as PNG tEXt metadata
+ * (v2 §4.4: exports carry their provenance).
+ */
 export async function exportPng(project: ContentProject, userApproved: boolean): Promise<Blob> {
   await assertProjectPublishable(project, userApproved);
   const format = formatById(project.format_id);
   const canvas = await renderToCanvas(project, format.width, format.height);
-  return new Promise((resolve, reject) => {
+  const raw = await new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(
       (blob) =>
         blob ? resolve(blob) : reject(new AppError('rendering', 'canvas.toBlob returned null')),
       'image/png',
     );
   });
+  const texts = sacredTexts(project);
+  if (texts.length === 0) return raw;
+  const bytes = withPngMetadata(new Uint8Array(await raw.arrayBuffer()), {
+    'falah:generator': 'FALAH',
+    'falah:source_ids': texts.map((t) => t.source.source_id).join(','),
+    'falah:source_names': [...new Set(texts.map((t) => t.source.source_name))].join(' | '),
+    'falah:content_hashes': texts.map((t) => t.checksum).join(','),
+  });
+  return new Blob([bytes.buffer as ArrayBuffer], { type: 'image/png' });
 }
 
 /** Small JPEG thumbnail (data URI) for the library grid. */

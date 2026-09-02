@@ -1,5 +1,30 @@
 # Changelog
 
+## 1.7.0 — 2026-09-02
+
+Category-sweep release: the remaining flagship features of every leading-app
+category (khatmah trackers, adhkar apps, tasbih counters), plus the chronic
+problems none of them solve. Extended survey in `docs/MARKET.md` §6.
+
+### Added
+- **Daily werd (الورد اليومي)**: khatmah tracker with tap-to-mark reading
+  position, percentage of all 6236 ayahs, and a day streak. Offline.
+- **Quranic adhkar (أذكار قرآنية)**: the commonly-recited Quranic portions
+  (Ayat al-Kursi, closing of al-Baqarah, the three Quls) from the verified
+  text only, with free per-item counters. No rulings asserted.
+- **Editor auto-save** every 5s of inactivity + **version history**: a
+  restorable snapshot on every save (throttled, capped at 15), with a
+  restore dialog in the editor toolbar.
+- **PNG provenance**: every exported image embeds the source ids, source
+  names and content hashes of its sacred texts as standard tEXt chunks.
+- **Full backup & restore**: one JSON file with designs, templates,
+  favorites, versions and schedule; additive restore. Fixes the category's
+  chronic "reinstalled and lost everything".
+- **PWA install button** in Settings when the browser offers installation.
+
+### Tests
+69 passing (adds PNG-metadata, versions/backup suites).
+
 ## 1.6.0 — 2026-09-02
 
 Market-parity release: the daily-companion features users love in the
