@@ -97,3 +97,18 @@
 .create-hub__card--hadith .create-hub__icon {
   color: var(--fl-gold-500);
 }
+
+/* ---------- v1.8 context validation notice ---------- */
+.ctx-warning {
+  border-inline-start: 3px solid var(--fl-warning);
+  gap: var(--fl-sp-2);
+  display: flex;
+  flex-direction: column;
+}
+.ctx-warning strong {
+  color: var(--fl-warning);
+  font-size: var(--fl-fs-sm);
+}
+.ctx-warning__row {
+  align-items: center;
+}

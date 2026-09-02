@@ -102,6 +102,12 @@ export const en: Record<string, string> = {
   'create.favRemoved': 'Removed from favorites',
   'create.copyAyah': 'Copy text with reference',
   'create.copied': 'Copied with its reference and source',
+  'create.ctxTitle': 'Context notice',
+  'create.ctxNextException': 'The next ayah opens an exception that completes the meaning.',
+  'create.ctxNextRelative': 'The next ayah is a relative clause completing your selection.',
+  'create.ctxPrevDep': 'The selected ayah completes the one before it.',
+  'create.ctxExtendNext': 'Include the next ayah',
+  'create.ctxExtendPrev': 'Include the previous ayah',
   'home.welcomeText':
     'Welcome to FALAH. your calm space to craft verified verses and hadiths beautifully, and share them with confidence.',
   'home.qa.quran': 'Holy Quran',

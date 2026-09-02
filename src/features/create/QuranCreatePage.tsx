@@ -17,11 +17,13 @@ import {
 } from '@features/quran/data/favoritesRepository';
 import {
   ayahAudioUrl,
+  getAyah,
   getAyahRange,
   listSurahs,
   searchQuran,
   surahByNumber,
 } from '@features/quran/data/quranRepository';
+import { checkContext, type ContextWarning } from '@core/sourcelock/contextValidation';
 import { enrichAyah } from '@features/quran/data/quranApi';
 import { RECITERS, RIWAYAT, type CachedAyah } from '@features/quran/domain/types';
 import { projectFromAyahs } from '@features/editor/domain/projectFactory';
@@ -54,6 +56,7 @@ export function QuranCreatePage() {
   const [creating, setCreating] = useState(false);
   const [favorites, setFavorites] = useState<FavoriteAyah[]>([]);
   const [isFav, setIsFav] = useState(false);
+  const [ctxWarnings, setCtxWarnings] = useState<ContextWarning[]>([]);
 
   useEffect(() => {
     if (user) void listFavoriteAyahs(user.id).then(setFavorites);
@@ -103,6 +106,17 @@ export function QuranCreatePage() {
         if (cancelled) return;
         setPreview(ayahs);
         setLoadingPreview(false);
+        const next = to < maxAyah ? await getAyah(surah, to + 1) : null;
+        if (!cancelled)
+          setCtxWarnings(
+            ayahs.length > 0
+              ? checkContext({
+                  firstText: ayahs[0]!.text,
+                  nextText: next?.text,
+                  hasPrev: from > 1,
+                })
+              : [],
+          );
         const enriched = await Promise.all(ayahs.map(enrichAyah));
         if (!cancelled) setPreview(enriched);
       })
@@ -386,6 +400,38 @@ export function QuranCreatePage() {
             </div>
           </div>
         )
+      )}
+
+      {!loadingPreview && ctxWarnings.length > 0 && (
+        <div className="fl-card ctx-warning" role="note" aria-label={t('create.ctxTitle')}>
+          <strong>{t('create.ctxTitle')}</strong>
+          {ctxWarnings.map((w) => (
+            <div key={`${w.extend}-${w.reason}`} className="fl-row fl-wrap ctx-warning__row">
+              <span className="fl-grow">
+                {t(
+                  w.extend === 'before'
+                    ? 'create.ctxPrevDep'
+                    : w.reason === 'exception'
+                      ? 'create.ctxNextException'
+                      : 'create.ctxNextRelative',
+                )}
+              </span>
+              <button
+                className="fl-btn fl-btn--ghost"
+                onClick={() => {
+                  if (w.extend === 'after') {
+                    setCount((c) => Math.min(10, c + 1));
+                  } else if (fromAyah > 1) {
+                    setFromAyah(fromAyah - 1);
+                    setCount((c) => Math.min(10, c + 1));
+                  }
+                }}
+              >
+                {t(w.extend === 'after' ? 'create.ctxExtendNext' : 'create.ctxExtendPrev')}
+              </button>
+            </div>
+          ))}
+        </div>
       )}
 
       {favorites.length > 0 && (
