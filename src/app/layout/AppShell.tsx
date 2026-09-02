@@ -7,6 +7,7 @@ import { ToastHost, toast } from '@core/ui/Toast';
 import { Modal } from '@core/ui/primitives';
 import {
   IconBell,
+  IconBook,
   IconCalendar,
   IconCard,
   IconClose,
@@ -22,10 +23,12 @@ import {
   IconMoon,
   IconMosque,
   IconPlus,
+  IconRepeat,
   IconSearch,
   IconSettings,
   IconShield,
   IconSparkles,
+  IconStar,
   IconSun,
   IconUser,
   type IconProps,
@@ -145,6 +148,11 @@ function Drawer({ open, onClose }: { open: boolean; onClose: () => void }) {
           label={t('menu.notifications')}
           onClick={() => go('/settings')}
         />
+
+        <div className="drawer__section">{t('menu.tools')}</div>
+        <DrawerItem icon={IconRepeat} label={t('tasbih.title')} onClick={() => go('/tasbih')} />
+        <DrawerItem icon={IconBook} label={t('azkar.title')} onClick={() => go('/azkar')} />
+        <DrawerItem icon={IconStar} label={t('werd.title')} onClick={() => go('/werd')} />
 
         <div className="drawer__section">{t('menu.theme')}</div>
         <div className="fl-row fl-wrap" role="radiogroup" aria-label={t('menu.theme')}>

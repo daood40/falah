@@ -19,6 +19,7 @@ import {
   IconCalendar,
   IconDownload,
   IconRedo,
+  IconRepeat,
   IconSave,
   IconUndo,
   IconVideo,
@@ -27,6 +28,12 @@ import {
 import { useEditor } from '../domain/editorStore';
 import { newTextElement } from '../domain/projectFactory';
 import { exportPng, downloadBlob, renderThumbnail, sacredTexts } from '../data/exportService';
+import {
+  getVersion,
+  listVersions,
+  saveVersion,
+  type ProjectVersion,
+} from '../data/versionsRepository';
 import { CanvasStage } from './CanvasStage';
 import { BackgroundPanel, InsertBar, LayersPanel, PropertiesPanel, TemplatesPanel } from './Panels';
 import './editor.css';
@@ -343,6 +350,41 @@ export function EditorPage() {
   const [videoOpen, setVideoOpen] = useState(false);
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [versions, setVersions] = useState<ProjectVersion[]>([]);
+
+  // Auto save (v2 §15): persist 5s after the last change; snapshot a
+  // restorable version at most once per minute of continuous editing.
+  const project = editor.project;
+  const dirty = editor.dirty;
+  useEffect(() => {
+    if (!dirty || !project) return;
+    const timer = setTimeout(() => {
+      void saveProject(project)
+        .then(() => saveVersion(project))
+        .then(() => editor.markSaved())
+        .catch(() => undefined);
+    }, 5_000);
+    return () => clearTimeout(timer);
+    // editor.markSaved is stable (zustand).
+  }, [dirty, project]);
+
+  const openHistory = async () => {
+    if (!project) return;
+    setVersions(await listVersions(project.id));
+    setHistoryOpen(true);
+  };
+
+  const restoreVersion = async (versionId: string) => {
+    const version = await getVersion(versionId);
+    if (!version || !project) return;
+    // Keep the current state reachable before jumping back.
+    await saveVersion(project, true);
+    editor.load({ ...version.snapshot, updated_at: new Date().toISOString() });
+    await saveProject(version.snapshot);
+    setHistoryOpen(false);
+    toast('success', t('editor.versionRestored'));
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -429,6 +471,7 @@ export function EditorPage() {
     try {
       const thumbnail = await renderThumbnail(project).catch(() => null);
       await saveProject({ ...project, thumbnail });
+      await saveVersion(project, true);
       editor.markSaved();
       toast('success', t('editor.saved'));
     } catch (error) {
@@ -509,6 +552,9 @@ export function EditorPage() {
           <button className="fl-btn fl-btn--sm" onClick={addWatermark}>
             <IconWatermark size={15} /> {t('editor.watermark')}
           </button>
+          <button className="fl-btn fl-btn--ghost fl-btn--sm" onClick={() => void openHistory()}>
+            <IconRepeat size={15} /> {t('editor.versions')}
+          </button>
         </div>
         <CanvasStage />
       </div>
@@ -543,6 +589,30 @@ export function EditorPage() {
       />
       <VideoModal open={videoOpen} onClose={() => setVideoOpen(false)} />
       <ScheduleModal open={scheduleOpen} onClose={() => setScheduleOpen(false)} />
+
+      <Modal open={historyOpen} onClose={() => setHistoryOpen(false)} title={t('editor.versions')}>
+        {versions.length === 0 ? (
+          <p className="fl-muted" style={{ textAlign: 'center', padding: 'var(--fl-sp-4)' }}>
+            {t('editor.versionsEmpty')}
+          </p>
+        ) : (
+          <div className="fl-col">
+            {versions.map((v) => (
+              <div key={v.id} className="fl-card fl-row" style={{ padding: 'var(--fl-sp-3)' }}>
+                <span className="fl-grow" dir="ltr" style={{ fontSize: 'var(--fl-fs-sm)' }}>
+                  {new Date(v.saved_at).toLocaleString()}
+                </span>
+                <span className="fl-muted" style={{ fontSize: 'var(--fl-fs-xs)' }}>
+                  {v.snapshot.elements.length} {t('editor.layers')}
+                </span>
+                <button className="fl-btn fl-btn--sm" onClick={() => void restoreVersion(v.id)}>
+                  {t('editor.restore')}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

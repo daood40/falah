@@ -59,6 +59,26 @@ export const router = createBrowserRouter(
           ),
         },
         {
+          path: 'werd',
+          element: page(() =>
+            import('@features/werd/WerdPage').then((m) => ({ default: m.WerdPage })),
+          ),
+        },
+        {
+          path: 'azkar',
+          element: page(() =>
+            import('@features/azkar/AzkarPage').then((m) => ({ default: m.AzkarPage })),
+          ),
+        },
+        {
+          path: 'tasbih',
+          element: page(() =>
+            import('@features/tasbih/presentation/TasbihPage').then((m) => ({
+              default: m.TasbihPage,
+            })),
+          ),
+        },
+        {
           path: 'publish',
           element: page(() =>
             import('@features/publishing/presentation/PublishPage').then((m) => ({

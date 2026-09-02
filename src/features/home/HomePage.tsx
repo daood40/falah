@@ -20,6 +20,9 @@ import { TEMPLATES } from '@features/templates/templates';
 import { listScheduled } from '@features/scheduler/domain/scheduler';
 import { getSurahAyahs, listSurahs } from '@features/quran/data/quranRepository';
 import type { CachedAyah } from '@features/quran/domain/types';
+import { listHadiths } from '@features/hadith/data/hadithRepository';
+import type { HadithRecord } from '@features/hadith/domain/types';
+import { hijriToday, upcomingOccasions, type Occasion } from '@core/hijri/hijri';
 import './home.css';
 
 const QUICK_ACTIONS = [
@@ -84,9 +87,24 @@ export function HomePage() {
   } | null>(null);
   const [upcoming, setUpcoming] = useState<ScheduledPost[]>([]);
   const [verse, setVerse] = useState<{ ayah: CachedAyah; surahName: string } | null>(null);
+  const [hadith, setHadith] = useState<HadithRecord | null>(null);
+  const [occasions, setOccasions] = useState<Occasion[]>([]);
 
   useEffect(() => {
     void verseOfDay().then(setVerse);
+    // Hadith of the day: rotates through the verified seed, offline.
+    void listHadiths()
+      .then((all) => {
+        if (all.length === 0) return;
+        const day = Math.floor(Date.now() / 86_400_000);
+        setHadith(all[day % all.length] ?? null);
+      })
+      .catch(() => undefined);
+    try {
+      setOccasions(upcomingOccasions());
+    } catch {
+      // Intl islamic calendar unavailable: hide the strip, never crash.
+    }
   }, []);
 
   useEffect(() => {
@@ -115,7 +133,32 @@ export function HomePage() {
       <header className="home-hero">
         <h1>{t('home.welcome')}</h1>
         <p className="home-hero__welcome">{t('home.welcomeText')}</p>
+        <p className="home-hero__hijri">{hijriToday()}</p>
       </header>
+
+      {occasions.length > 0 && (
+        <section className="home-occasions" aria-label={t('occasions.title')}>
+          {occasions.map((occ) => (
+            <Link key={occ.key} to="/create" className="fl-card home-occasion">
+              <span className="home-occasion__days">
+                {occ.inDays === 0 ? t('occasions.today') : occ.inDays}
+              </span>
+              <span className="fl-grow">
+                <strong>{t(`occasions.${occ.key}`)}</strong>
+                <span
+                  className="fl-muted"
+                  style={{ display: 'block', fontSize: 'var(--fl-fs-xs)' }}
+                >
+                  {occ.inDays === 0
+                    ? t('occasions.designNow')
+                    : `${t('occasions.inDays')} ${occ.inDays} ${t('occasions.days')} · ${t('occasions.designNow')}`}
+                </span>
+              </span>
+              <IconCalendar size={18} aria-hidden />
+            </Link>
+          ))}
+        </section>
+      )}
 
       {stats !== null && stats.total > 0 && (
         <section className="home-stats" aria-label={t('home.stats.total')}>
@@ -216,6 +259,27 @@ export function HomePage() {
           </p>
           <div className="home-verse__ref">
             سورة {verse.surahName} — {verse.ayah.ayah}
+            <span className="fl-badge fl-badge--verified">{t('source.verified')}</span>
+          </div>
+        </section>
+      )}
+
+      {hadith && (
+        <section
+          className="fl-card home-hadith"
+          onClick={() => navigate(`/create/hadith?id=${hadith.id}`)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') navigate(`/create/hadith?id=${hadith.id}`);
+          }}
+        >
+          <div className="fl-muted">{t('home.hadithOfDay')}</div>
+          <p className="fl-naskh" lang="ar" dir="rtl">
+            {hadith.arabic.length > 200 ? `${hadith.arabic.slice(0, 200)}…` : hadith.arabic}
+          </p>
+          <div className="home-verse__ref">
+            {hadith.book} — {hadith.number}
             <span className="fl-badge fl-badge--verified">{t('source.verified')}</span>
           </div>
         </section>
