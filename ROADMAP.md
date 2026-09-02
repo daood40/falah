@@ -4,44 +4,56 @@
 بأصغر تغيير تدريجي (v2 §5، وقاعدة الجلسة).
 
 ## المرحلة 0 — الأساس ✅ مكتملة
+
 معمارية Clean + ريبو + CI (فحوص + Postgres حقيقي) + نشر Pages تلقائي + APK تلقائي
-+ Design Tokens + ADRs (`docs/adr/`).
+
+- Design Tokens + ADRs (`docs/adr/`).
 
 ## المرحلة 1 — الهوية والمصادر والتحقق 🟡 قيد الإكمال
+
 - ✅ مصادقة Supabase (Email) + وضع محلي صادق + خط تحقق SOURCE_LOCK (هاش، قفل، بوابة نشر)
 - ✅ قرآن كامل (Tanzil حفص) + ترجمة صحيح إنترناشونال + الأربعون النووية موثقة
 - ⬜ Google Sign-In (+Apple على iOS) — قرار v2 §24
 - ⬜ استيراد تفسير السعدي كاملًا بمصدر مرخّص + جداول `tafsir_*`
 - ⬜ استيراد الكتب الستة تدريجيًا (§8.3) بعد توثيق التراخيص في `docs/SOURCE_POLICY.md`
-- ⬜ جداول v2 الناقصة (§29): `hadith_chapters/narrators`, `source_requests`,
-  `publish_attempts`, `reports`, `folders`, `tags`… بهجرة تراكمية `0002_v2.sql`
+- ✅ جداول v2 الناقصة (§29) بهجرة `0002_v2.sql`: `verification_records`،
+  `user_roles` (RBAC خمسة أدوار)، `hadith_chapters/narrators/narrations`،
+  `source_requests`، `publish_attempts`، `reports`، `folders`، `tags`،
+  `user_templates`، `project_versions` — كلها بـ RLS ومُتحقَّق منها في CI
 - ⬜ سير المراجعة البشرية (Reviewer) + Fast-Path للمطابقة الحرفية (§10)
 
 ## المرحلة 2 — الإنشاء والمحرر ✅ مكتملة وظيفيًا / 🟡 فجوات v2
+
 - ✅ Quran/Hadith Creator (اختيار فقط، لا إدخال حر) + محرر طبقات + 8 قوالب + تصدير PNG
-- ⬜ Context Validation: تحذير الاجتزاء عند قطع جملة شرطية/استثناء (§14.1)
-- ⬜ Version History للمشاريع + Auto Save كل 5 ثوانٍ (الحفظ الحالي عند الفعل)
-- ⬜ Metadata داخل الصورة المصدَّرة (`source_id`, `content_hash`) (§4.4)
+- ✅ Context Validation: تحذير غير مانع عند قطع استثناء/صلة على حافة الاختيار
+  مع زر «ضم الآية التالية/السابقة» (§14.1)
+- ✅ Version History للمشاريع + Auto Save كل 5 ثوانٍ (v1.7.0)
+- ✅ Metadata داخل الصورة المصدَّرة (`source_id`, `content_hash`) (§4.4، v1.7.0)
 
 ## المرحلة 3 — الفيديو 🟡 معاينة الجهاز منجزة
+
 - ✅ WebM على الجهاز بحركات وترجمة وتلاوة
 - ⬜ Worker خلفي FFmpeg + طابور + MP4 (ADR-004)
 
 ## المرحلة 4 — الجدولة والنشر 🟡 البنية منجزة، الربط الفعلي ينتظر Credentials
+
 - ✅ جدولة كاملة الحالات + SocialPublisher بواجهة موحدة ترفض بصدق عند عدم التهيئة
 - ✅ Retry بـ Exponential Backoff (≤3) + Idempotency Key (أُنجز في مواءمة v2)
 - ⬜ Connectors فعلية بعد توفير App ID/Secret لكل منصة (الملحق ج) + تشفير KMS (ADR-006)
 - ⬜ وضع "تجهيز للنشر اليدوي" للمنصات بلا API (§21)
 
 ## المرحلة 5 — الإحصائيات والاشتراكات 🟡 جزئي
+
 - ✅ Entitlements كبيانات (`plans.limits`) بلا أسعار في الكود
 - ⬜ Dashboard إحصائيات مغذّى من `analytics_*` — يتطلب Connectors فعلية
 - ⬜ مزود دفع خلف `PaymentProvider` (يُحسم بـADR-007 وفق السوق)
 
 ## المرحلة 6 — لوحة الإدارة والمراجعة ⬜
+
 RBAC الخمسة أدوار (§26)، طوابير المراجعة، طلبات إضافة المصادر، البلاغات.
 
 ## المرحلة 7 — Marketplace والفرق ⬜ (بعد نضج المنتج)
 
 ## مسار موازٍ — هجرة Flutter (ADR-001)
+
 لا تبدأ إلا بقرار صريح؛ خطتها الكاملة في `MIGRATION.md` ولا تُحتسب ضمن مراحل التسليم أعلاه.

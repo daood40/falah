@@ -103,6 +103,12 @@ export const ar: Record<string, string> = {
   'create.favRemoved': 'أُزيلت من المفضلة',
   'create.copyAyah': 'نسخ النص مع المرجع',
   'create.copied': 'نُسخ النص مع مرجعه ومصدره',
+  'create.ctxTitle': 'تنبيه سياق',
+  'create.ctxNextException': 'الآية التالية تبدأ باستثناء يكمل المعنى.',
+  'create.ctxNextRelative': 'الآية التالية صلة تكمل وصف ما اخترت.',
+  'create.ctxPrevDep': 'الآية المختارة تكمل ما قبلها.',
+  'create.ctxExtendNext': 'ضم الآية التالية',
+  'create.ctxExtendPrev': 'ضم الآية السابقة',
   'home.welcomeText':
     'أهلًا بك في فلاح. مساحتك الهادئة لصياغة آيات وأحاديث موثقة بتصميم يليق بها، ومشاركتها بطمأنينة.',
   'home.qa.quran': 'القرآن الكريم',

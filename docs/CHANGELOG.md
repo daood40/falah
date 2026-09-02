@@ -1,5 +1,30 @@
 # Changelog
 
+## 1.8.0 — 2026-09-02
+
+Directive-v2 closure release: the last two v2 items implementable without
+external licenses or credentials.
+
+### Added
+
+- **Context Validation (v2 §14.1)**: the Quran creator now warns, without
+  blocking, when a selection cuts a clause that continues across its edge —
+  an exception («إلا») or relative clause opening the next ayah, or a
+  selection that itself opens with one and depends on the previous ayah —
+  with one-tap "include the next/previous ayah". Pure analysis over the
+  verified text; asserts no rulings (SOURCE_LOCK intact).
+- **Migration `0002_v2.sql`**: the missing v2 tables — `verification_records`
+  (auditable verification pipeline runs), `user_roles` (five-role RBAC),
+  `hadith_chapters/narrators/narrations`, `source_requests`,
+  `publish_attempts`, `reports`, `folders` (+ `content_projects.folder_id`),
+  `tags`/`project_tags`, and server-side `user_templates`/`project_versions`.
+  RLS on all 13 new tables; validated in CI against real PostgreSQL 16.
+
+### Tests
+
+75 passing (adds the context-validation suite, incl. the «ألا»/«إلا»
+disambiguation case).
+
 ## 1.7.0 — 2026-09-02
 
 Category-sweep release: the remaining flagship features of every leading-app
@@ -7,6 +32,7 @@ category (khatmah trackers, adhkar apps, tasbih counters), plus the chronic
 problems none of them solve. Extended survey in `docs/MARKET.md` §6.
 
 ### Added
+
 - **Daily werd (الورد اليومي)**: khatmah tracker with tap-to-mark reading
   position, percentage of all 6236 ayahs, and a day streak. Offline.
 - **Quranic adhkar (أذكار قرآنية)**: the commonly-recited Quranic portions
@@ -23,6 +49,7 @@ problems none of them solve. Extended survey in `docs/MARKET.md` §6.
 - **PWA install button** in Settings when the browser offers installation.
 
 ### Tests
+
 69 passing (adds PNG-metadata, versions/backup suites).
 
 ## 1.6.0 — 2026-09-02
@@ -33,19 +60,21 @@ location-data selling, broken offline, paywalled sacred content). Research
 and evidence in `docs/MARKET.md`.
 
 ### Added
+
 - **Hijri date** (Umm al-Qura via Intl, fully on-device) in the home hero.
 - **Upcoming occasions strip** with day countdowns (Ramadan, both Eids,
   Arafah, Ashura, Hijri new year) linking straight into content creation.
 - **Hadith of the day** on home from the verified seed, opening in the creator.
 - **Ayah favorites**: star any verse, jump back to it from saved-verse chips
   in the Quran creator (offline, per user).
-- **Copy with attribution**: one tap copies the verse text + [surah:ayah]
-  + source name.
+- **Copy with attribution**: one tap copies the verse text plus [surah:ayah]
+  plus the source name.
 - **Tasbih (السبحة)**: circular counter with target rounds (33/34/100),
   haptic tick, persisted daily total; phrases occurring verbatim in the
   verified Quran text carry their ayah reference. In the drawer under Tools.
 
 ### Tests
+
 65 passing (adds hijri/occasions and favorites suites).
 
 ## 1.5.0 — 2026-08-28
@@ -54,6 +83,7 @@ Professional transformation release (full audit → targeted upgrades; see
 `docs/AUDIT.md` for the audit evidence).
 
 ### Product & UX
+
 - **Home is now a real dashboard**: status stats (drafts/scheduled/published/all,
   each linking to its destination), "pick up where you left off" drafts row,
   personalized greeting, prioritized section order.
@@ -66,28 +96,32 @@ Professional transformation release (full audit → targeted upgrades; see
   sacred text and checksums byte-identical after apply).
 
 ### Accessibility
+
 Focus trap + initial focus + focus return in all modals; skip-to-content link;
 translated dialog close labels; ≥44px touch targets on touch devices.
 
 ### Performance
+
 Supabase SDK now loads lazily only when configured — main bundle cut from
 590 KB → 373 KB (gzip 179 → 124 KB, −31%). Robust Arabic font fallback stacks.
 
 ### Security
+
 Content-Security-Policy meta (self-only scripts; allow-listed fonts, recitation
 CDN, and API hosts; `object-src 'none'`).
 
 ### Testing
+
 60 passing (adds user-template structure guarantees) + a reusable live
 regression walkthrough (`scripts/regression-walkthrough.mjs`) that drives the
 production build in Chromium and asserts zero app console errors.
-
 
 ## 1.4.0 — 2026-08-28
 
 Master Directive v2 alignment (docs + incremental code, no rebuilds).
 
 ### Added
+
 - Governance docs: `docs/adr/` (six binding ADRs), `MIGRATION.md` (staged Flutter
   path — not executed), `ROADMAP.md`, `PROJECT_STATUS.md`, `SKILL_REGISTRY.md`,
   `docs/AI_RULES.md`, `docs/SOURCE_POLICY.md`; ARCHITECTURE gained a v2 alignment map.
@@ -100,14 +134,15 @@ Master Directive v2 alignment (docs + incremental code, no rebuilds).
 - `.env.example` server-secret names aligned with v2 Appendix (ب).
 
 ### Tests
-58 passing (adds fatwa/alteration refusals and retry lifecycle).
 
+58 passing (adds fatwa/alteration refusals and retry lifecycle).
 
 ## 1.3.0 — 2026-08-28
 
 Feature-complete release (closes the remaining master-directive items).
 
 ### Added
+
 - **In-app notification center (Phase 12)**: bell with live unread badge in the
   header, notification panel (mark read / clear), persisted per user in
   IndexedDB; wired to publish success/failure, scheduling, and every export.
@@ -122,6 +157,7 @@ Feature-complete release (closes the remaining master-directive items).
   pre-applied to the generated design.
 
 ### Tests
+
 55 passing (adds the notification-center suite).
 
 ## 1.2.0 — 2026-08-28
@@ -129,6 +165,7 @@ Feature-complete release (closes the remaining master-directive items).
 Visual identity release.
 
 ### Added
+
 - Subtle Islamic geometric pattern (rub-el-hizb tile) woven into the hero,
   verse-of-day card, create-hub cards, and drawer identity card.
 - Home hero: gradient emerald banner; quick actions with per-category tinted
@@ -146,6 +183,7 @@ Visual identity release.
 Professional polish release.
 
 ### Added
+
 - **Design templates**: 8 curated looks (free + premium) with decorative frames,
   applied in one tap from the editor's new Templates tab — styling only, sacred
   text and checksums untouched (tested).
@@ -166,6 +204,7 @@ Professional polish release.
 - SEO/social meta tags and robots.txt.
 
 ### Tests
+
 52 passing (adds template styling-guarantee suite).
 
 ## 1.0.0 — 2026-08-28
@@ -173,6 +212,7 @@ Professional polish release.
 Initial production-ready release.
 
 ### Added
+
 - Clean architecture foundation (core/features, Zustand, strict TS, Vite PWA).
 - Design system: tokens, light/dark/system themes, RTL-first responsive shell
   (bottom nav on phones, side rail ≥900px), drawer menu.
