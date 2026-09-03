@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.9.0 — 2026-09-03
+
+Old-paper theme + no dead menu items.
+
+### Changed
+
+- **Aged-paper palette**: light theme is now parchment (warm cream surfaces,
+  sepia ink, warm borders/shadows) with a subtle paper-grain texture; dark
+  theme is old leather (warm browns, parchment-toned text). Green/gold brand
+  accents kept. All via tokens only.
+- **Drawer items now land somewhere visible**: Help/About/Privacy/Terms
+  links scroll to their Settings section and flash it. Added a real Help
+  section (4 FAQs) and rewrote Privacy as the four concrete guarantees
+  (no ads/trackers/location, local-first, opt-in sync, unaltered sacred
+  texts).
+
 ## 1.8.0 — 2026-09-02
 
 Directive-v2 closure release: the last two v2 items implementable without

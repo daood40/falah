@@ -313,7 +313,25 @@ export const en: Record<string, string> = {
   'settings.notConfigured': 'Requires API setup. see docs/DEPLOYMENT.md',
   'settings.help': 'Help',
   'settings.about': 'About',
-  'settings.aboutText': 'FALAH. trusted Islamic content creation platform. Version 1.0.0',
+  'help.faq1q': 'How do I create a verse design?',
+  'help.faq1a':
+    'From Create choose Holy Quran, pick the surah and ayah, then open it in the editor.',
+  'help.faq2q': 'How is my work saved?',
+  'help.faq2a':
+    'It auto-saves to your device every 5 seconds, and earlier versions can be restored from Version history in the editor.',
+  'help.faq3q': 'Does the app work offline?',
+  'help.faq3a':
+    'Yes. The full Quran, the editor, the library, tasbih and daily werd all work without a connection.',
+  'help.faq4q': 'How do I move my data to another device?',
+  'help.faq4a':
+    'Export a one-file backup from the Storage section, then import it on the other device.',
+  'privacy.p1': 'No ads, no trackers, and location permission is never requested.',
+  'privacy.p2': 'Your designs and data are stored locally on your device.',
+  'privacy.p3':
+    'Nothing leaves your device unless you connect a sync account or a publishing platform yourself.',
+  'privacy.p4':
+    'Sacred texts are shown from verified sources with their metadata and are never altered.',
+  'settings.aboutText': 'FALAH. trusted Islamic content creation platform. Version 1.9.0',
   'settings.clearData': 'Clear local data',
   'settings.clearDataConfirm': 'This deletes all local designs and drafts. Continue?',
   'settings.plan.free': 'Free',

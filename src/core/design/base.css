@@ -17,7 +17,8 @@ body {
   font-size: var(--fl-fs-md);
   line-height: var(--fl-lh-normal);
   color: var(--fl-text);
-  background: var(--fl-bg);
+  background-color: var(--fl-bg);
+  background-image: var(--fl-paper);
   -webkit-font-smoothing: antialiased;
   overscroll-behavior-y: none;
 }
@@ -448,4 +449,10 @@ a {
     min-height: 44px;
     min-width: 44px;
   }
+}
+
+/* Flash highlight for sections targeted from the drawer (#help/#privacy...) */
+.fl-target-flash {
+  outline: 2px solid var(--fl-accent);
+  outline-offset: 3px;
 }
