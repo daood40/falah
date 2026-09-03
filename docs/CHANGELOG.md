@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.9.1 — 2026-09-03
+
+Help FAQs reorganized into four topic groups (creating, saving/backup,
+reading/tools, publishing) shown as an accordion — questions collapsed,
+one open at a time — and grown from 4 to 8 questions.
+
 ## 1.9.0 — 2026-09-03
 
 Old-paper theme + no dead menu items.
