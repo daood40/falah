@@ -15,27 +15,27 @@
   --fl-gold-100: #f6ecc9;
   --fl-cream: #f8f5ec;
 
-  /* Semantic — light theme */
-  --fl-bg: #f6f7f6;
-  --fl-surface: #ffffff;
-  --fl-surface-2: #eef1ef;
-  --fl-surface-3: #e2e7e4;
-  --fl-text: #14201b;
-  --fl-text-2: #4c5a53;
-  --fl-text-3: #7c8781;
-  --fl-border: #dde3df;
+  /* Semantic — light theme: aged paper (parchment ground, sepia ink) */
+  --fl-bg: #ece1c8;
+  --fl-surface: #f6eedb;
+  --fl-surface-2: #e9dcbe;
+  --fl-surface-3: #dccaa4;
+  --fl-text: #2e2414;
+  --fl-text-2: #615133;
+  --fl-text-3: #8d7c59;
+  --fl-border: #d3c19b;
   --fl-primary: var(--fl-green-700);
   --fl-primary-hover: var(--fl-green-600);
-  --fl-on-primary: #ffffff;
+  --fl-on-primary: #f8f5ec;
   --fl-accent: var(--fl-gold-600);
-  --fl-danger: #b3352c;
-  --fl-warning: #a8710a;
+  --fl-danger: #a53a28;
+  --fl-warning: #96660a;
   --fl-success: #17734f;
   --fl-info: #1a5f8a;
-  --fl-overlay: rgba(10, 20, 16, 0.55);
-  --fl-shadow-1: 0 1px 3px rgba(10, 25, 20, 0.09);
-  --fl-shadow-2: 0 4px 16px rgba(10, 25, 20, 0.13);
-  --fl-shadow-3: 0 12px 40px rgba(10, 25, 20, 0.2);
+  --fl-overlay: rgba(43, 32, 12, 0.55);
+  --fl-shadow-1: 0 1px 3px rgba(62, 45, 15, 0.12);
+  --fl-shadow-2: 0 4px 16px rgba(62, 45, 15, 0.16);
+  --fl-shadow-3: 0 12px 40px rgba(62, 45, 15, 0.24);
 
   /* Typography */
   --fl-font-ui: 'Cairo', 'Segoe UI', system-ui, -apple-system, sans-serif;
@@ -85,15 +85,16 @@
   --fl-touch-min: 44px;
 }
 
+/* Dark theme: old leather binding — warm browns, parchment-toned ink */
 [data-theme='dark'] {
-  --fl-bg: #0b1210;
-  --fl-surface: #121a17;
-  --fl-surface-2: #1a2420;
-  --fl-surface-3: #24312b;
-  --fl-text: #eef3f0;
-  --fl-text-2: #aebbb4;
-  --fl-text-3: #74817a;
-  --fl-border: #26332d;
+  --fl-bg: #171106;
+  --fl-surface: #221a0c;
+  --fl-surface-2: #2d2312;
+  --fl-surface-3: #3a2e19;
+  --fl-text: #f0e6cf;
+  --fl-text-2: #c4b28c;
+  --fl-text-3: #8f7e5d;
+  --fl-border: #42351d;
   --fl-primary: var(--fl-green-500);
   --fl-primary-hover: #1da06f;
   --fl-on-primary: #06281f;
@@ -102,7 +103,7 @@
   --fl-warning: #d99a2b;
   --fl-success: #2fae7d;
   --fl-info: #4d9fd0;
-  --fl-overlay: rgba(0, 0, 0, 0.65);
+  --fl-overlay: rgba(12, 8, 0, 0.68);
   --fl-shadow-1: 0 1px 3px rgba(0, 0, 0, 0.4);
   --fl-shadow-2: 0 4px 16px rgba(0, 0, 0, 0.5);
   --fl-shadow-3: 0 12px 40px rgba(0, 0, 0, 0.6);
@@ -123,6 +124,8 @@
   /* Subtle rub-el-hizb geometric tile (light strokes, for dark/green surfaces). */
   --fl-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.055' stroke-width='1'%3E%3Crect x='16' y='16' width='40' height='40'/%3E%3Crect x='16' y='16' width='40' height='40' transform='rotate(45 36 36)'/%3E%3Ccircle cx='36' cy='36' r='4.5'/%3E%3C/g%3E%3C/svg%3E");
   --fl-glow-primary: 0 8px 22px rgba(18, 116, 79, 0.35);
+  /* Old-paper grain: sepia fractal noise at ~5% alpha, tiled. */
+  --fl-paper: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.33 0 0 0 0 0.25 0 0 0 0 0.10 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23p)'/%3E%3C/svg%3E");
 }
 [data-theme='dark'] {
   --fl-grad-primary: linear-gradient(135deg, #1da06f, #12744f 55%, #0e5c46);

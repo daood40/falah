@@ -1,7 +1,7 @@
 /** Settings: account, appearance, language, notifications, storage, quality,
  * subscription, social accounts, help/about/privacy/terms, clear data. */
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useI18n, LOCALES } from '@core/i18n';
 import { useTheme, type ThemeMode } from '@core/theme/theme';
 import { estimateStorage, db, kvGet, kvSet } from '@core/db/localdb';
@@ -55,6 +55,20 @@ export function SettingsPage() {
   const [storage, setStorage] = useState<{ usedMb: number; quotaMb: number } | null>(null);
   const [clearOpen, setClearOpen] = useState(false);
   const installPrompt = useInstallPrompt();
+  const location = useLocation();
+
+  // Drawer links land on /settings#help|#about|#privacy|#terms: scroll there
+  // and flash the section so the tap has a visible result.
+  useEffect(() => {
+    const id = location.hash.slice(1);
+    if (!id) return;
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.scrollIntoView({ block: 'start' });
+    el.classList.add('fl-target-flash');
+    const timer = setTimeout(() => el.classList.remove('fl-target-flash'), 1800);
+    return () => clearTimeout(timer);
+  }, [location.hash]);
 
   const exportBackup = async () => {
     const backup = await createBackup();
@@ -263,16 +277,27 @@ export function SettingsPage() {
         </Section>
       )}
 
+      <Section id="help" title={t('settings.help')}>
+        {([1, 2, 3, 4] as const).map((n) => (
+          <div key={n}>
+            <strong>{t(`help.faq${n}q`)}</strong>
+            <p className="fl-muted" style={{ margin: 0 }}>
+              {t(`help.faq${n}a`)}
+            </p>
+          </div>
+        ))}
+      </Section>
+
       <Section id="about" title={t('settings.about')}>
         <p className="fl-muted">{t('settings.aboutText')}</p>
       </Section>
 
       <Section id="privacy" title={t('menu.privacy')}>
-        <p className="fl-muted">
-          {locale === 'ar'
-            ? 'تُحفظ تصاميمك محليًا على جهازك، ولا تُرسل بياناتك لأي طرف إلا عند ربط حساب Supabase أو منصات النشر بموافقتك. النصوص الدينية تُعرض من مصادر موثقة مع بياناتها الوصفية.'
-            : 'Your designs are stored locally on your device. Data leaves the device only when you connect Supabase or publishing platforms. Religious texts are displayed from verified sources with full metadata.'}
-        </p>
+        <ul className="fl-muted" style={{ margin: 0, paddingInlineStart: 'var(--fl-sp-5)' }}>
+          {([1, 2, 3, 4] as const).map((n) => (
+            <li key={n}>{t(`privacy.p${n}`)}</li>
+          ))}
+        </ul>
       </Section>
 
       <Section id="terms" title={t('menu.terms')}>
