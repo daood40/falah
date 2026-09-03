@@ -4,7 +4,7 @@
  * - Hashed build assets (/assets/*): cache-first (immutable).
  * - Google Fonts + recitation audio: cache-first with a size-capped runtime cache.
  */
-const VERSION = 'falah-v2';
+const VERSION = 'falah-v3';
 const SHELL_CACHE = `${VERSION}-shell`;
 const ASSET_CACHE = `${VERSION}-assets`;
 const MEDIA_CACHE = `${VERSION}-media`;
@@ -12,7 +12,7 @@ const MEDIA_LIMIT = 120;
 
 // Scope-aware base path: works at '/' locally and under '/<repo>/' on GitHub Pages.
 const BASE = new URL(self.registration.scope).pathname;
-const SHELL_URLS = [BASE, BASE + 'index.html', BASE + 'manifest.webmanifest', BASE + 'icon.svg'];
+const SHELL_URLS = [BASE, BASE + 'index.html', BASE + 'manifest.webmanifest', BASE + 'icon.svg', BASE + 'icon-192.png', BASE + 'icon-512.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(

@@ -346,7 +346,7 @@ export const en: Record<string, string> = {
     'Nothing leaves your device unless you connect a sync account or a publishing platform yourself.',
   'privacy.p4':
     'Sacred texts are shown from verified sources with their metadata and are never altered.',
-  'settings.aboutText': 'FALAH. trusted Islamic content creation platform. Version 1.9.1',
+  'settings.aboutText': 'FALAH. trusted Islamic content creation platform. Version 2.0.0',
   'settings.clearData': 'Clear local data',
   'settings.clearDataConfirm': 'This deletes all local designs and drafts. Continue?',
   'settings.plan.free': 'Free',

@@ -1,5 +1,25 @@
 # Changelog
 
+## 2.0.0 — 2026-09-03 (الإطلاق — launch)
+
+Launch release: installation is now first-class.
+
+### Fixed
+
+- **PWA install on GitHub Pages**: the manifest used absolute paths
+  (`start_url: "/"`, `/icon.svg`), so an app installed from
+  `/falah/` would open the wrong URL. All manifest URLs are now relative
+  (`start_url`/`scope`/`id: "./"`).
+
+### Added
+
+- Real installable icons: 192/512 PNG, a 512 maskable icon (safe-zone
+  padded on brand green), and an apple-touch-icon; manifest
+  `background_color` matches the parchment theme.
+- `og:image` now points at the absolute published PNG so link previews
+  render everywhere.
+- Service worker bumped to v3 and precaches the new icons.
+
 ## 1.9.1 — 2026-09-03
 
 Help FAQs reorganized into four topic groups (creating, saving/backup,
