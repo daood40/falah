@@ -325,13 +325,28 @@ export const en: Record<string, string> = {
   'help.faq4q': 'How do I move my data to another device?',
   'help.faq4a':
     'Export a one-file backup from the Storage section, then import it on the other device.',
+  'help.cat1': 'Creating and design',
+  'help.cat2': 'Saving and backup',
+  'help.cat3': 'Reading and tools',
+  'help.cat4': 'Publishing and scheduling',
+  'help.faq5q': 'How do I use a ready template?',
+  'help.faq5a':
+    'From the Templates tab inside the editor, or the templates strip on Home. Only the design changes; the sacred text is never touched.',
+  'help.faq6q': 'How do I make a recitation video?',
+  'help.faq6a':
+    'Enable Make video in the Quran creator, pick a reciter, then export the video from the editor.',
+  'help.faq7q': 'Where are the tasbih, daily werd and adhkar?',
+  'help.faq7a': 'In the side menu (the top menu button) under Tools.',
+  'help.faq8q': 'Why do publishing platforms show as not configured?',
+  'help.faq8a':
+    'Real publishing needs official keys per platform. FALAH never fakes a publish; your schedule is kept and runs once connected.',
   'privacy.p1': 'No ads, no trackers, and location permission is never requested.',
   'privacy.p2': 'Your designs and data are stored locally on your device.',
   'privacy.p3':
     'Nothing leaves your device unless you connect a sync account or a publishing platform yourself.',
   'privacy.p4':
     'Sacred texts are shown from verified sources with their metadata and are never altered.',
-  'settings.aboutText': 'FALAH. trusted Islamic content creation platform. Version 1.9.0',
+  'settings.aboutText': 'FALAH. trusted Islamic content creation platform. Version 1.9.1',
   'settings.clearData': 'Clear local data',
   'settings.clearDataConfirm': 'This deletes all local designs and drafts. Continue?',
   'settings.plan.free': 'Free',

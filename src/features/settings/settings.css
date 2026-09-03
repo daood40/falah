@@ -1,0 +1,48 @@
+/* Settings: help FAQ accordion (one question open at a time) */
+.faq-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--fl-sp-1);
+}
+.faq-group + .faq-group {
+  margin-top: var(--fl-sp-3);
+}
+.faq-group__title {
+  font-size: var(--fl-fs-xs);
+  font-weight: 700;
+  color: var(--fl-accent);
+  letter-spacing: 0.02em;
+}
+.faq-item {
+  border-bottom: 1px solid var(--fl-border);
+}
+.faq-item:last-child {
+  border-bottom: none;
+}
+.faq-item__q {
+  display: flex;
+  align-items: center;
+  gap: var(--fl-sp-2);
+  width: 100%;
+  min-height: var(--fl-touch-min);
+  padding: var(--fl-sp-2) 0;
+  border: none;
+  background: none;
+  color: var(--fl-text);
+  font-size: var(--fl-fs-sm);
+  font-weight: 600;
+  text-align: start;
+  cursor: pointer;
+}
+.faq-item__chev {
+  color: var(--fl-text-3);
+  font-size: var(--fl-fs-lg);
+  line-height: 1;
+}
+.faq-item__q[aria-expanded='true'] .faq-item__chev {
+  color: var(--fl-accent);
+}
+.faq-item__a {
+  margin: 0 0 var(--fl-sp-3);
+  font-size: var(--fl-fs-sm);
+}

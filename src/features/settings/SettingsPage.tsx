@@ -14,12 +14,21 @@ import { listPublishers } from '@features/publishing/domain/socialPublisher';
 import { hasSupabase } from '@core/supabase/client';
 import { createBackup, restoreBackup } from '@core/backup/backup';
 import { useInstallPrompt } from '@core/pwa/installPrompt';
+import './settings.css';
 
 interface SettingsPrefs {
   notifications: boolean;
   exportQuality: 'standard' | 'high';
   wifiOnly: boolean;
 }
+
+/** Help FAQs grouped by topic; numbers map to help.faq<n>q/a i18n keys. */
+const FAQ: { cat: string; items: number[] }[] = [
+  { cat: 'help.cat1', items: [1, 5, 6] },
+  { cat: 'help.cat2', items: [2, 4] },
+  { cat: 'help.cat3', items: [3, 7] },
+  { cat: 'help.cat4', items: [8] },
+];
 
 const PREFS_KEY = 'settings.prefs';
 const DEFAULT_PREFS: SettingsPrefs = {
@@ -54,6 +63,7 @@ export function SettingsPage() {
   const [prefs, setPrefs] = useState<SettingsPrefs>(DEFAULT_PREFS);
   const [storage, setStorage] = useState<{ usedMb: number; quotaMb: number } | null>(null);
   const [clearOpen, setClearOpen] = useState(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
   const installPrompt = useInstallPrompt();
   const location = useLocation();
 
@@ -278,12 +288,24 @@ export function SettingsPage() {
       )}
 
       <Section id="help" title={t('settings.help')}>
-        {([1, 2, 3, 4] as const).map((n) => (
-          <div key={n}>
-            <strong>{t(`help.faq${n}q`)}</strong>
-            <p className="fl-muted" style={{ margin: 0 }}>
-              {t(`help.faq${n}a`)}
-            </p>
+        {FAQ.map((group) => (
+          <div key={group.cat} className="faq-group">
+            <h3 className="faq-group__title">{t(group.cat)}</h3>
+            {group.items.map((n) => (
+              <div key={n} className="faq-item">
+                <button
+                  className="faq-item__q"
+                  aria-expanded={openFaq === n}
+                  onClick={() => setOpenFaq(openFaq === n ? null : n)}
+                >
+                  <span className="fl-grow">{t(`help.faq${n}q`)}</span>
+                  <span className="faq-item__chev" aria-hidden>
+                    {openFaq === n ? '−' : '+'}
+                  </span>
+                </button>
+                {openFaq === n && <p className="faq-item__a fl-muted">{t(`help.faq${n}a`)}</p>}
+              </div>
+            ))}
           </div>
         ))}
       </Section>
