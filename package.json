@@ -1,7 +1,7 @@
 {
   "name": "falah",
   "private": true,
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "FALAH — منصة احترافية لصناعة وتنظيم ونشر المحتوى الإسلامي الموثوق",
   "type": "module",
   "scripts": {
@@ -14,7 +14,8 @@
     "typecheck": "tsc -b --pretty",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\"",
-    "db:validate": "bash scripts/validate-db.sh"
+    "db:validate": "bash scripts/validate-db.sh",
+    "sweep": "node scripts/launch-sweep.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.0",

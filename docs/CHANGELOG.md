@@ -1,5 +1,24 @@
 # Changelog
 
+## 2.1.0 — 2026-09-03
+
+Master-directive hardening (audit in `docs/DIRECTIVE_AUDIT.md` — all 54
+sections mapped with evidence).
+
+### Added
+
+- **Behavioral RLS tests** in `db:validate` (CI): a non-owner role acting as
+  user A must see only A's rows, cannot insert rows owned by B, and reads
+  zero foreign `publish_attempts` — policies are proven, not just present.
+- **Image-upload validation** in both editor upload spots: PNG/JPG/WebP/GIF
+  only (SVG deliberately excluded as scriptable), 8MB cap, clear errors.
+- **Client-side monitoring**: uncaught errors and unhandled rejections are
+  captured to a local ring buffer (50 entries, device-only) with an
+  Error-log section in Settings (view/clear).
+- **Permanent E2E sweep** `npm run sweep`: serves the production build,
+  visits all 12 routes, clicks every visible control, fails on any app
+  console error.
+
 ## 2.0.0 — 2026-09-03 (الإطلاق — launch)
 
 Launch release: installation is now first-class.

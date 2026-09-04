@@ -14,6 +14,11 @@ import { listPublishers } from '@features/publishing/domain/socialPublisher';
 import { hasSupabase } from '@core/supabase/client';
 import { createBackup, restoreBackup } from '@core/backup/backup';
 import { useInstallPrompt } from '@core/pwa/installPrompt';
+import {
+  clearCapturedErrors,
+  listCapturedErrors,
+  type CapturedError,
+} from '@core/monitor/errorLog';
 import './settings.css';
 
 interface SettingsPrefs {
@@ -104,10 +109,12 @@ export function SettingsPage() {
     }
   };
   const [connections, setConnections] = useState<Record<string, boolean>>({});
+  const [capturedErrors, setCapturedErrors] = useState<CapturedError[]>([]);
 
   useEffect(() => {
     void kvGet<SettingsPrefs>(PREFS_KEY).then((saved) => saved && setPrefs(saved));
     void estimateStorage().then(setStorage);
+    void listCapturedErrors().then(setCapturedErrors);
     void (async () => {
       const status: Record<string, boolean> = {};
       for (const publisher of listPublishers()) {
@@ -308,6 +315,34 @@ export function SettingsPage() {
             ))}
           </div>
         ))}
+      </Section>
+
+      <Section title={t('settings.errorLog')}>
+        {capturedErrors.length === 0 ? (
+          <p className="fl-muted">{t('settings.errorLogEmpty')}</p>
+        ) : (
+          <>
+            <ul className="fl-muted error-log" dir="ltr">
+              {capturedErrors.slice(0, 10).map((err, i) => (
+                <li key={`${err.at}-${i}`}>
+                  <code>{err.at.slice(0, 19)}</code> {err.message}
+                </li>
+              ))}
+            </ul>
+            <button
+              className="fl-btn"
+              onClick={async () => {
+                await clearCapturedErrors();
+                setCapturedErrors([]);
+              }}
+            >
+              {t('settings.errorLogClear')}
+            </button>
+          </>
+        )}
+        <p className="fl-muted" style={{ fontSize: 'var(--fl-fs-xs)', margin: 0 }}>
+          {t('settings.errorLogNote')}
+        </p>
       </Section>
 
       <Section id="about" title={t('settings.about')}>

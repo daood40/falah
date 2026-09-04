@@ -46,3 +46,16 @@
   margin: 0 0 var(--fl-sp-3);
   font-size: var(--fl-fs-sm);
 }
+
+/* Local error log (client-side monitoring) */
+.error-log {
+  margin: 0;
+  padding-inline-start: var(--fl-sp-5);
+  font-size: var(--fl-fs-xs);
+  word-break: break-word;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.error-log code {
+  color: var(--fl-text-3);
+}
