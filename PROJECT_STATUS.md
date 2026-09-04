@@ -86,6 +86,12 @@ Connectors فعلية + تشفير KMS (ADR-006)، الدفع، لوحة الإ�
   narrators/narrations، source_requests، publish_attempts، reports، folders،
   tags، user_templates، project_versions) مُتحقَّق منها على PostgreSQL حقيقي.
 
+## هجرة Flutter — مُفعَّلة (قرار المالك 2026-09-04)
+
+‏M0 منجزة: `flutter_app/` بثيم الورق القديم و359 مفتاح ترجمة، وعقد SOURCE_LOCK
+منقول باختباراته (12/12 في Dart) مع CI مستقل `flutter.yml`. التالي M1 (القراءة).
+الـPWA تبقى المنتج الحي حتى M4 (MIGRATION.md).
+
 ## المتبقي للجلسات القادمة (كله ينتظر مدخلات خارجية)
 
 1. Google Sign-In (يحتاج تهيئة Google في Supabase من المالك).

@@ -1,0 +1,26 @@
+# Flutter migration CI (MIGRATION.md M0+): independent of the PWA pipelines.
+name: Flutter CI
+on:
+  push:
+    paths: ['flutter_app/**', '.github/workflows/flutter.yml']
+  pull_request:
+    paths: ['flutter_app/**', '.github/workflows/flutter.yml']
+  workflow_dispatch:
+
+jobs:
+  flutter:
+    name: Analyze · Test
+    runs-on: ubuntu-latest
+    defaults:
+      run: { working-directory: flutter_app }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.4'
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter gen-l10n
+      - run: flutter analyze
+      - run: flutter test
