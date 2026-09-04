@@ -16,6 +16,7 @@ import {
 import { newShapeElement, newTextElement } from '../domain/projectFactory';
 import { useEditor } from '../domain/editorStore';
 import { newId } from '@core/utils/id';
+import { IMAGE_ACCEPT, validateImageFile } from '@core/utils/imageFile';
 import { TEMPLATES, applyTemplate, type DesignTemplate } from '@features/templates/templates';
 import {
   applyUserTemplate,
@@ -106,7 +107,13 @@ export function InsertBar() {
   };
   const addImage = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
+    const invalid = validateImageFile(file);
+    if (invalid) {
+      toast('error', t(invalid === 'type' ? 'errors.imageType' : 'errors.imageSize'));
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => {
       const el: CanvasElement = {
@@ -125,7 +132,6 @@ export function InsertBar() {
       select(el.id);
     };
     reader.readAsDataURL(file);
-    e.target.value = '';
   };
 
   return (
@@ -138,7 +144,7 @@ export function InsertBar() {
       </button>
       <label className="fl-btn fl-btn--sm" style={{ cursor: 'pointer' }}>
         <IconImage size={15} /> {t('editor.addImage')}
-        <input type="file" accept="image/*" onChange={addImage} style={{ display: 'none' }} />
+        <input type="file" accept={IMAGE_ACCEPT} onChange={addImage} style={{ display: 'none' }} />
       </label>
     </div>
   );
@@ -431,11 +437,16 @@ export function BackgroundPanel() {
 
   const setImage = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
+    const invalid = validateImageFile(file);
+    if (invalid) {
+      toast('error', t(invalid === 'type' ? 'errors.imageType' : 'errors.imageSize'));
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => setBackground({ ...bg, type: 'image', imageSrc: String(reader.result) });
     reader.readAsDataURL(file);
-    e.target.value = '';
   };
 
   return (
@@ -460,7 +471,12 @@ export function BackgroundPanel() {
           style={{ cursor: 'pointer' }}
         >
           <IconImage size={15} /> {t('editor.addImage')}
-          <input type="file" accept="image/*" onChange={setImage} style={{ display: 'none' }} />
+          <input
+            type="file"
+            accept={IMAGE_ACCEPT}
+            onChange={setImage}
+            style={{ display: 'none' }}
+          />
         </label>
       </div>
       <ColorPicker

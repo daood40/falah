@@ -326,6 +326,13 @@ export const en: Record<string, string> = {
   'help.faq4a':
     'Export a one-file backup from the Storage section, then import it on the other device.',
   'help.cat1': 'Creating and design',
+  'settings.errorLog': 'Error log',
+  'settings.errorLogEmpty': 'No errors recorded',
+  'settings.errorLogNote':
+    'Stored only on your device to help diagnose problems; never sent anywhere.',
+  'settings.errorLogClear': 'Clear log',
+  'errors.imageType': 'Unsupported image format. Allowed: PNG, JPG, WebP or GIF',
+  'errors.imageSize': 'Image exceeds the 8MB limit',
   'help.cat2': 'Saving and backup',
   'help.cat3': 'Reading and tools',
   'help.cat4': 'Publishing and scheduling',
