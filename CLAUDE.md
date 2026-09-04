@@ -19,6 +19,11 @@ SOURCE_LOCK — لا يُؤلَّف أو يُعدَّل نص شرعي أبدًا
 `npm run dev` · `npm test` (75) · `npm run typecheck` · `npm run lint` ·
 `npm run build` · `npm run db:validate` · `node scripts/regression-walkthrough.mjs`
 
+## عقد الجودة
+
+بوابات إلزامية بأدلة رقمية في `docs/GATES.md` — كل إصدار يحدّثها قبل إعلانه،
+ولا PASS بلا رقم. المرجعان: DIRECTIVE_AUDIT.md وMASTER CHECKLIST (46 قسمًا).
+
 ## قواعد
 
 - الفرع: `claude/falah-islamic-content-platform-hi3jhz`؛ الدفع بالعنوان الصريح
