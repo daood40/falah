@@ -26,6 +26,7 @@ class FalahApp extends StatelessWidget {
       locale: const Locale('ar'),
       theme: ThemeData(
         useMaterial3: true,
+        fontFamily: 'Cairo',
         scaffoldBackgroundColor: FlLight.bg,
         colorScheme: const ColorScheme.light(
           primary: FlLight.primary,
@@ -38,6 +39,7 @@ class FalahApp extends StatelessWidget {
       ),
       darkTheme: ThemeData(
         useMaterial3: true,
+        fontFamily: 'Cairo',
         scaffoldBackgroundColor: FlDark.bg,
         colorScheme: const ColorScheme.dark(
           primary: FlDark.primary,
