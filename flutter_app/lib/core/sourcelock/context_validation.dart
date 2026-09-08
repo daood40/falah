@@ -11,7 +11,9 @@ library;
 
 // Strip diacritics/Quranic marks WITHOUT unifying letter forms: hamza shape
 // distinguishes «إلا» (exception) from «ألا» (interrogative opener).
-final _marks = RegExp('[\\u0610-\\u061A\\u064B-\\u065F\\u0670\\u06D6-\\u06ED\\u0640\\u08D3-\\u08FF]');
+final _marks = RegExp(
+  '[\\u0610-\\u061A\\u064B-\\u065F\\u0670\\u06D6-\\u06ED\\u0640\\u08D3-\\u08FF]',
+);
 final _spaces = RegExp(r'\s+');
 
 String _stripMarks(String text) =>
@@ -51,10 +53,12 @@ List<ContextWarning> checkContext({
     final first = _stripMarks(firstText);
     if (_exceptionOpen.hasMatch(first)) {
       warnings.add(
-          const ContextWarning(ContextExtend.before, ContextReason.exception));
+        const ContextWarning(ContextExtend.before, ContextReason.exception),
+      );
     } else if (_relativeOpen.hasMatch(first)) {
       warnings.add(
-          const ContextWarning(ContextExtend.before, ContextReason.relative));
+        const ContextWarning(ContextExtend.before, ContextReason.relative),
+      );
     }
   }
 
@@ -62,10 +66,12 @@ List<ContextWarning> checkContext({
     final next = _stripMarks(nextText);
     if (_exceptionOpen.hasMatch(next)) {
       warnings.add(
-          const ContextWarning(ContextExtend.after, ContextReason.exception));
+        const ContextWarning(ContextExtend.after, ContextReason.exception),
+      );
     } else if (_relativeOpen.hasMatch(next)) {
       warnings.add(
-          const ContextWarning(ContextExtend.after, ContextReason.relative));
+        const ContextWarning(ContextExtend.after, ContextReason.relative),
+      );
     }
   }
 
