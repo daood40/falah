@@ -59,6 +59,14 @@ void main() {
       expect(results.first.ayah.surah, 112);
     });
 
+    test('returns verified inclusive ayah ranges (azkar portions)', () async {
+      expect(await repo.getAyahRange(2, 255, 255), hasLength(1));
+      final baqarahEnd = await repo.getAyahRange(2, 285, 286);
+      expect(baqarahEnd.map((a) => a.ayah), [285, 286]);
+      expect(await repo.getAyahRange(112, 1, 4), hasLength(4));
+      expect(baqarahEnd.first.locked.source.reviewStatus.name, 'verified');
+    });
+
     test('verse of the day is deterministic for a given date', () async {
       final date = DateTime.utc(2026, 9, 5);
       final a = await repo.verseOfDay(date);

@@ -125,6 +125,14 @@ class HomeScreen extends ConsumerWidget {
                   onTap: () => context.go('/tasbih'),
                 ),
               ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _NavCard(
+                  icon: Icons.auto_stories_outlined,
+                  label: t.azkar_title,
+                  onTap: () => context.go('/tasbih/azkar'),
+                ),
+              ),
             ],
           ),
         ],

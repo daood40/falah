@@ -52,6 +52,13 @@ class QuranRepository {
     return ayahs;
   }
 
+  /// Inclusive verified range, e.g. (2, 285, 286) for the closing of
+  /// al-Baqarah. Used by the Quranic azkar screen.
+  Future<List<Ayah>> getAyahRange(int surah, int from, int to) async {
+    final ayahs = await getSurahAyahs(surah);
+    return ayahs.where((a) => a.ayah >= from && a.ayah <= to).toList();
+  }
+
   Future<Ayah?> getAyah(int surah, int ayah) async {
     if (surah < 1 || surah > 114) return null;
     final ayahs = await getSurahAyahs(surah);

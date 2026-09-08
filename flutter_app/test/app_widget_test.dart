@@ -1,5 +1,6 @@
 // Widget tests: shell navigation, four states, RTL, persistence, a11y scale.
 import 'package:falah/app/providers.dart';
+import 'package:falah/features/azkar/azkar_screen.dart';
 import 'package:falah/core/settings/settings.dart';
 import 'package:falah/features/quran/data/quran_repository.dart';
 import 'package:falah/main.dart';
@@ -149,6 +150,64 @@ void main() {
     await tester.tap(find.text('100'));
     await tester.pump();
     expect(prefs.getInt('tasbih.target'), 100);
+  });
+
+  testWidgets('tasbih dhikr presets switch text, target and persist', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    final prefs = await _pumpApp(tester);
+
+    await tester.tap(_navIcon(Icons.radio_button_unchecked));
+    await _settle(tester);
+    expect(find.text('سُبْحَانَ اللَّهِ'), findsWidgets);
+
+    await tester.tap(find.text('أَسْتَغْفِرُ اللَّهَ'));
+    await tester.pump();
+    expect(find.text('/ 100'), findsOneWidget);
+    expect(prefs.getString('tasbih.preset'), 'istighfar');
+    expect(prefs.getInt('tasbih.target'), 100);
+  });
+
+  testWidgets('azkar screen shows the five verified Quranic portions', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    await _pumpApp(tester);
+
+    await tester.tap(_navIcon(Icons.radio_button_unchecked));
+    await _settle(tester);
+    await tester.ensureVisible(find.text('أذكار قرآنية'));
+    await tester.tap(find.text('أذكار قرآنية'));
+    await _settle(tester);
+
+    expect(find.text('آية الكرسي'), findsOneWidget);
+    expect(find.text('خواتيم سورة البقرة'), findsOneWidget);
+    expect(find.textContaining('موثّق'), findsWidgets);
+
+    // Scope to the azkar screen: the tasbih screen below in the branch
+    // stack also renders a "0".
+    final inAzkar = find.byType(AzkarScreen);
+    await tester.tap(
+      find.descendant(of: inAzkar, matching: find.text('0')).first,
+    );
+    await tester.pump();
+    expect(
+      find.descendant(of: inAzkar, matching: find.text('1')),
+      findsOneWidget,
+    );
+
+    // The last portion sits below the fold in the lazy ListView.
+    await tester.scrollUntilVisible(
+      find.text('سورة الناس'),
+      400,
+      scrollable: find.byType(Scrollable).last,
+    );
+    expect(find.text('سورة الناس'), findsOneWidget);
   });
 
   testWidgets('settings persist theme mode and switch language live', (
