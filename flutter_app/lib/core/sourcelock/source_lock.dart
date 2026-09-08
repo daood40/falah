@@ -81,7 +81,8 @@ LockedText lockText(String rawText, SourceMetadata source) {
   }
   if (source.sourceId.isEmpty || source.sourceName.isEmpty) {
     throw const SourceLockException(
-        'Religious text requires source_id and source_name');
+      'Religious text requires source_id and source_name',
+    );
   }
   return LockedText(text: text, checksum: checksumOf(text), source: source);
 }
@@ -98,11 +99,13 @@ void assertPublishable(LockedText locked, {required bool userApproved}) {
   }
   if (!verifyLockedText(locked)) {
     throw const SourceLockException(
-        'Checksum mismatch: text was modified after verification');
+      'Checksum mismatch: text was modified after verification',
+    );
   }
   if (!userApproved) {
     throw const SourceLockException(
-        'User approval is required before export/publish');
+      'User approval is required before export/publish',
+    );
   }
 }
 
