@@ -1,5 +1,19 @@
 # Changelog
 
+## Flutter M1 polish + hardening — 2026-09-08
+
+SPEC P5/P6 closed (skills pack applied end-to-end; PWA remains the live
+product until M4).
+
+- Polish: Semantics label on the tasbih tap circle, LTR-forced digits in RTL,
+  Arabic line heights (1.6–1.7) in the text theme, reading width capped at
+  720 on wide viewports.
+- Hardening: 7 widget tests (shell navigation, verse of day, 114-surah list +
+  reader, reference search plus empty state, tasbih persistence, settings
+  persistence with live language flip to LTR, 1.3x text-scale pass) —
+  Flutter suite now 26/26; analyze clean; web build green.
+- Verified visually: 6 screenshots across light/dark, RTL/LTR, all screens.
+
 ## 2.1.0 — 2026-09-03
 
 Master-directive hardening (audit in `docs/DIRECTIVE_AUDIT.md` — all 54

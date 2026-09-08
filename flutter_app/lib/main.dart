@@ -79,6 +79,13 @@ ThemeData _theme(Brightness brightness) {
   return ThemeData(
     useMaterial3: true,
     fontFamily: 'Cairo',
+    // Arabic needs extra line height or descenders/diacritics clip.
+    textTheme: const TextTheme(
+      bodyLarge: TextStyle(height: 1.7),
+      bodyMedium: TextStyle(height: 1.7),
+      bodySmall: TextStyle(height: 1.6),
+      titleMedium: TextStyle(height: 1.5),
+    ),
     colorScheme: scheme,
     scaffoldBackgroundColor: light ? FlLight.bg : FlDark.bg,
     appBarTheme: AppBarTheme(

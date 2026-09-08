@@ -2048,6 +2048,12 @@ abstract class AppLocalizations {
   /// **'تصفير'**
   String get tasbih_reset;
 
+  /// No description provided for @tasbih_tapToCount.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط للتسبيح'**
+  String get tasbih_tapToCount;
+
   /// No description provided for @tasbih_sourceNote.
   ///
   /// In ar, this message translates to:
