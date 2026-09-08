@@ -1015,6 +1015,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get tasbih_reset => 'تصفير';
 
   @override
+  String get tasbih_tapToCount => 'اضغط للتسبيح';
+
+  @override
   String get tasbih_sourceNote => 'ورد اللفظ في القرآن الكريم:';
 
   @override

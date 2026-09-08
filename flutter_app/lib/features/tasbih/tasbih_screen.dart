@@ -38,28 +38,36 @@ class TasbihScreen extends ConsumerWidget {
                     strokeWidth: 10,
                     backgroundColor: scheme.surfaceContainerHighest,
                   ),
-                  Material(
-                    color: Colors.transparent,
-                    shape: const CircleBorder(),
-                    clipBehavior: Clip.antiAlias,
-                    child: InkWell(
-                      onTap: () {
-                        HapticFeedback.lightImpact();
-                        notifier.tick();
-                      },
-                      child: Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              '${state.count}',
-                              style: Theme.of(context).textTheme.displayMedium,
-                            ),
-                            Text(
-                              '/ ${state.target}',
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
-                          ],
+                  Semantics(
+                    button: true,
+                    label: t.tasbih_tapToCount,
+                    child: Material(
+                      color: Colors.transparent,
+                      shape: const CircleBorder(),
+                      clipBehavior: Clip.antiAlias,
+                      child: InkWell(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          notifier.tick();
+                        },
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                '${state.count}',
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.displayMedium,
+                              ),
+                              Text(
+                                '/ ${state.target}',
+                                // Digits + slash must not flip in RTL.
+                                textDirection: TextDirection.ltr,
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),

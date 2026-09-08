@@ -1027,6 +1027,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tasbih_reset => 'Reset';
 
   @override
+  String get tasbih_tapToCount => 'Tap to count';
+
+  @override
   String get tasbih_sourceNote => 'The wording occurs in the Quran:';
 
   @override

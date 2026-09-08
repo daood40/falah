@@ -8,6 +8,7 @@ import '../features/quran/presentation/surah_list_screen.dart';
 import '../features/quran/presentation/surah_reader_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/tasbih/tasbih_screen.dart';
+import '../core/theme/tokens.dart';
 import '../l10n/app_localizations.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -77,7 +78,13 @@ class _ShellScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
     return Scaffold(
-      body: shell,
+      // Keep reading lines comfortable on wide (web/desktop) viewports.
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: FlLayout.readingMax),
+          child: shell,
+        ),
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: shell.currentIndex,
         onDestinationSelected: (i) =>

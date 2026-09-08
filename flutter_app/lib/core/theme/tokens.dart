@@ -79,4 +79,5 @@ abstract final class FlRadius {
 abstract final class FlLayout {
   static const touchMin = 44.0;
   static const contentMax = 1200.0;
+  static const readingMax = 720.0;
 }
