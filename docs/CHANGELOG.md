@@ -1,5 +1,31 @@
 # Changelog
 
+## 2.2.0 — Google Play release package — 2026-09-08
+
+Everything needed to publish app.falah.studio is now in the repo; the only
+remaining inputs are owner-only (Play account + signing secrets) — the exact
+steps live in `docs/RELEASE_PLAY.md`.
+
+### Added
+
+- **Release signing** in `android/app/build.gradle`: reads git-ignored
+  `key.properties` (CI restores it from secrets), versionName 2.2.0,
+  versionCode from CI run number.
+- **`Android Release (AAB)` workflow**: tag `v*` or manual run → tests →
+  web build → cap sync → signed `app-release.aab` artifact; fails loudly if
+  signing secrets are missing.
+- **Public privacy policy** `public/privacy.html` (ar+en) — deployed with
+  the site at `/falah/privacy.html`; content matches reality (offline-first,
+  no ads/tracking/analytics, no server accounts, minimal permissions).
+- **`docs/RELEASE_PLAY.md`**: complete store listing (ar), data-safety and
+  content-rating answers, owner steps, and the reasons the app passes review.
+- Store assets generated from the real app: 6 phone screenshots (1080×1920)
+  + feature graphic 1024×500 (delivered in chat).
+
+### Fixed
+
+- Tasbih target "/ 33" no longer flips to "33 /" in RTL (dir=ltr).
+
 ## Flutter azkar stage — 2026-09-08
 
 Owner decision via Q&A: azkar before MIGRATION's M2 editor stage.
