@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../dhikr/dhikr_presets.dart';
+
 /// Loaded once at startup (main awaits it) and overridden into the scope.
 final prefsProvider = Provider<SharedPreferences>(
   (ref) => throw UnimplementedError('overridden in main'),
@@ -50,27 +52,36 @@ final localeProvider = NotifierProvider<LocaleNotifier, Locale>(
   LocaleNotifier.new,
 );
 
-/// Tasbih: current count within the round, target, and persisted daily total.
+/// Tasbih: selected dhikr preset, current count within the round, target,
+/// and persisted daily total.
 class TasbihState {
+  final String presetId;
   final int count;
   final int target;
   final int todayTotal;
   const TasbihState({
+    required this.presetId,
     required this.count,
     required this.target,
     required this.todayTotal,
   });
 
-  TasbihState copyWith({int? count, int? target, int? todayTotal}) =>
-      TasbihState(
-        count: count ?? this.count,
-        target: target ?? this.target,
-        todayTotal: todayTotal ?? this.todayTotal,
-      );
+  TasbihState copyWith({
+    String? presetId,
+    int? count,
+    int? target,
+    int? todayTotal,
+  }) => TasbihState(
+    presetId: presetId ?? this.presetId,
+    count: count ?? this.count,
+    target: target ?? this.target,
+    todayTotal: todayTotal ?? this.todayTotal,
+  );
 }
 
 class TasbihNotifier extends Notifier<TasbihState> {
   static const _targetKey = 'tasbih.target';
+  static const _presetKey = 'tasbih.preset';
 
   String get _todayKey {
     final now = DateTime.now();
@@ -82,11 +93,26 @@ class TasbihNotifier extends Notifier<TasbihState> {
   @override
   TasbihState build() {
     final prefs = ref.read(prefsProvider);
+    final preset = presetById(prefs.getString(_presetKey));
     return TasbihState(
+      presetId: preset.id,
       count: 0,
-      target: prefs.getInt(_targetKey) ?? 33,
+      target: prefs.getInt(_targetKey) ?? preset.defaultTarget,
       todayTotal: prefs.getInt(_todayKey) ?? 0,
     );
+  }
+
+  /// Switching the dhikr resets the round and applies the preset's target.
+  Future<void> setPreset(String id) async {
+    final preset = presetById(id);
+    state = state.copyWith(
+      presetId: preset.id,
+      count: 0,
+      target: preset.defaultTarget,
+    );
+    final prefs = ref.read(prefsProvider);
+    await prefs.setString(_presetKey, preset.id);
+    await prefs.setInt(_targetKey, preset.defaultTarget);
   }
 
   Future<void> tick() async {

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/azkar/azkar_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/quran/presentation/surah_list_screen.dart';
 import '../features/quran/presentation/surah_reader_screen.dart';
@@ -52,6 +53,13 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: '/tasbih',
                 name: 'tasbih',
                 builder: (c, s) => const TasbihScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'azkar',
+                    name: 'azkar',
+                    builder: (c, s) => const AzkarScreen(),
+                  ),
+                ],
               ),
             ],
           ),

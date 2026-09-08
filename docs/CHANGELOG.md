@@ -1,5 +1,19 @@
 # Changelog
 
+## Flutter azkar stage — 2026-09-08
+
+Owner decision via Q&A: azkar before MIGRATION's M2 editor stage.
+
+- Expanded tasbih: the PWA's five dhikr presets ported verbatim (text, Quran
+  reference where the wording occurs in the verified text, default target),
+  selection persisted, "ورد اللفظ" note opens the reader at the reference.
+- New أذكار قرآنية screen: the same five Quranic portions as the PWA (Ayat
+  al-Kursi, closing of al-Baqarah, al-Ikhlas, al-Falaq, an-Nas) served
+  exclusively from the verified bundled text, free per-card counters, the
+  "no rulings" note; reachable from home and the tasbih tab.
+- `QuranRepository.getAyahRange` + 3 new tests (1 unit, 2 widget) — suite
+  now 29/29; analyze clean; web build green; verified with screenshots.
+
 ## Flutter M1 polish + hardening — 2026-09-08
 
 SPEC P5/P6 closed (skills pack applied end-to-end; PWA remains the live
