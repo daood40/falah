@@ -10,11 +10,18 @@ const HIJRI_FMT = new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura-nu-latn',
   year: 'numeric',
 });
 
-const HIJRI_DISPLAY = new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura', {
-  day: 'numeric',
-  month: 'long',
-  year: 'numeric',
-});
+const HIJRI_DISPLAY: Record<string, Intl.DateTimeFormat> = {
+  ar: new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }),
+  en: new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }),
+};
 
 export interface HijriDate {
   day: number;
@@ -28,9 +35,9 @@ export function hijriOf(date: Date): HijriDate {
   return { day: get('day'), month: get('month'), year: get('year') };
 }
 
-/** Human-readable hijri date, e.g. "١٢ ربيع الأول ١٤٤٨ هـ" (era comes from the locale). */
-export function hijriToday(date = new Date()): string {
-  return HIJRI_DISPLAY.format(date);
+/** Human-readable hijri date in the UI language, e.g. "١٢ ربيع الأول ١٤٤٨ هـ". */
+export function hijriToday(date = new Date(), locale: 'ar' | 'en' = 'ar'): string {
+  return (HIJRI_DISPLAY[locale] ?? HIJRI_DISPLAY.ar!).format(date);
 }
 
 export interface Occasion {

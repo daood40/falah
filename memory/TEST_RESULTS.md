@@ -1,5 +1,12 @@
 # memory/TEST_RESULTS.md   (تشغيل حقيقي فقط)
 
+## 2026-09-09 (مساءً) — جولة بوابات qa-production-readiness
+- التقرير الكامل: `docs/QA_REPORT.md` — النتيجة NO-GO ‏(11 PASS، ‏2 FAIL
+  قراري، ‏3 NOT RUN تحتاج جهاز/خادم، ‏1 BLOCKED خارجي)
+- جديد اليوم: `npm run db:validate` → ‏«rls behavioral: pass» على Postgres
+  حقيقي · جولة عدائية (مدخلات خبيثة/عمق/‏320px/‏EN/‏offline SW) → علة
+  واحدة أُصلحت وأُكدت · إعادة البوابات 1-4 بعد الإصلاح: خضراء
+
 ## 2026-09-09 — الجلسة المحلية (sandbox) + CI
 - ‏`npm test`: ‏75 نجحت / 0 فشلت (16 ملفًا)
 - ‏`npm run lint` و`npm run typecheck`: صفر أخطاء
