@@ -134,9 +134,7 @@ export function HomePage() {
       <header className="home-hero">
         <h1>{t('home.welcome')}</h1>
         <p className="home-hero__welcome">{t('home.welcomeText')}</p>
-        <p className="home-hero__hijri">
-          {hijriToday(new Date(), locale === 'en' ? 'en' : 'ar')}
-        </p>
+        <p className="home-hero__hijri">{hijriToday(new Date(), locale === 'en' ? 'en' : 'ar')}</p>
       </header>
 
       {occasions.length > 0 && (
