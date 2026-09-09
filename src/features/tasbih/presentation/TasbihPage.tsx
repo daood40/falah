@@ -58,7 +58,7 @@ export function TasbihPage() {
         <span className="tasbih__count" aria-hidden>
           {count}
         </span>
-        <span className="tasbih__target fl-muted" aria-hidden>
+        <span className="tasbih__target fl-muted" dir="ltr" aria-hidden>
           / {target}
         </span>
       </button>
