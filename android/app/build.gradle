@@ -16,7 +16,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         // versionCode must increase on every Play upload; CI passes run number.
-        versionCode (System.getenv('VERSION_CODE') ?: '2').toInteger()
+        versionCode = (System.getenv('VERSION_CODE') ?: '2').toInteger()
         versionName "2.2.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
