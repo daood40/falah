@@ -2,6 +2,11 @@
 FALAH QURAN API
 FINAL PRODUCTION AUDIT
 ----------------------------------
+SUPERSEDED BY: reports/PRIVATE_PRE_LICENSE_FINAL_AUDIT.txt (2026-09-16)
+CURRENT STATE: PRIVATE PRE-PRODUCTION — private mode is ON, nothing is public.
+This file remains as the record of the production-readiness pass that preceded
+the private-mode decision; its verdict (PRODUCTION READY: NO) still holds.
+----------------------------------
 generated_at : 2026-09-16 (second pass — public API readiness)
 environment  : PostgreSQL 16.13 · Node 22.22.2 · Flutter 3.35.4 / Dart 3.9.2
 rule         : every status below was produced by running the thing it

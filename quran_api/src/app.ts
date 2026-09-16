@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { Db } from './db/pool.ts';
 import { withRls } from './db/pool.ts';
-import type { Env } from './config/env.ts';
+import { unsafeConfiguration, type Env } from './config/env.ts';
 import { ApiError, mapDatabaseError } from './core/errors.ts';
 import { sendError, sendJson, sendSuccess } from './core/response.ts';
 import { Router } from './http/router.ts';
@@ -30,6 +30,12 @@ export type App = {
 };
 
 export function createApp(env: Env, db: Db): App {
+  const problems = unsafeConfiguration(env);
+  if (problems.length > 0) {
+    throw new Error(
+      `refusing to start — unsafe public configuration: ${problems.join('; ')}`,
+    );
+  }
   const router = buildRouter();
   const rateLimiter = new RateLimiter(env.rateLimit.windowMs, env.rateLimit.max);
 
@@ -58,12 +64,15 @@ export function createApp(env: Env, db: Db): App {
       if (route.auth && !userId) {
         throw new ApiError('UNAUTHORIZED', 'Authentication required');
       }
-      // Licence gate: content endpoints are public only when redistribution is
-      // confirmed; otherwise they stay available to authenticated staging users.
+      // Private mode / licence gate: while the project is private, or while
+      // redistribution rights are unconfirmed, religious content is served only
+      // to an authenticated internal caller — never anonymously.
       if (route.licensed && !env.flags.publicDataEnabled && !userId) {
         throw new ApiError(
           'LICENSE_RESTRICTED',
-          'Public data is disabled until redistribution rights are confirmed; authenticate to read in staging',
+          env.privateMode
+            ? 'PRIVATE_MODE: this instance is internal only — authenticate to read'
+            : 'Public data is disabled until redistribution rights are confirmed; authenticate to read',
         );
       }
 

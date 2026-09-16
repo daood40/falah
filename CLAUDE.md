@@ -26,6 +26,11 @@ SOURCE_LOCK — لا يُؤلَّف أو يُعدَّل نص شرعي أبدًا
 
 ## قواعد
 
+- **PRIVATE MODE (ملزم)**: المشروع خاص حتى تصل كل التراخيص — لا API عام، لا
+  بيانات عامة، لا تنزيل، لا فهرسة. `PRIVATE_MODE=true` افتراضيًا، ولا يُرفع أي
+  علم عام إلا بعد `npm run release:gate` = ALLOWED. التفاصيل في
+  `docs/PRIVATE_DOCUMENTATION.md` و`docs/LICENSING.md`.
+
 - الفرع: `claude/falah-islamic-content-platform-hi3jhz`؛ الدفع بالعنوان الصريح
   `https://github.com/daood40/falah` (origin يُعاد كتابته تلقائيًا للاسم القديم).
 - الموقع يُنشر من `main` فقط؛ APK من أي push (Actions → Artifacts).

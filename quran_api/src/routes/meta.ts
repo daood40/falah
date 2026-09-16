@@ -39,6 +39,8 @@ export const metaRoutes: Route[] = [
           status,
           environment: env.environment,
           api_version: 'v1',
+          private_mode: env.privateMode,
+          public_api_enabled: env.flags.publicApiEnabled,
           checks,
           license_flags: env.flags,
         },
@@ -79,6 +81,7 @@ export const metaRoutes: Route[] = [
           api_version: 'v1',
           api_release: API_RELEASE,
           environment: env.environment,
+          private_mode: env.privateMode,
           dataset: dataset && {
             version: dataset.version,
             status: dataset.status,
@@ -217,6 +220,32 @@ export const metaRoutes: Route[] = [
         values,
       );
       return { data: rows, meta: { total: rows.length } };
+    },
+  },
+  {
+    method: 'GET',
+    path: '/api/v1/licenses',
+    // Internal: the licence ledger is only visible to an authenticated caller.
+    auth: true,
+    handler: async ({ client }) => {
+      const { rows } = await client.query(
+        `select dataset_kind, subject, source_id, owner, copyright_holder, license,
+                license_url, permission_reference, redistribution, commercial_use,
+                modification, attribution_required, attribution_text, expires_at,
+                evidence, evidence_url, status, recorded_by, notes, updated_at
+         from quran.license_records order by dataset_kind, subject`,
+      );
+      const { rows: summary } = await client.query(
+        'select dataset_kind, confirmed, pending, restricted, rejected, total, all_confirmed from quran.license_gate order by dataset_kind',
+      );
+      return {
+        data: rows,
+        meta: {
+          total: rows.length,
+          summary,
+          note: 'CONFIRMED requires recorded evidence; anything else blocks public release.',
+        },
+      };
     },
   },
   {

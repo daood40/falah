@@ -8,6 +8,7 @@ const MIGRATIONS = [
   '0002_v2.sql',
   '0003_quran_platform.sql',
   '0004_human_verification.sql',
+  '0005_license_center.sql',
 ];
 const TEST_DB = process.env.TEST_DB_NAME ?? 'falah_quran_test';
 

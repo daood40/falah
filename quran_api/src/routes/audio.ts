@@ -15,8 +15,8 @@ import {
  * Audio licensing gate: download URLs are withheld unless
  * AUDIO_LICENSE_CONFIRMED=true AND the row itself is marked public.
  */
-function serializeAudio(row: Record<string, unknown>, audioLicenseConfirmed: boolean) {
-  const publicAudio = audioLicenseConfirmed && row.status === 'public';
+function serializeAudio(row: Record<string, unknown>, audioDownloadsAllowed: boolean) {
+  const publicAudio = audioDownloadsAllowed && row.status === 'public';
   return {
     ...row,
     download_url: publicAudio ? row.download_url : null,
@@ -111,7 +111,7 @@ export const audioRoutes: Route[] = [
         page,
       );
       return {
-        data: rows.map((row) => serializeAudio(row, ctx.env.flags.audioLicenseConfirmed)),
+        data: rows.map((row) => serializeAudio(row, ctx.env.flags.audioLicenseConfirmed && ctx.env.flags.dataRedistributionAllowed)),
         meta: pageMeta(page, total),
       };
     },
@@ -133,7 +133,7 @@ export const audioRoutes: Route[] = [
         page,
       );
       return {
-        data: rows.map((row) => serializeAudio(row, ctx.env.flags.audioLicenseConfirmed)),
+        data: rows.map((row) => serializeAudio(row, ctx.env.flags.audioLicenseConfirmed && ctx.env.flags.dataRedistributionAllowed)),
         meta: pageMeta(page, total),
       };
     },
@@ -151,7 +151,7 @@ export const audioRoutes: Route[] = [
         page,
       );
       return {
-        data: rows.map((row) => serializeAudio(row, ctx.env.flags.audioLicenseConfirmed)),
+        data: rows.map((row) => serializeAudio(row, ctx.env.flags.audioLicenseConfirmed && ctx.env.flags.dataRedistributionAllowed)),
         meta: pageMeta(page, total),
       };
     },
@@ -166,7 +166,7 @@ export const audioRoutes: Route[] = [
       if (!/^[0-9a-f-]{36}$/i.test(id)) throw new ApiError('VALIDATION_ERROR', 'id must be a uuid');
       const { rows, total } = await listAudioFiles(ctx.client, { kind: 'ayah', ayahId: id }, page);
       return {
-        data: rows.map((row) => serializeAudio(row, ctx.env.flags.audioLicenseConfirmed)),
+        data: rows.map((row) => serializeAudio(row, ctx.env.flags.audioLicenseConfirmed && ctx.env.flags.dataRedistributionAllowed)),
         meta: pageMeta(page, total),
       };
     },
@@ -186,7 +186,7 @@ export const audioRoutes: Route[] = [
         page,
       );
       return {
-        data: rows.map((row) => serializeAudio(row, ctx.env.flags.audioLicenseConfirmed)),
+        data: rows.map((row) => serializeAudio(row, ctx.env.flags.audioLicenseConfirmed && ctx.env.flags.dataRedistributionAllowed)),
         meta: pageMeta(page, total),
       };
     },
@@ -214,7 +214,7 @@ export const audioRoutes: Route[] = [
         page,
       );
       return {
-        data: rows.map((row) => serializeAudio(row, ctx.env.flags.audioLicenseConfirmed)),
+        data: rows.map((row) => serializeAudio(row, ctx.env.flags.audioLicenseConfirmed && ctx.env.flags.dataRedistributionAllowed)),
         meta: pageMeta(page, total),
       };
     },

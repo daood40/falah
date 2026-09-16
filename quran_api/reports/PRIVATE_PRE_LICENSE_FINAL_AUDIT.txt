@@ -1,0 +1,157 @@
+================================================================
+FALAH QURAN API — PRIVATE PRE-LICENSE FINAL AUDIT
+================================================================
+generated_at : 2026-09-16
+posture      : PRIVATE PRE-PRODUCTION. Nothing is public. Nothing was deployed.
+               No public URL exists and none is claimed.
+environment  : PostgreSQL 16.13 · Node 22.22.2 · Flutter 3.35.4 / Dart 3.9.2
+rule         : every status below was produced by running the thing it
+               describes, in this environment, today.
+
+----------------------------------------------------------------
+PRIVATE MODE — FINAL STATE
+----------------------------------------------------------------
+PRIVATE MODE            : ON      (default; forced in code, not just in config)
+PUBLIC API              : OFF     (PUBLIC_API_ENABLED=false, forced)
+PUBLIC DATA             : OFF     (PUBLIC_DATA_ENABLED=false, forced)
+PUBLIC DOWNLOADS        : OFF     (/downloads/* returns downloadable=false)
+PUBLIC STORAGE          : OFF     (no bucket exists; nothing uploaded anywhere)
+PUBLIC AUDIO            : OFF     (0 audio rows; no CDN used)
+PUBLIC TRANSLATIONS     : OFF     (10 languages held privately, LICENSE_PENDING)
+PUBLIC TAFSIR           : OFF     (no tafsir data at all)
+LICENSE GATES           : ON      (License Center + flags + release gate)
+SECURITY GATES          : ON      (auth, RLS, headers, CORS, rate limit, secret scan)
+HUMAN VERIFICATION GATE : ON      (DB trigger; status PENDING)
+DATA INTEGRITY GATE     : ON      (41 checks + 30 checks, both PASS)
+
+How private mode is enforced (not merely documented):
+  · loadEnv() forces publicDataEnabled / publicApiEnabled /
+    dataRedistributionAllowed to false whenever PRIVATE_MODE is on — setting
+    them to true in the environment changes nothing (test: "loadEnv cannot be
+    talked into a public posture while private").
+  · the server binds 127.0.0.1 by default in private mode (test).
+  · createApp() REFUSES to start a public instance whose licences are not
+    confirmed (test: "refuses to start a public instance without the matching
+    licences").
+  · content endpoints answer 451 to anonymous callers with a PRIVATE_MODE
+    message; only an authenticated internal caller reads (test).
+  · the PWA ships `noindex, nofollow, noarchive` and a Disallow-all robots.txt.
+  · Flutter staging/production configs carry an EMPTY base URL, guarded by a
+    test, so no build can point at a public host by accident.
+
+----------------------------------------------------------------
+CATEGORY | STATUS | EVIDENCE
+----------------------------------------------------------------
+Private Mode        | PASS    | forced in loadEnv + app + server + tests (6 cases)
+Build               | PASS    | tsc strict 0 errors · flutter analyze clean ·
+                    |         | npm run build 388.12 kB (gzip 129.59 kB)
+Database            | PASS    | schema `quran`: 34 tables · RLS forced on all ·
+                    |         | 31 policies · 84 indexes
+Migrations          | PASS    | 0001→0005 applied from an empty database
+Quran Data          | PASS    | 114 surahs · 6,236 ayahs · 0 failed/invalid/
+                    |         | missing/duplicate · 68,596 records verified
+Integrity           | PASS    | QURAN_FINAL_INTEGRITY.txt 41/41, 0 discrepancy ·
+                    |         | integrity-report.json 30/30
+Search              | PASS    | FTS + GIN + pg_trgm + skeleton index; raw text
+                    |         | never normalised
+Translations (data) | PASS    | 10 × 6,236 = 62,360 · 0 duplicates · hashes match
+Translations (rights)| PENDING| 10/10 LICENSE_PENDING — not served publicly
+Qiraat / Riwayat    | PASS    | 1 / 1, metadata licence CONFIRMED (MIT)
+Reciters            | BLOCKED | 0 records — no licensed dataset supplied
+Audio               | BLOCKED | 0 records — no licensed dataset; CDNs untouched
+Tafsir / WbW /      | PENDING | tables exist and are empty; licences UNKNOWN
+  Morphology        |         |
+API (internal)      | PASS    | 57 operations; live sweep of every family
+OpenAPI             | PASS    | 51 paths / 57 operations; router↔spec both ways
+Security            | PASS    | API_PRODUCTION_AUDIT.txt §6 · secret scan PASS
+                    |         | (and proven to catch a planted service-role key)
+RLS                 | PASS    | enforced in the database; cross-user read = 0
+SOURCE_LOCK         | PASS    | trigger refuses any raw_text change
+License Center      | PASS    | 22 records · CONFIRMED impossible without evidence
+                    |         | (2 DB-level tests) · exposed at /api/v1/licenses (auth)
+Public Release Gate | BLOCKED | 13 conditions unmet — reports/release-gate.json
+Human Verification  | PENDING | gate ON, no approved verification recorded
+Flutter             | PASS    | analyze clean · 52/52 tests · private configs only
+Android             | BLOCKED | no SDK here (dl.google.com blocked) → GitHub Actions
+iOS                 | BLOCKED | no macOS
+Deployment          | BLOCKED | owner credentials required; nothing deployed
+License (overall)   | NOT_CONFIRMED | LICENSE_AUDIT.txt + TRANSLATION_LICENSE_AUDIT.txt
+CI/CD               | PASS    | fails on: committed secret · integrity mismatch ·
+                    |         | OpenAPI drift · invalid audio manifest · licence
+                    |         | flag inconsistency · non-private defaults ·
+                    |         | release gate reporting ALLOWED · any failing test
+
+STATE: PRIVATE PRE-PRODUCTION   (not "production ready")
+
+----------------------------------------------------------------
+REAL COUNTS
+----------------------------------------------------------------
+Surahs 114 · Ayahs 6,236 · Juz 30 · Hizb 60 (rub 240) · Pages 604 · Sajdah 15
+Manzil 7 · Languages 10 · Translations 62,360 rows · Qiraat 1 · Riwayat 1
+Reciters 0 · Recitations 0 · Audio files 0
+Tables 34 · Migrations 5 · API operations 57 · OpenAPI paths 51
+License records 22 (4 CONFIRMED, 1 RESTRICTED, 11 PENDING, 6 UNKNOWN)
+Tests 217 — API 90 · PWA 75 · Flutter 52 · Passed 217 · Failed 0
+Blocked 5 (reciters, audio, deployment, android, ios)
+Pending 3 (human verification, content licence, translation licences)
+Dataset version 2026.09.16-1 · status `verified` (never `published`)
+Dataset SHA-256 d8a8adff387f60ce3ff7dbe3238dd9b27120bfe29d8fcb07ad2e89cad37cefd4
+
+----------------------------------------------------------------
+API INFORMATION
+----------------------------------------------------------------
+PUBLIC API BASE URL : NOT DEPLOYED
+PRIVATE INTERNAL URL: http://127.0.0.1:8787  (loopback only, development)
+API VERSION         : v1 (api_release 1.1.0)
+OPENAPI             : <private base>/api/v1/openapi.yaml · file quran_api/openapi/openapi.yaml
+HEALTH              : <private base>/api/v1/health
+VERSION             : <private base>/api/v1/version
+SOURCES             : <private base>/api/v1/sources
+STATS               : <private base>/api/v1/stats
+LICENSES            : <private base>/api/v1/licenses  (authenticated only)
+
+----------------------------------------------------------------
+WHAT THE OWNER MUST OBTAIN (nothing here can be produced by an agent)
+----------------------------------------------------------------
+LICENCES
+  1. Quran text redistribution permission (current source has conflicting
+     licence statements and no grant from the text holder).
+  2. Translation permissions — 10 separate works, one per translator/publisher.
+  3. Tafsir permission (if tafsir is wanted; no dataset exists yet).
+  4. Qiraat / Riwayat permissions for anything beyond Asim / Hafs.
+  5. Reciter metadata permission (name, bio, photo rights).
+  6. Audio redistribution (or documented streaming) permission + a manifest
+     that validates against schemas/audio-manifest.schema.json.
+  7. Commercial-use permission wherever the app will be monetised.
+  8. Exact attribution wording required by each source.
+
+APPROVALS
+  9. Human verification of the dataset (npm run verify:human … --result=approved).
+ 10. Final dataset approval and the decision to publish.
+
+INFRASTRUCTURE
+ 11. DATABASE_URL + Supabase keys + SUPABASE_JWT_SECRET (host environment only).
+ 12. A private host now; a public host and domain only after the gate allows it.
+ 13. GitHub repository set to private.
+ 14. Run the Android Release workflow to produce APK/AAB.
+
+WHEN THE LICENCES ARRIVE (no rebuild — ten steps)
+  place evidence in owner_dropzone/licenses/ → npm run license:record …
+  → npm run license:list → npm run integrity:final → npm test
+  → npm run verify:human … → raise the flags in the host environment
+  → npm run release:gate (must say ALLOWED) → deploy privately, verify
+  → publish and put the URL in flutter_app/config/production.json
+
+----------------------------------------------------------------
+EVIDENCE FILES
+----------------------------------------------------------------
+reports/QURAN_FINAL_INTEGRITY.txt      41/41, 0 discrepancy
+reports/integrity-report.json          30/30
+reports/import-report.json             real import counters
+reports/LICENSE_AUDIT.txt              five licences audited separately
+reports/TRANSLATION_LICENSE_AUDIT.txt  per-language rights record
+reports/SOURCE_DISCOVERY.txt           candidate sources + their real status
+reports/API_PRODUCTION_AUDIT.txt       API-as-a-service audit
+reports/release-gate.json              the release gate's own output (BLOCKED)
+reports/test-report.md                 test runs + QA break attempts
+================================================================

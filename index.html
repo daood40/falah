@@ -8,6 +8,10 @@
       content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob: https://cdn.islamic.network; connect-src 'self' https://api.alquran.cloud https://cdn.islamic.network https://api.sunnah.com https://*.supabase.co wss://*.supabase.co; object-src 'none'; base-uri 'self'"
     />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- PRIVATE MODE: the app carries licence-pending religious content, so it
+         must not be indexed, cached or archived until the licences land. -->
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
+    <meta name="googlebot" content="noindex, nofollow" />
     <meta
       name="description"
       content="فلاح — منصة احترافية لصناعة وتنظيم ونشر المحتوى الإسلامي الموثوق"

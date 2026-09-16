@@ -124,6 +124,25 @@ jobs:
             echo "FAIL: the empty manifest template was accepted"; exit 1
           fi
           echo "OK: incomplete audio manifest refused"
+      - name: Private posture (defaults must be private)
+        run: |
+          node --input-type=module -e "
+            const { loadEnv } = await import('./src/config/env.ts');
+            const env = loadEnv({});
+            const bad = [];
+            if (!env.privateMode) bad.push('PRIVATE_MODE default is not true');
+            if (env.flags.publicDataEnabled) bad.push('publicDataEnabled default is true');
+            if (env.flags.publicApiEnabled) bad.push('publicApiEnabled default is true');
+            if (env.host !== '127.0.0.1') bad.push('private default host is ' + env.host);
+            if (bad.length) { console.error('FAIL:', bad.join('; ')); process.exit(1); }
+            console.log('OK: defaults are private');
+          "
+      - name: Public release gate (must stay BLOCKED while licences are missing)
+        run: |
+          if npm run --silent release:gate; then
+            echo "FAIL: the public release gate reported ALLOWED without licences"; exit 1
+          fi
+          echo "OK: public release is blocked"
       - name: License gate (public data stays off until rights are confirmed)
         run: |
           node -e "

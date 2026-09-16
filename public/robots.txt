@@ -1,2 +1,20 @@
+# PRIVATE MODE — the project is internal until every content licence is
+# confirmed. Nothing here may be indexed or archived.
 User-agent: *
-Allow: /
+Disallow: /
+
+# Common AI/content crawlers, named explicitly so the intent is unambiguous.
+User-agent: GPTBot
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /

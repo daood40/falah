@@ -6,6 +6,11 @@
 > **SOURCE_LOCK** — لا يُولَّد نص قرآني ولا يُعدَّل ولا يُصحَّح تلقائيًا أبدًا.
 > كل حقل غير موجود في المصدر يبقى `NULL`. أي تغيير في البيانات = إصدار Dataset جديد.
 
+> **PRIVATE MODE: ON** — `PRIVATE_MODE=true` هو الافتراضي: لا API عام، لا بيانات
+> عامة، لا تنزيل، والخادم يستمع على `127.0.0.1` ويرفض الإقلاع في وضع عام بلا
+> تراخيص مؤكدة. التفاصيل: `docs/PRIVATE_DOCUMENTATION.md` و`docs/LICENSING.md`،
+> والقائمة المطلوبة منك في `OWNER_LICENSE_CHECKLIST.md`.
+
 ---
 
 ## 1. Architecture
@@ -80,13 +85,24 @@ Attribution text is stored per source and returned by `GET /api/v1/sources`.
 No site was scraped; no protection was bypassed; both datasets are published
 npm packages installed as dependencies.
 
-### Licence flags
+### Private mode and licence flags
 
 | Flag | Default | Effect |
 |---|---|---|
+| `PRIVATE_MODE` | `true` | forces the three public switches off, binds to loopback, answers `451` to anonymous content requests |
 | `CONTENT_LICENSE_CONFIRMED` | `false` | offline text download stays disabled |
-| `AUDIO_LICENSE_CONFIRMED` | `false` | audio `download_url` is withheld (streaming metadata only) |
-| `PUBLIC_DATA_ENABLED` | `false` | content endpoints answer `451` to anonymous callers; authenticated staging users still read |
+| `TRANSLATIONS_LICENSE_CONFIRMED` | `false` | translations stay internal (`LICENSE_PENDING`) |
+| `AUDIO_LICENSE_CONFIRMED` | `false` | audio `download_url` is withheld |
+| `TAFSIR_LICENSE_CONFIRMED` | `false` | reserved for tafsir data |
+| `QIRAAT_LICENSE_CONFIRMED` | `false` | reserved for additional qiraat datasets |
+| `DATA_REDISTRIBUTION_ALLOWED` | `false` | nothing may leave the system |
+| `PUBLIC_DATA_ENABLED` | `false` | content endpoints stay authenticated-only |
+| `PUBLIC_API_ENABLED` | `false` | the API is internal |
+
+The License Center (`quran.license_records`, `npm run license:list`,
+`GET /api/v1/licenses`) records the evidence behind each of these claims, and
+`npm run release:gate` is the single gate that decides whether anything may go
+public. It is `BLOCKED` today.
 
 ## 4. Import pipeline
 

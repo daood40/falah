@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:falah/features/quran_api/data/api_client.dart';
 import 'package:falah/features/quran_api/data/audio_api_data_source.dart';
@@ -91,6 +92,8 @@ Map<String, dynamic> ok(Object data, [Map<String, dynamic> meta = const {}]) => 
 };
 
 void main() {
+  _configGuards();
+
   group('build configuration', () {
     test('no API base URL is compiled in unless a config file supplies one', () {
       // The default test build passes no --dart-define, so the app must stay
@@ -335,4 +338,34 @@ class _PagedTransport implements HttpTransport {
       ),
     );
   }
+}
+
+/// Build-configuration guard: the shipped configs must never carry a public
+/// production URL while the project is private.
+void _configGuards() {
+  group('build configs stay private', () {
+    for (final name in ['staging', 'production']) {
+      test('$name config has no API base URL yet', () {
+        final file = File('config/$name.json');
+        expect(file.existsSync(), isTrue, reason: 'config/$name.json is missing');
+        final config = (jsonDecode(file.readAsStringSync()) as Map).cast<String, dynamic>();
+        expect(
+          config['QURAN_API_BASE_URL'],
+          isEmpty,
+          reason: 'no public URL may be compiled in before the licences land',
+        );
+      });
+    }
+
+    test('development config points at a private host only', () {
+      final config = (jsonDecode(File('config/development.json').readAsStringSync()) as Map)
+          .cast<String, dynamic>();
+      final url = config['QURAN_API_BASE_URL'] as String;
+      final isPrivate = url.contains('localhost') ||
+          url.contains('127.0.0.1') ||
+          url.contains('10.0.2.2') ||
+          url.startsWith('http://192.168.');
+      expect(isPrivate, isTrue, reason: 'development must not point at a public host');
+    });
+  });
 }

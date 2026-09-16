@@ -8,6 +8,12 @@
       — تذكير: يستلزم تحديث نموذج أمان البيانات وprivacy.html قبل أي
       إصدار يحوي المزامنة، وإضافة حذف حساب
 
+## P0 — الوضع الخاص والتراخيص (خطوات مالك)
+- [ ] راجع `OWNER_LICENSE_CHECKLIST.md` — هو قائمة ما يجب أن تحصل عليه
+- [ ] اجعل مستودع GitHub private
+- [ ] عند وصول أي إذن: ضعه في `owner_dropzone/licenses/` ثم
+      `npm run license:record -- …` ثم `npm run release:gate`
+
 ## P0 — منصة بيانات القرآن (خطوات مالك)
 - [ ] تشغيل الـAPI فعليًا: تزويد `DATABASE_URL` (Supabase) و`SUPABASE_JWT_SECRET`
       ثم `npm run db:apply && npm run import -- --publish` (quran_api/README.md §7)

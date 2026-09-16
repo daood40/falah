@@ -11,10 +11,16 @@ const server = createServer((req, res) => {
   void app.handler(req, res);
 });
 
-server.listen(env.port, () => {
+server.listen(env.port, env.host, () => {
+  // Never log secrets, connection strings or content — only the posture.
   console.log(
-    `[api] FALAH Quran API listening on :${env.port} (env=${env.environment}, public_data=${env.flags.publicDataEnabled})`,
+    `[api] FALAH Quran API on ${env.host}:${env.port} ` +
+      `(env=${env.environment}, private_mode=${env.privateMode}, ` +
+      `public_data=${env.flags.publicDataEnabled}, public_api=${env.flags.publicApiEnabled})`,
   );
+  if (env.privateMode) {
+    console.log('[api] PRIVATE MODE — internal access only, no public data, no public API');
+  }
 });
 
 const shutdown = (): void => {

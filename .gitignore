@@ -18,3 +18,9 @@ key.properties
 *.mobileprovision
 supabase/.temp/
 .claude/settings.local.json
+
+# --- owner_dropzone: licensed material stays out of git ---
+owner_dropzone/**
+!owner_dropzone/README.md
+!owner_dropzone/*/
+!owner_dropzone/*/README.md

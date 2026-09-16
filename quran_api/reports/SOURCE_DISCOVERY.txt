@@ -1,0 +1,129 @@
+================================================================
+FALAH QURAN API — SOURCE DISCOVERY (PRIVATE)
+================================================================
+generated_at : 2026-09-16T06:04:05.536Z
+method       : public npm registry metadata only. No dataset was
+               downloaded, no site was scraped, no access control was
+               touched. A declared licence string is NOT evidence that the
+               Quran text or a translation inside a package may be
+               redistributed.
+
+[1] IN USE TODAY
+  quran-json@3.1.2   RESTRICTED       text + 10 translations; conflicting
+                                      licence statements, no upstream grant
+  quran-meta@6.0.17  LICENSE CONFIRMED MIT (read from disk); structure only
+
+[2] NPM CANDIDATES (metadata only)
+  quran-json
+    status      : FOUND · LICENSE UNKNOWN (declared only)
+    version     : 3.1.2
+    declared    : CC-BY-4.0
+    repository  : git+https://github.com/risan/quran-json.git
+    description : Quran text, transliteration, and translations in JSON format.
+  quran-meta
+    status      : FOUND · LICENSE UNKNOWN (declared only)
+    version     : 6.0.17
+    declared    : MIT
+    repository  : git+https://github.com/quran-center/quran-meta.git
+    description : Library with meta data and functionality related to Holy Quran
+  @kmaslesa/holy-quran
+    status      : NOT FOUND
+    note        : no such package on the registry
+  quran
+    status      : FOUND · LICENSE UNKNOWN (declared only)
+    version     : 0.0.9
+    declared    : LGPL
+    repository  : git://github.com/qzaidi/quran.git
+    description : npm module for Al-Quran (tanzil)
+  quranjs
+    status      : FOUND · LICENSE UNKNOWN (declared only)
+    version     : 1.2.5
+    declared    : MIT
+    repository  : git+https://github.com/alialparslan/quranJS.git
+    description : Utility that makes easier to access Quran verses and experimenting with verses and their attributes
+  @quranjs/api
+    status      : FOUND · LICENSE UNKNOWN (declared only)
+    version     : 3.8.0
+    declared    : MIT
+    repository  : git+https://github.com/quran/api-js.git
+    description : Official library for fetching authentic, scholarly verified Quran data from Quran.com.
+  quran-db
+    status      : FOUND · LICENSE UNKNOWN (declared only)
+    version     : 1.2.4
+    declared    : ISC
+    repository  : git+https://github.com/aqeelshamz/quran-db.git
+    description : Quran text, translation, audio URLs, and details of pages, juz, surah, ayah, place of revelation etc.
+  tanzil
+    status      : FOUND · LICENSE UNKNOWN (declared only)
+    version     : 0.0.18
+    declared    : MIT
+    repository  : git+https://github.com/stardigits/tanzil.git
+    description : Nodejs module of Quran text and translation from http://tanzil.net
+  alquran-tools
+    status      : NOT FOUND
+    note        : no such package on the registry
+  quran-tafsir
+    status      : NOT FOUND
+    note        : no such package on the registry
+  quran-audio
+    status      : FOUND · LICENSE UNKNOWN (declared only)
+    version     : 0.6.0
+    declared    : MIT
+    repository  : git+https://github.com/MHDN55/quran-audio.git
+    description : Download Quran MP3 recitations from the terminal with searchable surah and reciter pickers and multi-source fa
+  quranic-universal-library
+    status      : NOT FOUND
+    note        : no such package on the registry
+  @quran/data
+    status      : NOT FOUND
+    note        : no such package on the registry
+
+[3] WEBSITES / APIs — NOT CONTACTED FROM THIS ENVIRONMENT
+    (this sandbox rejects outbound connections to them; and reachability
+     would not be permission anyway)
+  King Fahd Complex (qurancomplex.gov.sa)
+    provides    : Quran text, mushaf images, translations
+    status      : NOT ACCESSIBLE here · LICENSE UNKNOWN
+    owner action: request written permission, then place the dataset in
+                  owner_dropzone/ and record the evidence in the License Center
+  Tanzil.net
+    provides    : Quran text editions + translations
+    status      : NOT ACCESSIBLE here · LICENSE UNKNOWN
+    owner action: request written permission, then place the dataset in
+                  owner_dropzone/ and record the evidence in the License Center
+  The Noble Qur'an Encyclopedia (quranenc.com)
+    provides    : Quran text + translations
+    status      : NOT ACCESSIBLE here · LICENSE UNKNOWN
+    owner action: request written permission, then place the dataset in
+                  owner_dropzone/ and record the evidence in the License Center
+  Quran.com / Quran Foundation API
+    provides    : text, translations, audio, word-by-word
+    status      : NOT ACCESSIBLE here · LICENSE UNKNOWN
+    owner action: request written permission, then place the dataset in
+                  owner_dropzone/ and record the evidence in the License Center
+  everyayah.com
+    provides    : per-ayah recitation audio
+    status      : NOT ACCESSIBLE here · LICENSE UNKNOWN
+    owner action: request written permission, then place the dataset in
+                  owner_dropzone/ and record the evidence in the License Center
+  cdn.islamic.network
+    provides    : recitation audio CDN
+    status      : NOT ACCESSIBLE here · LICENSE UNKNOWN
+    owner action: request written permission, then place the dataset in
+                  owner_dropzone/ and record the evidence in the License Center
+  api.alquran.cloud
+    provides    : text/translation/audio API
+    status      : NOT ACCESSIBLE here · LICENSE UNKNOWN
+    owner action: request written permission, then place the dataset in
+                  owner_dropzone/ and record the evidence in the License Center
+  QUL — Quranic Universal Library
+    provides    : datasets: tajweed, word-by-word, tafsir
+    status      : NOT ACCESSIBLE here · LICENSE UNKNOWN
+    owner action: request written permission, then place the dataset in
+                  owner_dropzone/ and record the evidence in the License Center
+
+[4] RULE
+  FOUND / ACCESSIBLE / declared-licence are technical facts.
+  Only a documented grant moves a source to LICENSE CONFIRMED, and only
+  the owner can obtain that grant.
+================================================================

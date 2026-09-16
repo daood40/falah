@@ -67,3 +67,18 @@
 | secret-scan | PASS · ويفشل عند زرع مفتاح service_role |
 | النشر / Android / iOS | BLOCKED |
 | PRODUCTION READY | NO |
+
+## 2026-09-16 (PRIVATE MODE)
+
+| ما شُغّل | النتيجة |
+|---|---|
+| vitest (quran_api) | 90/90 PASS |
+| vitest (PWA) | 75/75 PASS |
+| flutter analyze/test | نظيف · 52/52 PASS |
+| npm run build | PASS |
+| OpenAPI | 51 مسارًا · 57 عملية · مطابق |
+| integrity:final / integrity | PASS 41/41 · PASS 30/30 |
+| release:gate | BLOCKED (13 شرطًا) — وهو السلوك الصحيح |
+| license:list | 22 سجلًا · 4 CONFIRMED · 1 RESTRICTED · 11 PENDING · 6 UNKNOWN |
+| secret-scan | PASS |
+| PRIVATE MODE | ON — مفروض بالكود ومختبَر (6 حالات) |

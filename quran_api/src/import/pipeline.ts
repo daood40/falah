@@ -6,6 +6,7 @@ import { contentHash } from '../core/hash.ts';
 import { parseDataset, type ParsedDataset } from './parse.ts';
 import { hasErrors, validateDataset, type ValidationIssue } from './validate.ts';
 import { QIRAAT, QURAN_EDITION, RIWAYAT, SOURCES, TRANSLATIONS } from './registry.ts';
+import { seedLicenseCenter } from './license-center.ts';
 
 export const PIPELINE_VERSION = '1.0.0';
 
@@ -125,6 +126,11 @@ export async function runImport(
       ],
     );
   }
+
+  // ---------- LICENSE CENTER ----------
+  // Recorded before anything else so the licence state of every dataset is
+  // visible even if a later step fails.
+  await seedLicenseCenter(client);
 
   // ---------- QIRAAT / RIWAYAT ----------
   for (const qiraah of QIRAAT) {

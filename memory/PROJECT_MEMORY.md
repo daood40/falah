@@ -21,6 +21,14 @@
 - لا يعمل: المزامنة والحسابات (لا مفاتيح Supabase بعد)؛ iOS مؤجل (لا حساب Apple).
 
 ## أين توقّفنا
+2026-09-16 (PRIVATE MODE): المشروع كله صار خاصًا بقرار المالك حتى تصل التراخيص.
+`PRIVATE_MODE=true` افتراضيًا ومفروض بالكود (يجبر الأعلام العامة على false،
+يربط على 127.0.0.1، ويرفض إقلاع نسخة عامة بلا تراخيص). أُضيف مركز تراخيص
+(هجرة 0005) لا يقبل CONFIRMED بلا دليل، وبوابة نشر واحدة `release:gate`
+(BLOCKED بـ13 شرطًا)، وowner_dropzone بـ12 مجلدًا خارج git، وتوثيق خاص
+(PRIVATE_DOCUMENTATION/LICENSING/PRIVATE_DEPLOYMENT/DATA_PROVENANCE) وقائمة
+OWNER_LICENSE_CHECKLIST. الـPWA noindex وrobots يمنع الفهرسة. 217 اختبارًا PASS.
+
 2026-09-16 (Public API): صار الـAPI خدمة مستقلة موثّقة — `/version` و
 `/openapi.yaml` حيّان، `API_USAGE.md` وسبعة أمثلة عملاء (شُغّلت فعليًا)،
 Dockerfile للإنتاج، إعدادات بيئات Flutter (dev/staging/prod بلا رابط مضمّن)،

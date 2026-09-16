@@ -1,0 +1,114 @@
+{
+  "verdict": "BLOCKED",
+  "dataset_version": "2026.09.16-1",
+  "checks": [
+    {
+      "id": "PRIVATE_MODE=false",
+      "required": true,
+      "ok": false,
+      "detail": "PRIVATE_MODE is ON — everything stays internal"
+    },
+    {
+      "id": "PUBLIC_DATA_ENABLED",
+      "required": true,
+      "ok": false,
+      "detail": "flag=false"
+    },
+    {
+      "id": "PUBLIC_API_ENABLED",
+      "required": true,
+      "ok": false,
+      "detail": "flag=false"
+    },
+    {
+      "id": "DATA_REDISTRIBUTION_ALLOWED",
+      "required": true,
+      "ok": false,
+      "detail": "flag=false"
+    },
+    {
+      "id": "CONTENT_LICENSE_CONFIRMED",
+      "required": true,
+      "ok": false,
+      "detail": "flag=false"
+    },
+    {
+      "id": "TRANSLATIONS_LICENSE_CONFIRMED",
+      "required": true,
+      "ok": false,
+      "detail": "flag=false"
+    },
+    {
+      "id": "AUDIO_LICENSE_CONFIRMED",
+      "required": true,
+      "ok": false,
+      "detail": "flag=false (pass --without-audio to release text only)"
+    },
+    {
+      "id": "DATASET_EXISTS",
+      "required": true,
+      "ok": true,
+      "detail": "version 2026.09.16-1"
+    },
+    {
+      "id": "HUMAN_VERIFICATION=APPROVED",
+      "required": true,
+      "ok": false,
+      "detail": "no approved human verification"
+    },
+    {
+      "id": "DATASET_PUBLISHED",
+      "required": true,
+      "ok": false,
+      "detail": "dataset status = verified"
+    },
+    {
+      "id": "LICENSE_CENTER:quran_text",
+      "required": true,
+      "ok": false,
+      "detail": "0 of 1 not confirmed"
+    },
+    {
+      "id": "LICENSE_CENTER:translation",
+      "required": true,
+      "ok": false,
+      "detail": "10 of 10 not confirmed"
+    },
+    {
+      "id": "LICENSE_CENTER:qiraat",
+      "required": true,
+      "ok": true,
+      "detail": "1 record(s) CONFIRMED"
+    },
+    {
+      "id": "LICENSE_CENTER:riwayat",
+      "required": true,
+      "ok": true,
+      "detail": "1 record(s) CONFIRMED"
+    },
+    {
+      "id": "LICENSE_CENTER:metadata",
+      "required": true,
+      "ok": true,
+      "detail": "1 record(s) CONFIRMED"
+    },
+    {
+      "id": "LICENSE_CENTER:audio",
+      "required": true,
+      "ok": false,
+      "detail": "1 of 1 not confirmed"
+    },
+    {
+      "id": "LICENSE_CENTER:reciter",
+      "required": true,
+      "ok": false,
+      "detail": "1 of 1 not confirmed"
+    },
+    {
+      "id": "INTEGRITY=PASS",
+      "required": true,
+      "ok": true,
+      "detail": "6236 ayahs, 0 unverified"
+    }
+  ]
+}

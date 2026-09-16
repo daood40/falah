@@ -7,6 +7,12 @@ in this guide requires the FALAH app or a developer machine to be running.
 
 ---
 
+> **PRIVATE MODE.** This API is internal. There is no public base URL, no
+> public dataset and no public download until the owner obtains every content
+> licence. Anonymous requests to content endpoints answer `451`. Everything
+> below describes how the API works for an internal caller, and how it will
+> work once the licences land.
+
 ## 1. Base URL
 
 ```

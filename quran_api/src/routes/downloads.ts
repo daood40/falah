@@ -42,7 +42,12 @@ export const downloadRoutes: Route[] = [
           ).rows[0] ?? null
         : null;
 
-      const downloadable = ctx.env.flags.contentLicenseConfirmed && ctx.env.flags.publicDataEnabled;
+      // Offline download needs the licence, the redistribution grant and the
+      // public switch — private mode alone already forces the last two off.
+      const downloadable =
+        ctx.env.flags.contentLicenseConfirmed &&
+        ctx.env.flags.dataRedistributionAllowed &&
+        ctx.env.flags.publicDataEnabled;
       const { rows: sizeRows } = await ctx.client.query<{ bytes: string }>(
         `select coalesce(sum(octet_length(raw_text)), 0)::text as bytes
          from quran.ayahs where edition_id = $1`,
@@ -100,7 +105,8 @@ export const downloadRoutes: Route[] = [
          order by af.sequence_number`,
         [reciter.id, surahNumber],
       );
-      const downloadable = ctx.env.flags.audioLicenseConfirmed;
+      const downloadable =
+        ctx.env.flags.audioLicenseConfirmed && ctx.env.flags.dataRedistributionAllowed;
       return {
         data: {
           reciter: { id: reciter.id, slug: reciter.slug, name_ar: reciter.name_ar },

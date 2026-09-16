@@ -308,22 +308,56 @@ components:
         verified: { type: boolean }
         verification_status: { type: string, enum: [pending, verified, failed] }
         dataset_version: { type: [string, 'null'] }
+    LicenseFlags:
+      type: object
+      properties:
+        contentLicenseConfirmed: { type: boolean }
+        translationsLicenseConfirmed: { type: boolean }
+        audioLicenseConfirmed: { type: boolean }
+        tafsirLicenseConfirmed: { type: boolean }
+        qiraatLicenseConfirmed: { type: boolean }
+        dataRedistributionAllowed: { type: boolean }
+        publicDataEnabled: { type: boolean }
+        publicApiEnabled: { type: boolean }
     Health:
       type: object
       properties:
         status: { type: string, enum: [ok, degraded] }
         environment: { type: string }
         api_version: { type: string }
+        private_mode: { type: boolean }
+        public_api_enabled: { type: boolean }
         checks: { type: object, additionalProperties: true }
-        license_flags:
-          type: object
-          properties:
-            contentLicenseConfirmed: { type: boolean }
-            audioLicenseConfirmed: { type: boolean }
-            publicDataEnabled: { type: boolean }
+        license_flags: { $ref: '#/components/schemas/LicenseFlags' }
     Stats:
       type: object
       additionalProperties: { type: integer }
+    LicenseRecord:
+      type: object
+      properties:
+        dataset_kind:
+          type: string
+          enum: [software, quran_text, translation, tafsir, audio, reciter, qiraat,
+                 riwayat, word_by_word, morphology, tajweed, metadata]
+        subject: { type: string }
+        source_id: { type: [string, 'null'] }
+        owner: { type: [string, 'null'] }
+        copyright_holder: { type: [string, 'null'] }
+        license: { type: [string, 'null'] }
+        license_url: { type: [string, 'null'] }
+        permission_reference: { type: [string, 'null'] }
+        redistribution: { type: string, enum: [unknown, allowed, denied] }
+        commercial_use: { type: string, enum: [unknown, allowed, denied] }
+        modification: { type: string, enum: [unknown, allowed, denied, forbidden_by_policy] }
+        attribution_required: { type: boolean }
+        attribution_text: { type: [string, 'null'] }
+        expires_at: { type: [string, 'null'], format: date }
+        evidence: { type: [string, 'null'] }
+        evidence_url: { type: [string, 'null'] }
+        status: { type: string, enum: [UNKNOWN, PENDING, RESTRICTED, CONFIRMED, REJECTED] }
+        recorded_by: { type: [string, 'null'] }
+        notes: { type: [string, 'null'] }
+        updated_at: { type: string, format: date-time }
     Version:
       type: object
       properties:
@@ -348,12 +382,10 @@ components:
             verified: { type: boolean }
             verified_at: { type: [string, 'null'], format: date-time }
             verifier: { type: [string, 'null'] }
-        license_flags:
-          type: object
-          properties:
-            contentLicenseConfirmed: { type: boolean }
-            audioLicenseConfirmed: { type: boolean }
-            publicDataEnabled: { type: boolean }
+        license_flags: { $ref: '#/components/schemas/LicenseFlags' }
+        private_mode:
+          type: boolean
+          description: While true nothing is public, whatever the other flags say.
         openapi_url: { type: string }
     Bookmark:
       type: object
@@ -499,6 +531,29 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Success' }
+  /api/v1/licenses:
+    get:
+      tags: [system]
+      summary: License Center ledger (internal — requires authentication)
+      description: >-
+        One record per licensable dataset with owner, licence, redistribution
+        and commercial permissions, evidence and status. CONFIRMED is only
+        possible with recorded evidence.
+      security: [{ supabaseJwt: [] }]
+      responses:
+        '200':
+          description: Licence records
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/LicenseRecord' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /api/v1/qiraat:
     get:
       tags: [quran]

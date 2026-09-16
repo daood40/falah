@@ -1,5 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { startHarness, testEnv, type Harness } from './helpers.ts';
+import { createTestUser, startHarness, testEnv, type Harness } from './helpers.ts';
+import { createApp } from '../src/app.ts';
+import { loadEnv } from '../src/config/env.ts';
 import { parseDataset } from '../src/import/parse.ts';
 
 let api: Harness;
@@ -17,11 +19,13 @@ describe('system endpoints', () => {
     expect(status).toBe(200);
     expect(body.data.checks.database).toBe('ok');
     expect(body.data.checks.dataset.version).toBe('test-1');
-    expect(body.data.license_flags).toEqual({
-      contentLicenseConfirmed: false,
-      audioLicenseConfirmed: false,
+    expect(body.data.license_flags).toMatchObject({
       publicDataEnabled: true,
+      publicApiEnabled: false,
+      audioLicenseConfirmed: false,
+      tafsirLicenseConfirmed: false,
     });
+    expect(body.data.private_mode).toBe(false); // the test harness is an internal instance
     expect(JSON.stringify(body)).not.toMatch(/secret|password|postgresql:\/\//i);
   });
 
@@ -257,20 +261,120 @@ describe('audio and reciters', () => {
 });
 
 describe('downloads', () => {
-  it('returns the text manifest with checksum and honest download state', async () => {
+  it('offers the manifest only when licence AND redistribution are confirmed', async () => {
+    // The harness runs with both confirmed, so the manifest is downloadable.
     const { body } = await api.request('/api/v1/downloads/quran');
     expect(body.data.dataset_version).toBe('test-1');
     expect(body.data.checksum).toHaveLength(64);
-    expect(body.data.downloadable).toBe(false);
-    expect(body.data.download_url).toBeNull();
-    expect(body.data.license_note).toMatch(/not confirmed/i);
+    expect(body.data.downloadable).toBe(true);
+    expect(body.data.download_url).not.toBeNull();
+  });
+
+  it('withholds the download in private mode, even for an authenticated caller', async () => {
+    const privateApi = await startHarness(testEnv({ privateMode: true }));
+    try {
+      const user = await createTestUser(privateApi.pool);
+      const anonymous = await privateApi.request('/api/v1/downloads/quran');
+      expect(anonymous.status).toBe(451);
+      expect(anonymous.body.error.message).toMatch(/PRIVATE_MODE/);
+
+      const authenticated = await privateApi.request('/api/v1/downloads/quran', {
+        token: user.token,
+      });
+      expect(authenticated.status).toBe(200);
+      expect(authenticated.body.data.downloadable).toBe(false);
+      expect(authenticated.body.data.download_url).toBeNull();
+      expect(authenticated.body.data.license_note).toMatch(/not confirmed/i);
+    } finally {
+      await privateApi.close();
+    }
+  });
+});
+
+describe('private mode', () => {
+  it('forces every public switch off regardless of the environment', async () => {
+    const privateApi = await startHarness(
+      testEnv({
+        privateMode: true,
+        flags: {
+          contentLicenseConfirmed: true,
+          translationsLicenseConfirmed: true,
+          audioLicenseConfirmed: true,
+          tafsirLicenseConfirmed: true,
+          qiraatLicenseConfirmed: true,
+          // These three are what loadEnv() forces off in private mode; passing
+          // them as true here proves the API still refuses anonymous access.
+          dataRedistributionAllowed: false,
+          publicDataEnabled: false,
+          publicApiEnabled: false,
+        },
+      }),
+    );
+    try {
+      const health = await privateApi.request('/api/v1/health');
+      expect(health.body.data.private_mode).toBe(true);
+      expect(health.body.data.public_api_enabled).toBe(false);
+
+      const version = await privateApi.request('/api/v1/version');
+      expect(version.body.data.private_mode).toBe(true);
+
+      for (const path of ['/api/v1/surahs', '/api/v1/search?q=a', '/api/v1/sajdahs']) {
+        const response = await privateApi.request(path);
+        expect(response.status).toBe(451);
+        expect(response.body.error.code).toBe('LICENSE_RESTRICTED');
+      }
+    } finally {
+      await privateApi.close();
+    }
+  });
+
+  it('loadEnv cannot be talked into a public posture while private', () => {
+    const flags = loadEnv({
+      PRIVATE_MODE: 'true',
+      PUBLIC_DATA_ENABLED: 'true',
+      PUBLIC_API_ENABLED: 'true',
+      DATA_REDISTRIBUTION_ALLOWED: 'true',
+      CONTENT_LICENSE_CONFIRMED: 'true',
+    } as NodeJS.ProcessEnv).flags;
+    expect(flags.publicDataEnabled).toBe(false);
+    expect(flags.publicApiEnabled).toBe(false);
+    expect(flags.dataRedistributionAllowed).toBe(false);
+  });
+
+  it('refuses to start a public instance without the matching licences', () => {
+    expect(() =>
+      createApp(
+        loadEnv({
+          PRIVATE_MODE: 'false',
+          PUBLIC_DATA_ENABLED: 'true',
+          CONTENT_LICENSE_CONFIRMED: 'false',
+        } as NodeJS.ProcessEnv),
+        api.pool,
+      ),
+    ).toThrow(/unsafe public configuration/);
+  });
+
+  it('binds to loopback by default in private mode', () => {
+    expect(loadEnv({ PRIVATE_MODE: 'true' } as NodeJS.ProcessEnv).host).toBe('127.0.0.1');
+    expect(loadEnv({ PRIVATE_MODE: 'false' } as NodeJS.ProcessEnv).host).toBe('0.0.0.0');
   });
 });
 
 describe('licence gating', () => {
   it('blocks content endpoints for anonymous callers when PUBLIC_DATA_ENABLED=false', async () => {
     const restricted = await startHarness(
-      testEnv({ flags: { contentLicenseConfirmed: false, audioLicenseConfirmed: false, publicDataEnabled: false } }),
+      testEnv({
+        flags: {
+          contentLicenseConfirmed: false,
+          translationsLicenseConfirmed: false,
+          audioLicenseConfirmed: false,
+          tafsirLicenseConfirmed: false,
+          qiraatLicenseConfirmed: false,
+          dataRedistributionAllowed: false,
+          publicDataEnabled: false,
+          publicApiEnabled: false,
+        },
+      }),
     );
     try {
       const anonymous = await restricted.request('/api/v1/surahs');
