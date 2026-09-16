@@ -1,0 +1,33 @@
+{
+  "name": "@falah/quran-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "FALAH Quran Data Platform — import pipeline, verification and read-only REST API",
+  "engines": {
+    "node": ">=22.6"
+  },
+  "scripts": {
+    "serve": "node src/server.ts",
+    "import": "node src/import/cli.ts",
+    "import:audio": "node src/import/audio-cli.ts",
+    "verify": "node src/import/verify-cli.ts",
+    "db:apply": "node scripts/apply-migrations.ts",
+    "openapi:validate": "node scripts/validate-openapi.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "integrity": "node scripts/integrity-report.ts"
+  },
+  "dependencies": {
+    "pg": "^8.13.1",
+    "quran-json": "3.1.2",
+    "quran-meta": "6.0.17"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/pg": "^8.11.10",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8",
+    "yaml": "^2.6.1"
+  }
+}

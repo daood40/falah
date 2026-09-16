@@ -10,6 +10,14 @@
 | `api.sunnah.com` | Live hadith collections (Bukhari, Muslim, …) | `x-api-key` (`VITE_SUNNAH_API_KEY`) | module reports unavailable; bundled Nawawi 40 used |
 | Anthropic API | AI assistant | server-side key in edge function | falls back to the local rule-based assistant |
 
+## Provided API — FALAH Quran API (`quran_api/`)
+
+منصة بيانات القرآن الخاصة بنا: PostgreSQL + REST للقراءة فقط على `/api/v1`
+(54 نقطة نهاية، OpenAPI في `quran_api/openapi/openapi.yaml`). التفاصيل الكاملة
+في `quran_api/README.md`. المصادر: `quran-json@3.1.2` (نص عثماني + 10 ترجمات،
+CC BY-SA 4.0) و`quran-meta@6.0.17` (بنية المصحف، MIT). لا يُستدعى أي موقع مصدر
+وقت الطلب؛ الاستيراد مسبق ومُتحقَّق منه بالبصمات.
+
 ## Edge Functions (`supabase/functions/`)
 
 ### `ai-assistant` (implemented)

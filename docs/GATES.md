@@ -31,6 +31,25 @@
 - ‏Offline-first: القرآن كاملًا مدمج، Service Worker v3 مختبر
 - الحزمة الرئيسية 385KB (gzip 128KB)
 
+## QURAN DATA PLATFORM GATE — ✅ PASS (2026-09-16)
+
+```
+Migration 0003 (schema quran):     PASS   31 جدولًا · RLS+FORCE على 31
+Import (تشغيل حقيقي):              PASS   114 سورة · 6,236 آية · 62,360 ترجمة
+                                          (10 لغات) · 0 failed/invalid/missing
+Structure:                         PASS   30 جزءًا · 60 حزبًا · 240 ربعًا ·
+                                          604 صفحات · 7 منازل · 15 سجدة
+Integrity report:                  PASS   30/30 فحصًا (إعادة حساب 6,236 بصمة)
+API tests (vitest + PostgreSQL):   PASS   68/68
+OpenAPI:                           PASS   48 مسارًا · 54 عملية · مطابق للراوتر
+Typecheck (strict):                PASS   0 أخطاء
+Flutter analyze/test:              PASS   0 مشاكل · 46/46 (17 جديدة)
+Audio:                             BLOCKED لا Dataset صوتي مرخّص + المنفذ محجوب
+Deployment:                        NOT DEPLOYED
+```
+الأدلة: `quran_api/reports/import-report.json` · `integrity-report.json` ·
+`test-report.md`.
+
 ## DATABASE GATE — ✅ PASS
 
 ```

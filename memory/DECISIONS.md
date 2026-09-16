@@ -18,3 +18,23 @@
 الدفع بالعنوان الصريح https://github.com/daood40/falah فقط (origin يُعاد
 كتابته)؛ الفرع الوحيد المسموح claude/falah-islamic-content-platform-hi3jhz
 (الوكيل يمنع غيره)؛ main عبر PR فقط؛ لا service_role في أي عميل.
+
+## 2026-09-16 — منصة بيانات القرآن (quran_api)
+
+- **مخطط `quran` منفصل** لا `public`: جداول v1/v2 القديمة (reciters, recitations,
+  quran_ayahs, audit_logs) تحمل نفس الأسماء بأعمدة مختلفة؛ الفصل يمنع التصادم
+  ويبقي الهجرة الجديدة قابلة للتطبيق فوق قاعدة قائمة.
+- **المصادر**: `quran-json@3.1.2` (نص عثماني من quranenc.com + 10 ترجمات من
+  tanzil.net، CC BY-SA 4.0) و`quran-meta@6.0.17` (بنية المصحف، MIT) — حزمتان
+  منشورتان على npm، بلا كشط ولا تجاوز أي حماية. الترخيص السابق المدوّن في
+  SOURCE_POLICY (CC BY 4.0) كان خطأ وصُحّح إلى CC BY-SA 4.0.
+- **bismillah و sajdah_type و text_simple = NULL**: المصدر لا يحملها، ولا تُستنتج.
+- **البحث**: عمودان مشتقّان (`search_text` و`search_skeleton` بلا ألف) لأن الرسم
+  العثماني يكتب بعض الألفات خنجرية؛ الهاش والنص الأصلي لا يُمسّان.
+- **بوابة الترخيص في الـAPI**: `PUBLIC_DATA_ENABLED=false` ⇒ 451 للمجهولين
+  ووصول داخلي للمصادَق عليهم (STAGING) بدل تعطيل النظام كله.
+- **RLS هي نقطة الفرض**: كل طلب داخل معاملة مع `SET LOCAL ROLE anon|authenticated`
+  ومطالبات JWT — لا اعتماد على منطق الـAPI وحده.
+- **Flutter بلا اعتماديات جديدة**: التخزين والصوت خلف منافذ (`CacheStorage`,
+  `AudioBackend`) — محوّل just_audio موثّق في docs/FLUTTER_AUDIO.md ويُضاف عند
+  تأكيد حقوق الصوت، حتى لا نشحن اعتمادية غير مستعملة.

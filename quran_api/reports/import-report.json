@@ -1,0 +1,35 @@
+{
+  "pipeline_version": "1.0.0",
+  "mode": "import",
+  "dataset_version": "2026.09.16-1",
+  "source_file_hash": "d8a8adff387f60ce3ff7dbe3238dd9b27120bfe29d8fcb07ad2e89cad37cefd4",
+  "started_at": "2026-09-16T01:44:13.153Z",
+  "finished_at": "2026-09-16T01:44:17.581Z",
+  "totals": {
+    "surahs": 114,
+    "ayahs": 6236,
+    "juzs": 30,
+    "hizbs": 60,
+    "rubs": 240,
+    "pages": 604,
+    "manzils": 7,
+    "sajdahs": 15,
+    "translations": 10,
+    "ayah_translations": 62360,
+    "reciters": 0,
+    "recitations": 0,
+    "audio_files": 0
+  },
+  "counters": {
+    "imported": 68596,
+    "failed": 0,
+    "skipped": 0,
+    "duplicates": 0,
+    "invalid": 0,
+    "missing": 0,
+    "verified": 68596
+  },
+  "issues": [],
+  "errors": [],
+  "status": "success"
+}

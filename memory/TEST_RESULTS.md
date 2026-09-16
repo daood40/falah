@@ -17,3 +17,19 @@
   Flutter CI ✓ (على 15f6371) · Pages deploy ✓
 - لم يُشغَّل: db:validate في هذه الجلسة (آخر تشغيل أخضر في CI ‏v2.1)،
   اختبار على جهاز أندرويد فعلي (لا جهاز — يُغطى عبر Internal testing)
+
+## 2026-09-16 — quran_api (تشغيل فعلي)
+
+| ما شُغّل | النتيجة |
+|---|---|
+| migrations 0001+0002+0003 على PostgreSQL 16.13 | PASS |
+| import --validate-only | success · 0 issues |
+| import --publish (10 ترجمات) | 68,596 سجلًا · 0 failed · 0 invalid · 0 missing |
+| integrity-report | PASS 30/30 |
+| vitest (API/RLS/أمان/استيراد/OpenAPI) | 68/68 PASS |
+| tsc --noEmit (strict) | PASS |
+| validate-openapi | 48 مسارًا · 54 عملية · مطابق |
+| flutter analyze | No issues found |
+| flutter test | 46/46 PASS (17 جديدة) |
+| الصوت | BLOCKED — لا Dataset مرخّص + CDN محجوب في البيئة |
+| النشر | NOT DEPLOYED |

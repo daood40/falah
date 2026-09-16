@@ -1,0 +1,1341 @@
+openapi: 3.1.0
+info:
+  title: FALAH Quran API
+  version: 1.0.0
+  description: |
+    Read-only Quran data platform for the FALAH app.
+
+    SOURCE_LOCK: Quran text is never generated, edited or corrected by this API.
+    Every record carries its source, licence, dataset version and SHA-256
+    content hash. Fields absent from the source dataset are returned as `null`.
+
+    Licence gating: when `PUBLIC_DATA_ENABLED=false`, content endpoints require a
+    Supabase access token (internal/staging access) and answer `451` otherwise.
+    Audio download URLs are withheld unless `AUDIO_LICENSE_CONFIRMED=true`.
+  license:
+    name: Source datasets — see /api/v1/sources
+    url: https://github.com/daood40/falah/blob/main/docs/SOURCE_POLICY.md
+servers:
+  - url: http://localhost:8787
+    description: Local development
+  - url: '{base_url}'
+    description: Deployed instance (see README — NOT DEPLOYED by default)
+    variables:
+      base_url:
+        default: http://localhost:8787
+tags:
+  - name: system
+  - name: quran
+  - name: structure
+  - name: search
+  - name: translations
+  - name: audio
+  - name: downloads
+  - name: user
+security: []
+components:
+  securitySchemes:
+    supabaseJwt:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Supabase Auth access token (HS256). Required for `/me/*`.
+  parameters:
+    edition:
+      name: edition
+      in: query
+      required: false
+      schema: { type: string }
+      description: Edition slug or id. Page/juz/hizb numbering is edition specific.
+    translation:
+      name: translation
+      in: query
+      required: false
+      schema: { type: string }
+      description: Translation slug or id to embed with each ayah.
+    page:
+      name: page
+      in: query
+      required: false
+      schema: { type: integer, minimum: 1, default: 1 }
+    limit:
+      name: limit
+      in: query
+      required: false
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+  schemas:
+    Success:
+      type: object
+      required: [success, data, meta]
+      properties:
+        success: { type: boolean, const: true }
+        data: {}
+        meta: { type: object, additionalProperties: true }
+    Error:
+      type: object
+      required: [success, error]
+      properties:
+        success: { type: boolean, const: false }
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              enum: [BAD_REQUEST, VALIDATION_ERROR, UNAUTHORIZED, FORBIDDEN, NOT_FOUND,
+                     METHOD_NOT_ALLOWED, RATE_LIMITED, LICENSE_RESTRICTED, INTERNAL_ERROR]
+            message: { type: string }
+            details: {}
+    PageMeta:
+      type: object
+      properties:
+        page: { type: integer }
+        limit: { type: integer }
+        total: { type: integer }
+        total_pages: { type: integer }
+    Source:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        organization: { type: [string, 'null'] }
+        url: { type: [string, 'null'] }
+        api_url: { type: [string, 'null'] }
+        description: { type: [string, 'null'] }
+        language: { type: [string, 'null'] }
+        license: { type: [string, 'null'] }
+        license_url: { type: [string, 'null'] }
+        attribution_required: { type: boolean }
+        attribution_text: { type: [string, 'null'] }
+        version: { type: [string, 'null'] }
+        status: { type: string, enum: [pending, approved, restricted, blocked] }
+    Edition:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        slug: { type: string }
+        name: { type: string }
+        edition_type: { type: string, enum: [quran, translation, transliteration, tafsir] }
+        riwayah: { type: [string, 'null'] }
+        qiraah: { type: [string, 'null'] }
+        script_type: { type: [string, 'null'] }
+        font_name: { type: [string, 'null'] }
+        version: { type: [string, 'null'] }
+        publisher: { type: [string, 'null'] }
+        country: { type: [string, 'null'] }
+        language: { type: [string, 'null'] }
+        license: { type: [string, 'null'] }
+        license_url: { type: [string, 'null'] }
+        source_id: { type: string }
+    Surah:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        surah_number: { type: integer, minimum: 1, maximum: 114 }
+        name_ar: { type: string }
+        name_en: { type: [string, 'null'] }
+        name_transliteration: { type: [string, 'null'] }
+        revelation_place: { type: [string, 'null'], enum: [makkah, madinah, null] }
+        revelation_order: { type: [integer, 'null'] }
+        ayah_count: { type: integer }
+        bismillah: { type: [string, 'null'] }
+        source_id: { type: string }
+        verified: { type: boolean }
+        dataset_version: { type: [string, 'null'] }
+    Ayah:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        surah:
+          type: object
+          properties:
+            number: { type: integer }
+            name_ar: { type: string }
+            name_en: { type: [string, 'null'] }
+        ayah_number: { type: integer }
+        ayah_key: { type: string, examples: ['2:255'] }
+        global_ayah_number: { type: integer }
+        juz: { type: [integer, 'null'] }
+        hizb: { type: [integer, 'null'] }
+        rub: { type: [integer, 'null'] }
+        page: { type: [integer, 'null'] }
+        manzil: { type: [integer, 'null'] }
+        ruku: { type: [integer, 'null'] }
+        sajdah: { type: boolean }
+        sajdah_type: { type: [string, 'null'] }
+        text: { type: string, description: Source text, verbatim (source-locked). }
+        text_uthmani: { type: [string, 'null'] }
+        text_simple: { type: [string, 'null'] }
+        edition: { $ref: '#/components/schemas/EditionRef' }
+        source:
+          type: object
+          properties:
+            id: { type: string }
+            name: { type: [string, 'null'] }
+            version: { type: [string, 'null'] }
+        verification:
+          type: object
+          properties:
+            verified: { type: boolean }
+            status: { type: string, enum: [pending, verified, failed] }
+        dataset_version: { type: [string, 'null'] }
+        content_hash: { type: string, description: SHA-256 of the source text. }
+        translation:
+          type: [object, 'null']
+          properties:
+            title: { type: [string, 'null'] }
+            language: { type: [string, 'null'] }
+            text: { type: string }
+    EditionRef:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        slug: { type: string }
+        name: { type: string }
+        riwayah: { type: [string, 'null'] }
+        qiraah: { type: [string, 'null'] }
+    Division:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        number: { type: integer }
+        start_surah: { type: integer }
+        start_ayah: { type: integer }
+        end_surah: { type: integer }
+        end_ayah: { type: integer }
+        start_global_ayah: { type: integer }
+        end_global_ayah: { type: integer }
+        source_id: { type: string }
+        verified: { type: boolean }
+    Qiraah:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        slug: { type: string }
+        name_ar: { type: string }
+        name_en: { type: [string, 'null'] }
+        description: { type: [string, 'null'] }
+        source_id: { type: string }
+        license: { type: [string, 'null'] }
+        license_url: { type: [string, 'null'] }
+        verified: { type: boolean }
+    Riwayah:
+      allOf:
+        - $ref: '#/components/schemas/Qiraah'
+        - type: object
+          properties:
+            qiraah_id: { type: string, format: uuid }
+    Translation:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        slug: { type: string }
+        language: { type: string }
+        translator: { type: [string, 'null'] }
+        title: { type: string }
+        edition_id: { type: [string, 'null'], format: uuid }
+        source_id: { type: string }
+        license: { type: [string, 'null'] }
+        license_url: { type: [string, 'null'] }
+        version: { type: [string, 'null'] }
+        verified: { type: boolean }
+    Reciter:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        slug: { type: string }
+        name_ar: { type: string }
+        name_en: { type: [string, 'null'] }
+        display_name: { type: [string, 'null'] }
+        bio: { type: [string, 'null'] }
+        country: { type: [string, 'null'] }
+        birth_year: { type: [integer, 'null'] }
+        death_year: { type: [integer, 'null'] }
+        photo_url: { type: [string, 'null'] }
+        website: { type: [string, 'null'] }
+        source_id: { type: string }
+        license: { type: [string, 'null'] }
+        license_url: { type: [string, 'null'] }
+        attribution_required: { type: boolean }
+        attribution_text: { type: [string, 'null'] }
+        verified: { type: boolean }
+        verification_status: { type: string, enum: [pending, verified, failed] }
+    Recitation:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        reciter_id: { type: string, format: uuid }
+        riwayah_id: { type: [string, 'null'], format: uuid }
+        edition_id: { type: [string, 'null'], format: uuid }
+        name: { type: string }
+        type: { type: string, enum: [murattal, mujawwad, muallim, translation] }
+        quality: { type: [string, 'null'] }
+        format: { type: [string, 'null'] }
+        bitrate: { type: [integer, 'null'] }
+        sample_rate: { type: [integer, 'null'] }
+        source_id: { type: string }
+        license: { type: [string, 'null'] }
+        license_url: { type: [string, 'null'] }
+        version: { type: [string, 'null'] }
+        status: { type: string, enum: [restricted, streaming_only, public] }
+        verified: { type: boolean }
+    AudioFile:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        recitation_id: { type: string, format: uuid }
+        surah_id: { type: [string, 'null'], format: uuid }
+        ayah_id: { type: [string, 'null'], format: uuid }
+        juz_id: { type: [string, 'null'], format: uuid }
+        sequence_number: { type: integer }
+        audio_url: { type: string }
+        stream_url: { type: [string, 'null'] }
+        download_url:
+          type: [string, 'null']
+          description: null unless AUDIO_LICENSE_CONFIRMED=true and the file status is public.
+        downloadable: { type: boolean }
+        format: { type: [string, 'null'] }
+        codec: { type: [string, 'null'] }
+        bitrate: { type: [integer, 'null'] }
+        sample_rate: { type: [integer, 'null'] }
+        duration_ms: { type: [integer, 'null'] }
+        file_size: { type: [integer, 'null'] }
+        checksum: { type: [string, 'null'] }
+        source_id: { type: string }
+        license: { type: [string, 'null'] }
+        license_url: { type: [string, 'null'] }
+        status: { type: string, enum: [restricted, streaming_only, public] }
+        verified: { type: boolean }
+        verification_status: { type: string, enum: [pending, verified, failed] }
+        dataset_version: { type: [string, 'null'] }
+    Health:
+      type: object
+      properties:
+        status: { type: string, enum: [ok, degraded] }
+        environment: { type: string }
+        api_version: { type: string }
+        checks: { type: object, additionalProperties: true }
+        license_flags:
+          type: object
+          properties:
+            contentLicenseConfirmed: { type: boolean }
+            audioLicenseConfirmed: { type: boolean }
+            publicDataEnabled: { type: boolean }
+    Stats:
+      type: object
+      additionalProperties: { type: integer }
+    Bookmark:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        ayah_id: { type: string, format: uuid }
+        note: { type: [string, 'null'] }
+        created_at: { type: string, format: date-time }
+    Progress:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        edition_id: { type: string, format: uuid }
+        surah_id: { type: string, format: uuid }
+        ayah_id: { type: string, format: uuid }
+        updated_at: { type: string, format: date-time }
+    Settings:
+      type: object
+      properties:
+        user_id: { type: string, format: uuid }
+        selected_edition: { type: [string, 'null'], format: uuid }
+        selected_riwayah: { type: [string, 'null'], format: uuid }
+        selected_reciter: { type: [string, 'null'], format: uuid }
+        selected_translation: { type: [string, 'null'], format: uuid }
+        selected_quality: { type: [string, 'null'] }
+        autoplay_next_ayah: { type: boolean }
+        autoplay_next_surah: { type: boolean }
+        download_wifi_only: { type: boolean }
+        updated_at: { type: string, format: date-time }
+  responses:
+    BadRequest:
+      description: Malformed request
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    Unauthorized:
+      description: Missing or invalid access token
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    NotFound:
+      description: Resource not found
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    ValidationError:
+      description: Invalid parameters
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    RateLimited:
+      description: Too many requests
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    LicenseRestricted:
+      description: Public data disabled until redistribution rights are confirmed
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+paths:
+  /api/v1/health:
+    get:
+      tags: [system]
+      summary: Liveness + dataset/licence status
+      responses:
+        '200':
+          description: Health report
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties: { data: { $ref: '#/components/schemas/Health' } }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /api/v1/stats:
+    get:
+      tags: [system]
+      summary: Real record counts
+      responses:
+        '200':
+          description: Counts
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties: { data: { $ref: '#/components/schemas/Stats' } }
+  /api/v1/sources:
+    get:
+      tags: [system]
+      summary: Source registry with licences and attribution
+      responses:
+        '200':
+          description: Sources
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data: { type: array, items: { $ref: '#/components/schemas/Source' } }
+  /api/v1/editions:
+    get:
+      tags: [system]
+      summary: Mushaf / translation editions
+      parameters:
+        - { name: type, in: query, schema: { type: string } }
+        - { name: language, in: query, schema: { type: string } }
+      responses:
+        '200':
+          description: Editions
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data: { type: array, items: { $ref: '#/components/schemas/Edition' } }
+  /api/v1/datasets:
+    get:
+      tags: [system]
+      summary: Dataset versions (immutable import history)
+      responses:
+        '200':
+          description: Dataset versions
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Success' }
+  /api/v1/qiraat:
+    get:
+      tags: [quran]
+      summary: Qira'at recorded in the source datasets
+      responses:
+        '200':
+          description: Qira'at
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data: { type: array, items: { $ref: '#/components/schemas/Qiraah' } }
+  /api/v1/riwayat:
+    get:
+      tags: [quran]
+      summary: Riwayat recorded in the source datasets
+      parameters:
+        - { name: qiraah, in: query, schema: { type: string } }
+      responses:
+        '200':
+          description: Riwayat
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data: { type: array, items: { $ref: '#/components/schemas/Riwayah' } }
+  /api/v1/translations:
+    get:
+      tags: [translations]
+      summary: Available translations
+      parameters:
+        - { name: language, in: query, schema: { type: string } }
+      responses:
+        '200':
+          description: Translations
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data: { type: array, items: { $ref: '#/components/schemas/Translation' } }
+  /api/v1/surahs:
+    get:
+      tags: [quran]
+      summary: List surahs of an edition
+      parameters:
+        - $ref: '#/components/parameters/edition'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Surahs
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data: { type: array, items: { $ref: '#/components/schemas/Surah' } }
+                      meta: { $ref: '#/components/schemas/PageMeta' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '451': { $ref: '#/components/responses/LicenseRestricted' }
+  /api/v1/surahs/{id}:
+    get:
+      tags: [quran]
+      summary: One surah by number or id
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - $ref: '#/components/parameters/edition'
+      responses:
+        '200':
+          description: Surah
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties: { data: { $ref: '#/components/schemas/Surah' } }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '451': { $ref: '#/components/responses/LicenseRestricted' }
+  /api/v1/surahs/{id}/ayahs:
+    get:
+      tags: [quran]
+      summary: Ayahs of a surah
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - $ref: '#/components/parameters/edition'
+        - $ref: '#/components/parameters/translation'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Ayahs
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data: { type: array, items: { $ref: '#/components/schemas/Ayah' } }
+                      meta: { $ref: '#/components/schemas/PageMeta' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '451': { $ref: '#/components/responses/LicenseRestricted' }
+  /api/v1/surahs/{id}/audio:
+    get:
+      tags: [audio]
+      summary: Audio files mapped to a whole surah
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - $ref: '#/components/parameters/edition'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Audio files
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data: { type: array, items: { $ref: '#/components/schemas/AudioFile' } }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '451': { $ref: '#/components/responses/LicenseRestricted' }
+  /api/v1/ayahs/{id}:
+    get:
+      tags: [quran]
+      summary: One ayah by id
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: '#/components/parameters/edition'
+        - $ref: '#/components/parameters/translation'
+      responses:
+        '200':
+          description: Ayah
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties: { data: { $ref: '#/components/schemas/Ayah' } }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '451': { $ref: '#/components/responses/LicenseRestricted' }
+  /api/v1/ayahs/by-key/{key}:
+    get:
+      tags: [quran]
+      summary: One ayah by "surah:ayah"
+      parameters:
+        - { name: key, in: path, required: true, schema: { type: string }, example: '2:255' }
+        - $ref: '#/components/parameters/edition'
+        - $ref: '#/components/parameters/translation'
+      responses:
+        '200':
+          description: Ayah
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties: { data: { $ref: '#/components/schemas/Ayah' } }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '451': { $ref: '#/components/responses/LicenseRestricted' }
+  /api/v1/ayahs/{id}/audio:
+    get:
+      tags: [audio]
+      summary: Audio files for one ayah
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Audio files
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data: { type: array, items: { $ref: '#/components/schemas/AudioFile' } }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '451': { $ref: '#/components/responses/LicenseRestricted' }
+  /api/v1/juzs:
+    get:
+      tags: [structure]
+      summary: All 30 juz boundaries
+      parameters: [{ $ref: '#/components/parameters/edition' }]
+      responses:
+        '200':
+          description: Juzs
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data: { type: array, items: { $ref: '#/components/schemas/Division' } }
+        '451': { $ref: '#/components/responses/LicenseRestricted' }
+  /api/v1/juzs/{number}:
+    get:
+      tags: [structure]
+      summary: One juz
+      parameters:
+        - { name: number, in: path, required: true, schema: { type: integer, minimum: 1, maximum: 30 } }
+        - $ref: '#/components/parameters/edition'
+      responses:
+        '200':
+          description: Juz
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties: { data: { $ref: '#/components/schemas/Division' } }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/juzs/{number}/ayahs:
+    get:
+      tags: [structure]
+      summary: Ayahs of a juz
+      parameters:
+        - { name: number, in: path, required: true, schema: { type: integer, minimum: 1, maximum: 30 } }
+        - $ref: '#/components/parameters/edition'
+        - $ref: '#/components/parameters/translation'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Ayahs
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data: { type: array, items: { $ref: '#/components/schemas/Ayah' } }
+                      meta: { $ref: '#/components/schemas/PageMeta' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/hizbs:
+    get:
+      tags: [structure]
+      summary: All 60 hizbs
+      parameters: [{ $ref: '#/components/parameters/edition' }]
+      responses:
+        '200':
+          description: Hizbs
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data: { type: array, items: { $ref: '#/components/schemas/Division' } }
+  /api/v1/hizbs/{number}:
+    get:
+      tags: [structure]
+      summary: One hizb with its four quarters (rub al-hizb)
+      parameters:
+        - { name: number, in: path, required: true, schema: { type: integer, minimum: 1, maximum: 60 } }
+        - $ref: '#/components/parameters/edition'
+      responses:
+        '200':
+          description: Hizb
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Success' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/hizbs/{number}/ayahs:
+    get:
+      tags: [structure]
+      summary: Ayahs of a hizb (optionally one quarter)
+      parameters:
+        - { name: number, in: path, required: true, schema: { type: integer, minimum: 1, maximum: 60 } }
+        - { name: quarter, in: query, schema: { type: integer, minimum: 1, maximum: 4 } }
+        - $ref: '#/components/parameters/edition'
+        - $ref: '#/components/parameters/translation'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Ayahs
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Success' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/rubs/{number}/ayahs:
+    get:
+      tags: [structure]
+      summary: Ayahs of one rub al-hizb (1..240)
+      parameters:
+        - { name: number, in: path, required: true, schema: { type: integer, minimum: 1, maximum: 240 } }
+        - $ref: '#/components/parameters/edition'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Ayahs
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Success' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/pages/{page}:
+    get:
+      tags: [structure]
+      summary: One mushaf page (numbering is edition specific)
+      parameters:
+        - { name: page, in: path, required: true, schema: { type: integer, minimum: 1 } }
+        - $ref: '#/components/parameters/edition'
+      responses:
+        '200':
+          description: Page
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties: { data: { $ref: '#/components/schemas/Division' } }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/pages/{page}/ayahs:
+    get:
+      tags: [structure]
+      summary: Ayahs of a mushaf page
+      parameters:
+        - { name: page, in: path, required: true, schema: { type: integer, minimum: 1 } }
+        - $ref: '#/components/parameters/edition'
+        - $ref: '#/components/parameters/translation'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Ayahs
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Success' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/manzils:
+    get:
+      tags: [structure]
+      summary: The seven manzils
+      parameters: [{ $ref: '#/components/parameters/edition' }]
+      responses:
+        '200':
+          description: Manzils
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data: { type: array, items: { $ref: '#/components/schemas/Division' } }
+  /api/v1/manzils/{number}/ayahs:
+    get:
+      tags: [structure]
+      summary: Ayahs of a manzil
+      parameters:
+        - { name: number, in: path, required: true, schema: { type: integer, minimum: 1, maximum: 7 } }
+        - $ref: '#/components/parameters/edition'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Ayahs
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Success' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/sajdahs:
+    get:
+      tags: [structure]
+      summary: Sajdah positions recorded by the source dataset
+      description: sajdah_type is null unless the source states the ruling.
+      parameters: [{ $ref: '#/components/parameters/edition' }]
+      responses:
+        '200':
+          description: Sajdahs
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Success' }
+  /api/v1/search:
+    get:
+      tags: [search]
+      summary: Full-text search over Quran text and translations
+      parameters:
+        - { name: q, in: query, required: true, schema: { type: string, maxLength: 200 } }
+        - { name: surah, in: query, schema: { type: integer, minimum: 1, maximum: 114 } }
+        - { name: ayah, in: query, schema: { type: integer, minimum: 1 } }
+        - { name: juz, in: query, schema: { type: integer, minimum: 1, maximum: 30 } }
+        - { name: hizb, in: query, schema: { type: integer, minimum: 1, maximum: 60 } }
+        - { name: page_number, in: query, schema: { type: integer, minimum: 1 } }
+        - { name: riwayah, in: query, schema: { type: string } }
+        - { name: qiraah, in: query, schema: { type: string } }
+        - { name: language, in: query, schema: { type: string } }
+        - { name: exact, in: query, schema: { type: boolean, default: false } }
+        - $ref: '#/components/parameters/edition'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Search hits
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data: { type: array, items: { $ref: '#/components/schemas/Ayah' } }
+                      meta: { $ref: '#/components/schemas/PageMeta' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '451': { $ref: '#/components/responses/LicenseRestricted' }
+  /api/v1/reciters:
+    get:
+      tags: [audio]
+      summary: List / search reciters
+      parameters:
+        - { name: search, in: query, schema: { type: string } }
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Reciters
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data: { type: array, items: { $ref: '#/components/schemas/Reciter' } }
+                      meta: { $ref: '#/components/schemas/PageMeta' }
+  /api/v1/reciters/{id}:
+    get:
+      tags: [audio]
+      summary: One reciter by id or slug
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200':
+          description: Reciter
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties: { data: { $ref: '#/components/schemas/Reciter' } }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/v1/reciters/{id}/riwayat:
+    get:
+      tags: [audio]
+      summary: Riwayat a reciter is documented to recite
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200':
+          description: Riwayat
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Success' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/v1/reciters/{id}/recitations:
+    get:
+      tags: [audio]
+      summary: Recitations of a reciter
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200':
+          description: Recitations
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data: { type: array, items: { $ref: '#/components/schemas/Recitation' } }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/v1/reciters/{id}/surahs:
+    get:
+      tags: [audio]
+      summary: Surahs a reciter has audio for
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200':
+          description: Surahs with audio counts
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Success' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '451': { $ref: '#/components/responses/LicenseRestricted' }
+  /api/v1/reciters/{id}/surahs/{surah_id}:
+    get:
+      tags: [audio]
+      summary: Audio files of one surah for a reciter
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - { name: surah_id, in: path, required: true, schema: { type: integer, minimum: 1, maximum: 114 } }
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Audio files
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data: { type: array, items: { $ref: '#/components/schemas/AudioFile' } }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/reciters/{id}/juzs/{juz_number}:
+    get:
+      tags: [audio]
+      summary: Audio files of one juz for a reciter
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - { name: juz_number, in: path, required: true, schema: { type: integer, minimum: 1, maximum: 30 } }
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Audio files
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Success' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/reciters/{id}/full-quran:
+    get:
+      tags: [audio]
+      summary: Every audio file of a reciter, ordered
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Audio files
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Success' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/v1/audio/search:
+    get:
+      tags: [audio]
+      summary: Search audio files by reciter, surah, riwayah or format
+      parameters:
+        - { name: reciter, in: query, schema: { type: string } }
+        - { name: surah, in: query, schema: { type: integer, minimum: 1, maximum: 114 } }
+        - { name: riwayah, in: query, schema: { type: string } }
+        - { name: format, in: query, schema: { type: string } }
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Audio files
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Success' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/downloads/quran:
+    get:
+      tags: [downloads]
+      summary: Offline manifest for the Quran text of an edition
+      parameters:
+        - $ref: '#/components/parameters/edition'
+        - $ref: '#/components/parameters/translation'
+      responses:
+        '200':
+          description: Manifest
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Success' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '451': { $ref: '#/components/responses/LicenseRestricted' }
+  /api/v1/downloads/reciters/{id}/surah/{surah_id}:
+    get:
+      tags: [downloads]
+      summary: Offline audio manifest for one surah of a reciter
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - { name: surah_id, in: path, required: true, schema: { type: integer, minimum: 1, maximum: 114 } }
+      responses:
+        '200':
+          description: Manifest
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Success' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/me/bookmarks:
+    get:
+      tags: [user]
+      summary: List my bookmarks
+      security: [{ supabaseJwt: [] }]
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Bookmarks
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data: { type: array, items: { $ref: '#/components/schemas/Bookmark' } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [user]
+      summary: Add a bookmark
+      security: [{ supabaseJwt: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ayah_id]
+              properties:
+                ayah_id: { type: string, format: uuid }
+                note: { type: string, maxLength: 500 }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties: { data: { $ref: '#/components/schemas/Bookmark' } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/me/bookmarks/{ayah_id}:
+    delete:
+      tags: [user]
+      summary: Remove a bookmark
+      security: [{ supabaseJwt: [] }]
+      parameters: [{ name: ayah_id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        '200':
+          description: Deleted
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Success' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/v1/me/favorites:
+    get:
+      tags: [user]
+      summary: List my favorite ayahs
+      security: [{ supabaseJwt: [] }]
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Favorites
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Success' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [user]
+      summary: Add a favorite ayah
+      security: [{ supabaseJwt: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ayah_id]
+              properties: { ayah_id: { type: string, format: uuid } }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Success' }
+        '200':
+          description: Already present
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Success' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/me/favorites/{ayah_id}:
+    delete:
+      tags: [user]
+      summary: Remove a favorite ayah
+      security: [{ supabaseJwt: [] }]
+      parameters: [{ name: ayah_id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        '200':
+          description: Deleted
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Success' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/v1/me/progress:
+    get:
+      tags: [user]
+      summary: My reading progress
+      security: [{ supabaseJwt: [] }]
+      responses:
+        '200':
+          description: Progress
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data: { type: array, items: { $ref: '#/components/schemas/Progress' } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    put:
+      tags: [user]
+      summary: Save reading progress
+      security: [{ supabaseJwt: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ayah_id]
+              properties: { ayah_id: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Saved
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties: { data: { $ref: '#/components/schemas/Progress' } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/v1/me/favorite-reciters:
+    get:
+      tags: [user]
+      summary: My favorite reciters
+      security: [{ supabaseJwt: [] }]
+      responses:
+        '200':
+          description: Favorite reciters
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Success' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [user]
+      summary: Add a favorite reciter
+      security: [{ supabaseJwt: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reciter_id]
+              properties: { reciter_id: { type: string, format: uuid } }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Success' }
+        '200':
+          description: Already present
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Success' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/me/favorite-reciters/{id}:
+    delete:
+      tags: [user]
+      summary: Remove a favorite reciter
+      security: [{ supabaseJwt: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        '200':
+          description: Deleted
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Success' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/v1/me/audio-progress:
+    get:
+      tags: [user]
+      summary: My audio listening positions
+      security: [{ supabaseJwt: [] }]
+      responses:
+        '200':
+          description: Audio progress
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Success' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    put:
+      tags: [user]
+      summary: Save an audio listening position
+      security: [{ supabaseJwt: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [recitation_id, position_ms]
+              properties:
+                recitation_id: { type: string, format: uuid }
+                surah_id: { type: [string, 'null'], format: uuid }
+                ayah_id: { type: [string, 'null'], format: uuid }
+                position_ms: { type: integer, minimum: 0 }
+      responses:
+        '200':
+          description: Saved
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Success' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/me/settings:
+    get:
+      tags: [user]
+      summary: My Quran settings
+      security: [{ supabaseJwt: [] }]
+      responses:
+        '200':
+          description: Settings
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties: { data: { $ref: '#/components/schemas/Settings' } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    put:
+      tags: [user]
+      summary: Save my Quran settings
+      security: [{ supabaseJwt: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Settings' }
+      responses:
+        '200':
+          description: Saved
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties: { data: { $ref: '#/components/schemas/Settings' } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/ValidationError' }

@@ -1,4 +1,5 @@
 node_modules/
+quran_api/node_modules/
 dist/
 coverage/
 .env

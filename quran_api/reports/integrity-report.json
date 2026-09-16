@@ -1,0 +1,188 @@
+{
+  "generated_at": "2026-09-16T01:44:18.054Z",
+  "status": "PASS",
+  "total_checks": 30,
+  "failed_checks": 0,
+  "checks": [
+    {
+      "check": "surahs",
+      "expected": 114,
+      "actual": 114,
+      "pass": true
+    },
+    {
+      "check": "ayahs",
+      "expected": 6236,
+      "actual": 6236,
+      "pass": true
+    },
+    {
+      "check": "juzs",
+      "expected": 30,
+      "actual": 30,
+      "pass": true
+    },
+    {
+      "check": "rubs",
+      "expected": 240,
+      "actual": 240,
+      "pass": true
+    },
+    {
+      "check": "hizbs",
+      "expected": 60,
+      "actual": 60,
+      "pass": true
+    },
+    {
+      "check": "pages",
+      "expected": 604,
+      "actual": 604,
+      "pass": true
+    },
+    {
+      "check": "manzils",
+      "expected": 7,
+      "actual": 7,
+      "pass": true
+    },
+    {
+      "check": "sajdahs",
+      "expected": 15,
+      "actual": 15,
+      "pass": true
+    },
+    {
+      "check": "duplicate_ayahs",
+      "expected": 0,
+      "actual": 0,
+      "pass": true
+    },
+    {
+      "check": "surah_ayah_count_mismatch",
+      "expected": 0,
+      "actual": 0,
+      "pass": true
+    },
+    {
+      "check": "global_number_gaps",
+      "expected": 0,
+      "actual": 0,
+      "pass": true
+    },
+    {
+      "check": "unverified_ayahs",
+      "expected": 0,
+      "actual": 0,
+      "pass": true
+    },
+    {
+      "check": "orphan_translations",
+      "expected": 0,
+      "actual": 0,
+      "pass": true
+    },
+    {
+      "check": "audio_without_mapping",
+      "expected": 0,
+      "actual": 0,
+      "pass": true
+    },
+    {
+      "check": "audio_verified_without_checksum_or_size",
+      "expected": 0,
+      "actual": 0,
+      "pass": true
+    },
+    {
+      "check": "ayahs_without_arabic_letters",
+      "expected": 0,
+      "actual": 0,
+      "pass": true
+    },
+    {
+      "check": "juz_mapping_mismatch",
+      "expected": 0,
+      "actual": 0,
+      "pass": true
+    },
+    {
+      "check": "page_mapping_mismatch",
+      "expected": 0,
+      "actual": 0,
+      "pass": true
+    },
+    {
+      "check": "hash_mismatch_vs_stored_text",
+      "expected": 0,
+      "actual": 0,
+      "pass": true
+    },
+    {
+      "check": "hash_mismatch_vs_source_dataset",
+      "expected": 0,
+      "actual": 0,
+      "pass": true
+    },
+    {
+      "check": "translation_coverage:bn-khan",
+      "expected": 6236,
+      "actual": 6236,
+      "pass": true
+    },
+    {
+      "check": "translation_coverage:en-saheeh",
+      "expected": 6236,
+      "actual": 6236,
+      "pass": true
+    },
+    {
+      "check": "translation_coverage:es-garcia",
+      "expected": 6236,
+      "actual": 6236,
+      "pass": true
+    },
+    {
+      "check": "translation_coverage:fr-hamidullah",
+      "expected": 6236,
+      "actual": 6236,
+      "pass": true
+    },
+    {
+      "check": "translation_coverage:id-affairs",
+      "expected": 6236,
+      "actual": 6236,
+      "pass": true
+    },
+    {
+      "check": "translation_coverage:ru-kuliev",
+      "expected": 6236,
+      "actual": 6236,
+      "pass": true
+    },
+    {
+      "check": "translation_coverage:sv-bernstrom",
+      "expected": 6236,
+      "actual": 6236,
+      "pass": true
+    },
+    {
+      "check": "translation_coverage:tr-diyanet",
+      "expected": 6236,
+      "actual": 6236,
+      "pass": true
+    },
+    {
+      "check": "translation_coverage:ur-maududi",
+      "expected": 6236,
+      "actual": 6236,
+      "pass": true
+    },
+    {
+      "check": "translation_coverage:zh-makin",
+      "expected": 6236,
+      "actual": 6236,
+      "pass": true
+    }
+  ]
+}

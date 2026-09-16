@@ -23,5 +23,8 @@ export default defineConfig({
     globals: true,
     setupFiles: ['src/test/setup.ts'],
     css: false,
+    // The Quran API package has its own vitest project (real PostgreSQL).
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    exclude: ['node_modules/**', 'dist/**', 'quran_api/**', 'flutter_app/**'],
   },
 });

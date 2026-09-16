@@ -7,8 +7,9 @@
 
 | المصدر | النوع | الترخيص | الحالة |
 |---|---|---|---|
-| Tanzil — نص القرآن (حفص عن عاصم، عثماني) عبر حزمة `quran-json` | quran | CC BY 4.0 (يتطلب النسبة) | approved — مدمج offline |
-| ترجمة Sahih International عبر `quran-json` | translation | ضمن ترخيص الحزمة | approved |
+| `quran-json@3.1.2` — نص عثماني (حفص عن عاصم) من The Noble Qur'an Encyclopedia (quranenc.com) | quran | CC BY-SA 4.0 (يتطلب النسبة والمشاركة بالمثل) | approved — مدمج offline + مستورد في منصة البيانات |
+| ترجمات `quran-json` العشر (Saheeh International, Hamidullah, Diyanet, Maududi, Kemenag, García, Kuliev, Bernström, Muhiuddin Khan, Ma Jian) — أغلبها من tanzil.net | translation | ضمن ترخيص الحزمة CC BY-SA 4.0 | approved |
+| `quran-meta@6.0.17` — بنية المصحف (جزء/حزب/ربع/صفحة/منزل/ركوع/سجدة + بيانات السور) لرواية حفص | structure | MIT | approved — مستورد في منصة البيانات |
 | الأربعون النووية (نص + ترجمة + راوٍ + مصدر) | hadith | بيانات موثقة مرفقة المصدر | approved — بذرة مدمجة |
 | تلاوات cdn.islamic.network (4 قرّاء) | recitation | استخدام عام عبر الـCDN | approved — بث فقط، لا إعادة توزيع |
 | sunnah.com API | hadith | يتطلب مفتاحًا وشروط استخدام | مشروط — enrichment فقط عند توفر `VITE_SUNNAH_API_KEY` |
@@ -28,6 +29,12 @@
    (`ؐ-ؚ ً-ٟ ٰ ۖ-ۭ ـ ࣓-ࣿ`)
    وتوحيد الهمزات/الألف/الياء لأغراض المطابقة فقط.
 3. يُخزَّن النص الأصلي دائمًا؛ النسخة المطبَّعة مشتقة ولا تُعرض ولا تُصدَّر.
+
+3-bis. **بحث منصة البيانات** (`quran_api`): عمودان مشتقان — `search_text`
+   (تطبيع كما في البند 2) و`search_skeleton` (نفسه بعد حذف الألف) ليتطابق الرسم
+   العثماني (ٱلۡعَٰلَمِينَ) مع الكتابة المعتادة (العالمين). العمودان مشتقّان ولا
+   يُعرضان ولا يُصدَّران؛ `raw_text` يبقى كما ورد حرفيًا (بما فيه المسافة الرفيعة
+   U+2009 في 2:72).
 
 أي تعديل على هذه القاعدة يكسر البصمات المخزنة، فيتطلب ADR + إعادة توليد
 `verification_records` بنسخة pipeline جديدة (`pipeline_version`).

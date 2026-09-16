@@ -1,4 +1,4 @@
-# memory/TODO.md   (آخر تحديث: 2026-09-09)
+# memory/TODO.md   (آخر تحديث: 2026-09-16)
 
 ## P0 — يمنع النشر على المتجر (كلها خطوات مالك)
 - [ ] حساب مطور Google Play ‏(25$) + التحقق (docs/RELEASE_PLAY.md §2)
@@ -7,6 +7,15 @@
 - [ ] إرسال Project URL + anon key لتفعيل Supabase (docs/SUPABASE_SETUP.md)
       — تذكير: يستلزم تحديث نموذج أمان البيانات وprivacy.html قبل أي
       إصدار يحوي المزامنة، وإضافة حذف حساب
+
+## P0 — منصة بيانات القرآن (خطوات مالك)
+- [ ] تشغيل الـAPI فعليًا: تزويد `DATABASE_URL` (Supabase) و`SUPABASE_JWT_SECRET`
+      ثم `npm run db:apply && npm run import -- --publish` (quran_api/README.md §7)
+- [ ] قرار الترخيص: تأكيد حق إعادة توزيع النص (CC BY-SA 4.0 يلزم النسبة
+      والمشاركة بالمثل) قبل رفع `CONTENT_LICENSE_CONFIRMED` و`PUBLIC_DATA_ENABLED`
+- [ ] توفير Dataset صوتي مرخّص (manifest يذكر القارئ والرواية والترخيص وروابط
+      الملفات) لتفعيل التلاوات — البنية والاستيراد والتحقق جاهزة
+      (`npm run import:audio -- manifest.json`)
 
 ## P1 — بعد الإطلاق
 - [ ] قرار مالك (بوابة 14): تقارير أعطال عن بُعد (تغيّر نموذج البيانات
