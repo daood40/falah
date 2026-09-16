@@ -1,0 +1,31 @@
+============ SEARCH RUN — 2026-09-16T02:07:05Z ============
+data: synthetic TEST fixture (3 records). The real corpus is still empty.
+note: results carry text_available=false — search works, text stays withheld.
+
+hash of stored text BEFORE searching:
+a584dc2e327a072d2f4621d407cce1ee
+
+exact word           "اختباري"            -> total=3 page=1 limit=20 type=hadiths
+partial             "ختبار"              -> total=3 page=1 limit=20 type=hadiths
+with diacritics     "اِخْتِبَارِيّ"          -> total=3 page=1 limit=20 type=hadiths
+hamza variant       "إختباري"            -> total=3 page=1 limit=20 type=hadiths
+arabic-indic digits "٠١٢"                -> total=1 page=1 limit=20 type=hadiths
+narrator name       "راو" type=narrators -> total=2 page=1 limit=20 type=narrators
+chapter name        "باب" type=chapters  -> total=2 page=1 limit=20 type=chapters
+book name           "قسم" type=books     -> total=1 page=1 limit=20 type=books
+filter volume=2                          -> total=1 page=1 limit=20 type=hadiths
+filter hadith_number=2                   -> total=1 page=1 limit=20 type=hadiths
+filter grading                           -> total=1 page=1 limit=20 type=hadiths
+filter source (takhrij)                  -> total=1 page=1 limit=20 type=hadiths
+pagination page=2&limit=1                -> total=3 page=2 limit=1 type=hadiths
+no match            "زقنطوريا"           -> total=0 page=1 limit=20 type=hadiths
+
+hash of stored text AFTER searching (must be identical):
+a584dc2e327a072d2f4621d407cce1ee   ->  IDENTICAL
+
+rejected inputs:
+  q=""        -> 422
+  q="ا"       -> 422
+  limit=99999 -> 422
+  q=' or 1=1--> 200
+===========================================================

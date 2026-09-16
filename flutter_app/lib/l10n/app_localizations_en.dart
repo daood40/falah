@@ -417,6 +417,60 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errors_validation => 'Some input is invalid. Please review.';
 
   @override
+  String get hadith_booksTitle => 'Collection books';
+
+  @override
+  String get hadith_empty => 'No hadiths in this section yet';
+
+  @override
+  String get hadith_error => 'Could not reach the FALAH server';
+
+  @override
+  String get hadith_gradingLabel => 'Grading';
+
+  @override
+  String get hadith_loading => 'Loading…';
+
+  @override
+  String get hadith_narratorLabel => 'Narrator';
+
+  @override
+  String get hadith_noResults => 'No matching results';
+
+  @override
+  String get hadith_numberLabel => 'Hadith number';
+
+  @override
+  String get hadith_retry => 'Retry';
+
+  @override
+  String get hadith_searchHint => 'Search hadiths…';
+
+  @override
+  String get hadith_sourceLabel => 'Source';
+
+  @override
+  String get hadith_takhrijLabel => 'Takhrij';
+
+  @override
+  String get hadith_textWithheld =>
+      'Text unavailable until publishing rights are confirmed';
+
+  @override
+  String get hadith_title => 'Hadith';
+
+  @override
+  String get hadith_unverified => 'Not yet verified';
+
+  @override
+  String get hadith_verified => 'Verified';
+
+  @override
+  String hadith_volumePage(Object page, Object volume) {
+    return 'Volume $volume — page $page';
+  }
+
+  @override
   String get help_cat1 => 'Creating and design';
 
   @override
@@ -1027,14 +1081,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tasbih_reset => 'Reset';
 
   @override
-  String get tasbih_tapToCount => 'Tap to count';
-
-  @override
   String get tasbih_sourceNote => 'The wording occurs in the Quran:';
 
   @override
   String get tasbih_subtitle =>
       'A dhikr counter that works offline; your data stays on your device';
+
+  @override
+  String get tasbih_tapToCount => 'Tap to count';
 
   @override
   String get tasbih_title => 'Tasbih';
@@ -1134,57 +1188,4 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get werd_title => 'Daily werd';
-
-  @override
-  String get hadith_title => 'Hadith';
-
-  @override
-  String get hadith_booksTitle => 'Collection books';
-
-  @override
-  String get hadith_loading => 'Loading…';
-
-  @override
-  String get hadith_empty => 'No hadiths in this section yet';
-
-  @override
-  String get hadith_error => 'Could not reach the FALAH server';
-
-  @override
-  String get hadith_retry => 'Retry';
-
-  @override
-  String get hadith_textWithheld => 'Text unavailable until publishing rights are confirmed';
-
-  @override
-  String get hadith_searchHint => 'Search hadiths…';
-
-  @override
-  String get hadith_noResults => 'No matching results';
-
-  @override
-  String get hadith_numberLabel => 'Hadith number';
-
-  @override
-  String get hadith_gradingLabel => 'Grading';
-
-  @override
-  String get hadith_takhrijLabel => 'Takhrij';
-
-  @override
-  String get hadith_narratorLabel => 'Narrator';
-
-  @override
-  String hadith_volumePage(Object volume, Object page) {
-    return 'Volume $volume — page $page';
-  }
-
-  @override
-  String get hadith_sourceLabel => 'Source';
-
-  @override
-  String get hadith_unverified => 'Not yet verified';
-
-  @override
-  String get hadith_verified => 'Verified';
 }

@@ -22,8 +22,8 @@ Backend + REST API لبيانات كتب الحديث، مبني أولًا حو
 | الـAPI | Node 22، بلا إطار، `node:http` + `pg` |
 | البحث | Full Text Search + `pg_trgm` بتطبيع عربي |
 | الأمن | RLS، أدوار Supabase، JWT إداري، تحديد معدّل، ترويسات، سجلّ تدقيق |
-| التوثيق | `openapi.yaml` (OpenAPI 3.1، 26 مسارًا) |
-| الاختبارات | Vitest على PostgreSQL حقيقي — 103 اختبارًا |
+| التوثيق | `openapi.yaml` (OpenAPI 3.1، 28 مسارًا / 29 عملية) |
+| الاختبارات | Vitest على PostgreSQL حقيقي — 128 اختبارًا |
 
 **القاعدة الحاكمة (SOURCE_LOCK):** لا يُولَّد نص شرعي ولا يُصحَّح ولا يُعاد صياغته ولا
 يُستكمل بالتخمين. ما لا يوجد في المصدر يبقى `NULL`. لا يوجد أي مسار في هذا النظام —
@@ -46,11 +46,13 @@ Flutter FALAH
 
 ## 3. Database
 
-مخطط `corpus` — 15 جدولًا (14 مطلوبًا + `app_settings` لعلم الترخيص):
+مخطط `corpus` — 16 جدولًا (14 مطلوبًا + `app_settings` لعلم الترخيص +
+`verification_samples` لعيّنة التحقق البشرية):
 
 `sources` · `editions` · `books` · `chapters` · `hadiths` · `narrators` ·
 `hadith_narrators` · `hadith_sources` · `hadith_gradings` · `hadith_references` ·
-`raw_imports` · `dataset_versions` · `verification_records` · `audit_logs` · `app_settings`
+`raw_imports` · `dataset_versions` · `verification_records` ·
+`verification_samples` · `audit_logs` · `app_settings`
 
 ضمانات على مستوى قاعدة البيانات لا على مستوى الكود:
 
@@ -62,8 +64,8 @@ Flutter FALAH
 * `view corpus.hadiths_public` يحجب النص ما لم يكن علم الترخيص `true`.
 
 الهجرات: `../supabase/migrations/0003_hadith_corpus.sql` ·
-`0004_hadith_corpus_search.sql` · `0005_hadith_corpus_rls.sql`
-(تراكمية فوق 0001/0002 الخاصتين بتطبيق فلاح).
+`0004_hadith_corpus_search.sql` · `0005_hadith_corpus_rls.sql` ·
+`0006_hadith_verification_samples.sql` (تراكمية فوق 0001/0002 لتطبيق فلاح).
 
 ## 4. Import process
 
@@ -133,7 +135,8 @@ npm run db:reset
 
 **إداري (Bearer):** `admin/stats` · `admin/imports` · `admin/imports/{id}` ·
 `admin/dataset-versions` · `admin/audit-logs` · `admin/hadiths/{id}` ·
-`admin/hadiths/{id}/verify` · `admin/verifications`
+`admin/hadiths/{id}/verify` · `admin/verifications` ·
+`admin/verification-samples` (GET/POST) · `admin/verification-status`
 
 الترقيم: `?page=1&limit=20`، و`limit` فوق السقف يُرفض بـ422 لا يُقصّ بصمت.
 
@@ -179,14 +182,15 @@ if (hadith.textAvailable) Text(hadith.rawText!); // لا نص بديل ولا ت
 ## 13. Testing
 
 ```bash
-npm run db:reset && npm test    # 103 اختبارًا على PostgreSQL حقيقي
+npm run db:reset && npm test    # 128 اختبارًا على PostgreSQL حقيقي
 npm run typecheck
-npm run verify                  # تقرير سلامة البيانات
+npm run verify                  # تقرير سلامة البيانات (21 قاعدة)
+npm run smoke                   # نداء فعلي لكل نقطة نهاية مقابل خادم يعمل
 ```
 
 التغطية: وحدات · استيراد · API · قاعدة بيانات · بحث · أمن (SQLi، JWT، صلاحيات،
-ترويسات) · ترقيم · سلامة بيانات · علم الترخيص · مطابقة OpenAPI للمسارات المخدومة.
-التقارير الفعلية في `reports/`.
+ترويسات) · ترقيم · سلامة بيانات (بقواعد تُختبَر بزرع مخالفة لكل قاعدة ثم التراجع) ·
+عيّنة التحقق · علم الترخيص · مطابقة OpenAPI للمسارات المخدومة. التقارير في `reports/`.
 
 ## 14. Data verification
 
@@ -194,6 +198,11 @@ npm run verify                  # تقرير سلامة البيانات
 `hash_check` آليّ يثبت أن النص المخزَّن هو النص المستورد، ولا يرفع الحالة.
 `verified = true` يحتاج `manual_sample` أو `external_source` بنتيجة `passed`
 و`content_hash` مطابقًا للنص الحالي — وإلا فالطلب يُرفض بـ409.
+
+عيّنة التحقق البشرية (§48) في `corpus.verification_samples`: حجم العيّنة ومعرّفاتها
+والمحقِّق والمرجع وعدد المطابقات والفروق. حالة `passed` مرفوضة — في الـAPI وفي قيد
+قاعدة البيانات معًا — ما لم تطابق كل سجلات العيّنة بلا فرق واحد، وكل معرّف في العيّنة
+يجب أن ينتمي إلى نفس `dataset_version` المُتحقَّق منها.
 
 ## 15. License / content rights status
 

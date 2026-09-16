@@ -1,43 +1,30 @@
-# API CONTRACT RUN — 2026-09-16T01:25:31Z
+# API CONTRACT RUN — 2026-09-16T02:16:36Z
+# (endpoint-by-endpoint status codes live in API_ENDPOINTS_RUN.txt; this file shows real payloads)
 
-$ curl -s http://127.0.0.1:8787/api/v1/health
-{"success":true,"data":{"api":"up","database":"up","database_latency_ms":7,"environment":"staging","dataset_version":"JAMI-KAMIL-1437-V1","content_license_confirmed":false,"endpoints":26,"time":"2026-09-16T01:25:31.016Z"}}
+$ GET /api/v1/health
+{"success":true,"data":{"api":"up","database":"up","database_latency_ms":1,"environment":"staging","dataset_version":"JAMI-KAMIL-1437-V1","content_license_confirmed":false,"endpoints":29,"time":"2026-09-16T02:16:36.808Z"}}
 
-$ curl -s http://127.0.0.1:8787/api/v1/hadiths/$ID   (public — licence unconfirmed)
-{"success":true,"data":{"id":"4689e546-a6a0-4c80-97eb-fcf06014d547","hadith_number":"1","book":{"id":"51cbea73-d5a1-4932-93ba-686a3f732d1b","name":"قسم اختباري أول"},"chapter":{"id":"c36fa201-96d2-441e-b21c-dfbfc2975e09","name":"باب اختباري أول"},"narrator":{"id":"61dd8e81-4d8d-4520-bcad-3d1ec426bdc2","name":"راوٍ اختباريّ أوّل"},"isnad":null,"matn":null,"raw_text":null,"takhrij":null,"grading":"TEST GRADE — درجة اختبارية","volume":1,"page":25,"original_reference":null,"original_hadith_number":null,"source":{"name":"TEST FIXTURE SOURCE","edition":"TEST FIXTURE EDITION","publisher":"TEST PUBLISHER"},"verification":{"verified":false,"status":"pending"},"source_locked":true,"content_hash":"1828e58856a163aad4812a6c7a4714c98f66b298984f8b007a07da72a637e914","dataset_version":"TEST-FIXTURE-V1","text_available":false,"created_at":"2026-09-16T01:25:06.956Z","updated_at":"2026-09-16T01:25:06.956Z"}}
+$ GET /api/v1/hadiths/$ID   (public — licence unconfirmed)
+{"success":true,"data":{"id":"e1bfc294-764b-47e7-a362-e997fa2456e2","hadith_number":"1","book":{"id":"fbf0097b-7207-47fa-96a7-34c6d797f23f","name":"قسم اختباري أول"},"chapter":{"id":"83a1e730-c8bb-41a3-b230-e9388b3d0974","name":"باب اختباري أول"},"narrator":{"id":"4a8327d6-f41b-4048-9afa-6de1b84a082a","name":"راوٍ اختباريّ أوّل"},"isnad":null,"matn":null,"raw_text":null,"takhrij":null,"grading":"TEST GRADE — درجة اختبارية","volume":1,"page":25,"original_reference":null,"original_hadith_number":null,"source":{"name":"TEST FIXTURE SOURCE","edition":"TEST FIXTURE EDITION","publisher":"TEST PUBLISHER"},"verification":{"verified":false,"status":"pending"},"source_locked":true,"content_hash":"1828e58856a163aad4812a6c7a4714c98f66b298984f8b007a07da72a637e914","dataset_version":"TEST-FIXTURE-V1","text_available":false,"created_at":"2026-09-16T02:16:21.330Z","updated_at":"2026-09-16T02:16:21.330Z"}}
 
-$ curl -s -H 'Authorization: Bearer <ADMIN_API_KEY>' .../hadiths/$ID   (internal)
-{"success":true,"data":{"id":"4689e546-a6a0-4c80-97eb-fcf06014d547","hadith_number":"1","book":{"id":"51cbea73-d5a1-4932-93ba-686a3f732d1b","name":"قسم اختباري أول"},"chapter":{"id":"c36fa201-96d2-441e-b21c-dfbfc2975e09","name":"باب اختباري أول"},"narrator":{"id":"61dd8e81-4d8d-4520-bcad-3d1ec426bdc2","name":"راوٍ اختباريّ أوّل"},"isnad":null,"matn":null,"raw_text":"TEST DATA — نصٌّ اختباريٌّ للفحص الآليّ، لا يُمثِّل نصًّا شرعيًّا — أ إ آ ٱ ى ة ؤ ئ ـــ ٠١٢٣٤٥٦٧٨٩ «اقتباس» ﴿رمز﴾","takhrij":"TEST TAKHRIJ — مرجع اختباري","grading":"TEST GRADE — درجة اختبارية","volume":1,"page":25,"original_reference":null,"original_hadith_number":null,"source":{"name":"TEST FIXTURE SOURCE","edition":"TEST FIXTURE EDITION","publisher":"TEST PUBLISHER"},"verification":{"verified":false,"status":"pending"},"source_locked":true,"content_hash":"1828e58856a163aad4812a6c7a4714c98f66b298984f8b007a07da72a637e914","dataset_version":"TEST-FIXTURE-V1","text_available":true,"created_at":"2026-09-16T01:25:06.956Z","updated_at":"2026-09-16T01:25:06.956Z"}}
+$ GET /api/v1/hadiths/$ID   with admin credential (internal)
+{"success":true,"data":{"id":"e1bfc294-764b-47e7-a362-e997fa2456e2","hadith_number":"1","book":{"id":"fbf0097b-7207-47fa-96a7-34c6d797f23f","name":"قسم اختباري أول"},"chapter":{"id":"83a1e730-c8bb-41a3-b230-e9388b3d0974","name":"باب اختباري أول"},"narrator":{"id":"4a8327d6-f41b-4048-9afa-6de1b84a082a","name":"راوٍ اختباريّ أوّل"},"isnad":null,"matn":null,"raw_text":"TEST DATA — نصٌّ اختباريٌّ للفحص الآليّ، لا يُمثِّل نصًّا شرعيًّا — أ إ آ ٱ ى ة ؤ ئ ـــ ٠١٢٣٤٥٦٧٨٩ «اقتباس» ﴿رمز﴾","takhrij":"TEST TAKHRIJ — مرجع اختباري","grading":"TEST GRADE — درجة اختبارية","volume":1,"page":25,"original_reference":null,"original_hadith_number":null,"source":{"name":"TEST FIXTURE SOURCE","edition":"TEST FIXTURE EDITION","publisher":"TEST PUBLISHER"},"verification":{"verified":false,"status":"pending"},"source_locked":true,"content_hash":"1828e58856a163aad4812a6c7a4714c98f66b298984f8b007a07da72a637e914","dataset_version":"TEST-FIXTURE-V1","text_available":true,"created_at":"2026-09-16T02:16:21.330Z","updated_at":"2026-09-16T02:16:21.330Z"}}
 
-$ curl -s '.../search?q=اختباري&limit=1'
-{"success":true,"data":[{"id":"4689e546-a6a0-4c80-97eb-fcf06014d547","hadith_number":"1","book":{"id":"51cbea73-d5a1-4932-93ba-686a3f732d1b","name":"قسم اختباري أول"},"chapter":{"id":"c36fa201-96d2-441e-b21c-dfbfc2975e09","name":"باب اختباري أول"},"narrator":{"id":"61dd8e81-4d8d-4520-bcad-3d1ec426bdc2","name":"راوٍ اختباريّ أوّل"},"isnad":null,"matn":null,"raw_text":null,"takhrij":null,"grading":"TEST GRADE — درجة اختبارية","volume":1,"page":25,"original_reference":null,"original_hadith_number":null,"source":{"name":"TEST FIXTURE SOURCE","edition":"TEST FIXTURE EDITION","publisher":"TEST PUBLISHER"},"verification":{"verified":false,"status":"pending"},"source_locked":true,"content_hash":"1828e58856a163aad4812a6c7a4714c98f66b298984f8b007a07da72a637e914","dataset_version":"TEST-FIXTURE-V1","text_available":false,"created_at":"2026-09-16T01:25:06.956Z","updated_at":"2026-09-16T01:25:06.956Z"}],"meta":{"page":1,"limit":1,"total":3,"total_pages":3,"query":"اختباري","type":"hadiths"}}
+$ GET /api/v1/stats
+{"success":true,"data":{"sources":2,"editions":2,"books":1,"chapters":2,"hadiths":3,"narrators":2,"verified_hadiths":0,"pending_hadiths":3,"needs_review_hadiths":0,"rejected_hadiths":0,"gradings":1,"imports":1,"last_import":{"id":"bdbe90e7-8088-4abb-b747-67c7d401dae6","adapter":"jami_kamil","file_name":"test-dataset.json","status":"completed","dataset_version":"TEST-FIXTURE-V1","total_records":6,"successful_records":3,"failed_records":2,"skipped_records":3,"duplicate_records":1,"import_started_at":"2026-09-16T02:16:21.328Z","import_completed_at":"2026-09-16T02:16:21.345Z"},"dataset_version":"JAMI-KAMIL-1437-V1","content_license_confirmed":false}}
 
-$ curl -s '.../hadiths/by-number/2'
-{"success":true,"data":[{"id":"f26662ce-71d5-4240-9eaf-fb42407c628b","hadith_number":"2","book":{"id":"51cbea73-d5a1-4932-93ba-686a3f732d1b","name":"قسم اختباري أول"},"chapter":{"id":"11f82424-26d8-43ba-bc5a-ac4a47ed32d0","name":"باب اختباري ثانٍ"},"narrator":{"id":"c81d86fe-e1fc-4ed7-bbf1-610a155441ae","name":"راوٍ اختباريّ ثانٍ"},"isnad":null,"matn":null,"raw_text":null,"takhrij":null,"grading":null,"volume":1,"page":26,"original_reference":null,"original_hadith_number":null,"source":{"name":"TEST FIXTURE SOURCE","edition":"TEST FIXTURE EDITION","pu
+$ GET /api/v1/editions  (real edition metadata, nothing invented)
+{"success":true,"data":[{"id":"d7b4ac6b-1d83-4c64-b40e-4ff5d308450d","slug":"test-fixture-edition","title":"TEST FIXTURE EDITION","author":"TEST AUTHOR","publisher":"TEST PUBLISHER","edition_name":null,"edition_number":1,"publication_year":null,"hijri_year":null,"volume_count":12,"isbn":null,"page_count":null,"source_url":null,"dataset_version":"TEST-FIXTURE-V1","source_id":"8f967599-1f57-4034-8272-26957c3a6909","source_name":"TEST FIXTURE SOURCE","created_at":"2026-09-16T02:16:21.197Z","updated_at":"2026-09-16T02:16:21.197Z"},{"id":"e3269338-c21b-4a04-9b08-a625c85fc9c0","slug":"jami-kamil-1437","title":"الجامع الكامل في الحديث الصحيح الشامل","author":"محمد عبد الله الأعظمي المعروف بالضياء","publisher":"دار السلام للنشر والتوزيع – الرياض","edition_name":null,"edition_number":1,"publication_year":2016,"hijri_year":1437,"volume_count":12,"isbn":null,"page_count":null,"source_url":"https://ketabonline.com/ar/books/62920","dataset_version":"JAMI-KAMIL-1437-V1","source_id":"24dce3e1-d259-4055-9b05-a90c72bc17b7","source_name":"ketabonline — الجامع الكامل في الحديث الصحيح الشامل","created_at":"2026-09-16T02:16:20.947Z","updated_at":"2026-09-16T02:16:20.947Z"}],"meta":{"page":1,"limit":5,"total":2,"total_pages":1}}
 
-$ curl -s '.../editions'  (real edition metadata, no invented fields)
-{"success":true,"data":[{"id":"8be00313-3640-4823-a29b-68a86297de08","slug":"test-fixture-edition","title":"TEST FIXTURE EDITION","author":"TEST AUTHOR","publisher":"TEST PUBLISHER","edition_name":null,"edition_number":1,"publication_year":null,"hijri_year":null,"volume_count":12,"isbn":null,"page_count":null,"source_url":null,"dataset_version":"TEST-FIXTURE-V1","source_id":"40e1b098-a036-40fc-ab89-93e7e612f843","source_name":"TEST FIXTURE SOURCE","created_at":"2026-09-16T01:24:59.578Z","updated_at":"2026-09-16T01:24:59.578Z"},{"id":"ea186461-8a07-4b5b-8d06-da73bc16be9a","slug":"jami-kamil-1437","title":"الجامع الكامل في الحديث الصحيح الشامل","author":"محمد عبد الله الأعظمي المعروف بالضياء","publisher":"دار السلام للنشر والتوزيع – الرياض","edition_name":null,"edition_number":1,"publication_year":2016,"hijri_year":1437,"volume_count":12,"isbn":null,"page_count":null,"source_url":"https://ketabonline.com/ar/books/62920","dataset_version":"JAMI-KAMIL-1437-V1","source_id":"d3db021a-2adf-460f-a0a0-fa97869a17c0","source_name":"ketabonline — الجامع الكامل في الحديث الصحيح الشامل","created_at":"2026-09-16T01:24:59.345Z","updated_at":"2026-09-16T01:24:59.345Z"}],"meta":{"page":1,"limit":5,"total":2,"total_pages":1}}
+$ GET /api/v1/admin/verification-status
+{"success":true,"data":[{"dataset_version":"JAMI-KAMIL-1437-V1","hadiths":0,"verified_hadiths":0,"samples":0,"passed_samples":0,"last_sample_at":null},{"dataset_version":"TEST-FIXTURE-V1","hadiths":3,"verified_hadiths":0,"samples":0,"passed_samples":0,"last_sample_at":null}]}
 
-$ curl -s '.../hadiths?limit=100000'  (limit cap)
-{"success":false,"error":{"code":"VALIDATION_ERROR","message":"\"limit\" must be at most 100"},"meta":{"request_id":"6dc46b7d-c04c-4029-91f8-c97dd4197482"}}
+$ GET /api/v1/hadiths?limit=100000
+{"success":false,"error":{"code":"VALIDATION_ERROR","message":"\"limit\" must be at most 100"},"meta":{"request_id":"c3b4ca2f-39f4-4d95-b99b-55fad87fcf3c"}}
 
-$ curl -s '.../hadiths/not-a-uuid'
-{"success":false,"error":{"code":"VALIDATION_ERROR","message":"\"id\" must be a UUID"},"meta":{"request_id":"649e0ba3-32dd-4fb0-93f9-a87b88a0b6d9"}}
-
-$ curl -s '.../search?q=%27%20or%201%3D1--'  (SQL injection attempt)
-{"success":true,"data":[],"meta":{"page":1,"limit":20,"total":0,"total_pages":0,"query":"' or 1=1--","type":"hadiths"}}
-
-$ curl -si .../admin/stats  (no credential)
-HTTP/1.1 401 Unauthorized
-x-request-id: 870a79fd-497e-4a6b-bf6e-8ce88b1b7a04
-x-content-type-options: nosniff
-
-$ curl -s -H 'Authorization: Bearer <ADMIN_API_KEY>' .../admin/stats
-{"success":true,"data":{"sources":2,"editions":2,"books":1,"chapters":2,"hadiths":3,"narrators":2,"verified_hadiths":0,"pending_hadiths":3,"needs_review_hadiths":0,"rejected_hadiths":0,"gradings":1,"imports":1,"last_import":{"id":"c30d1669-2ba8-4fcd-b541-a9fde1201de3","adapter":"jami_kamil","file_name":"test-dataset.json","file_hash":"f7a3f71cd252393871fb7a4fb7eb1b8da6e0981ec797b9f1049716826ac1bd11","status":"completed","dataset_version":"TEST-FIXTURE-V1","total_records":6,"successful_records":3,"failed_records":2,"skipped_records":3,"duplicate_records":1,"import_started_at":"2026-09-16T01:25:06.954Z","import_completed_at":"2026-09-16T01:25:06.974Z"},"dataset_versions":[{"version":"TEST-FIXT
-
-$ curl -sI .../health  (security headers)
+$ curl -sI /api/v1/health
 HTTP/1.1 405 Method Not Allowed
-x-request-id: 716b9dbe-17ee-4a39-9aac-f68b8784703c
+x-request-id: 8d3b5ba2-a80c-4623-b408-b05156f77352
 x-content-type-options: nosniff
 x-frame-options: DENY
 referrer-policy: no-referrer
@@ -48,10 +35,10 @@ access-control-allow-origin: *
 access-control-allow-methods: GET, POST, PATCH, OPTIONS
 access-control-allow-headers: authorization, content-type, x-request-id
 access-control-max-age: 600
-x-ratelimit-remaining: 103
+x-ratelimit-remaining: 110
 content-type: application/json; charset=utf-8
 content-length: 153
-Date: Wed, 16 Sep 2026 01:25:31 GMT
+Date: Wed, 16 Sep 2026 02:16:36 GMT
 Connection: keep-alive
 Keep-Alive: timeout=5
 

@@ -1,8 +1,8 @@
-# IMPORT REPORT — 2026-09-16T01:30:35Z
+# IMPORT REPORT — 2026-09-16T02:16:21Z
 # fixture: backend/fixtures/test-dataset.json — synthetic TEST DATA, never scripture
-# (the real Jami-Kamil dataset is empty: the source file is still missing)
+# the real JAMI-KAMIL-1437-V1 dataset is still empty: no authorised source file
 
-## DRY RUN
+## DRY RUN (no database writes)
 ================ IMPORT REPORT ================
 SOURCE             TEST FIXTURE SOURCE
 EDITION            TEST FIXTURE EDITION

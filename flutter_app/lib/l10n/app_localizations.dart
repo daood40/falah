@@ -884,6 +884,108 @@ abstract class AppLocalizations {
   /// **'بعض البيانات غير صحيحة. راجع المدخلات.'**
   String get errors_validation;
 
+  /// No description provided for @hadith_booksTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'كتب الجامع'**
+  String get hadith_booksTitle;
+
+  /// No description provided for @hadith_empty.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد أحاديث في هذا القسم بعد'**
+  String get hadith_empty;
+
+  /// No description provided for @hadith_error.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر الاتصال بخادم فلاح'**
+  String get hadith_error;
+
+  /// No description provided for @hadith_gradingLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدرجة'**
+  String get hadith_gradingLabel;
+
+  /// No description provided for @hadith_loading.
+  ///
+  /// In ar, this message translates to:
+  /// **'جارٍ التحميل…'**
+  String get hadith_loading;
+
+  /// No description provided for @hadith_narratorLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'الراوي'**
+  String get hadith_narratorLabel;
+
+  /// No description provided for @hadith_noResults.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا نتائج مطابقة'**
+  String get hadith_noResults;
+
+  /// No description provided for @hadith_numberLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم الحديث'**
+  String get hadith_numberLabel;
+
+  /// No description provided for @hadith_retry.
+  ///
+  /// In ar, this message translates to:
+  /// **'إعادة المحاولة'**
+  String get hadith_retry;
+
+  /// No description provided for @hadith_searchHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'ابحث في الأحاديث…'**
+  String get hadith_searchHint;
+
+  /// No description provided for @hadith_sourceLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'المصدر'**
+  String get hadith_sourceLabel;
+
+  /// No description provided for @hadith_takhrijLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'التخريج'**
+  String get hadith_takhrijLabel;
+
+  /// No description provided for @hadith_textWithheld.
+  ///
+  /// In ar, this message translates to:
+  /// **'النص غير متاح حتى تأكيد حقوق النشر'**
+  String get hadith_textWithheld;
+
+  /// No description provided for @hadith_title.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحديث'**
+  String get hadith_title;
+
+  /// No description provided for @hadith_unverified.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يُوثَّق بعد'**
+  String get hadith_unverified;
+
+  /// No description provided for @hadith_verified.
+  ///
+  /// In ar, this message translates to:
+  /// **'موثَّق'**
+  String get hadith_verified;
+
+  /// No description provided for @hadith_volumePage.
+  ///
+  /// In ar, this message translates to:
+  /// **'المجلد {volume} — صفحة {page}'**
+  String hadith_volumePage(Object page, Object volume);
+
   /// No description provided for @help_cat1.
   ///
   /// In ar, this message translates to:
@@ -2048,12 +2150,6 @@ abstract class AppLocalizations {
   /// **'تصفير'**
   String get tasbih_reset;
 
-  /// No description provided for @tasbih_tapToCount.
-  ///
-  /// In ar, this message translates to:
-  /// **'اضغط للتسبيح'**
-  String get tasbih_tapToCount;
-
   /// No description provided for @tasbih_sourceNote.
   ///
   /// In ar, this message translates to:
@@ -2065,6 +2161,12 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'عدّاد ذكر يعمل بلا إنترنت، وبياناتك تبقى على جهازك'**
   String get tasbih_subtitle;
+
+  /// No description provided for @tasbih_tapToCount.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط للتسبيح'**
+  String get tasbih_tapToCount;
 
   /// No description provided for @tasbih_title.
   ///
@@ -2257,108 +2359,6 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'الورد اليومي'**
   String get werd_title;
-
-  /// No description provided for @hadith_title.
-  ///
-  /// In ar, this message translates to:
-  /// **'الحديث'**
-  String get hadith_title;
-
-  /// No description provided for @hadith_booksTitle.
-  ///
-  /// In ar, this message translates to:
-  /// **'كتب الجامع'**
-  String get hadith_booksTitle;
-
-  /// No description provided for @hadith_loading.
-  ///
-  /// In ar, this message translates to:
-  /// **'جارٍ التحميل…'**
-  String get hadith_loading;
-
-  /// No description provided for @hadith_empty.
-  ///
-  /// In ar, this message translates to:
-  /// **'لا توجد أحاديث في هذا القسم بعد'**
-  String get hadith_empty;
-
-  /// No description provided for @hadith_error.
-  ///
-  /// In ar, this message translates to:
-  /// **'تعذّر الاتصال بخادم فلاح'**
-  String get hadith_error;
-
-  /// No description provided for @hadith_retry.
-  ///
-  /// In ar, this message translates to:
-  /// **'إعادة المحاولة'**
-  String get hadith_retry;
-
-  /// No description provided for @hadith_textWithheld.
-  ///
-  /// In ar, this message translates to:
-  /// **'النص غير متاح حتى تأكيد حقوق النشر'**
-  String get hadith_textWithheld;
-
-  /// No description provided for @hadith_searchHint.
-  ///
-  /// In ar, this message translates to:
-  /// **'ابحث في الأحاديث…'**
-  String get hadith_searchHint;
-
-  /// No description provided for @hadith_noResults.
-  ///
-  /// In ar, this message translates to:
-  /// **'لا نتائج مطابقة'**
-  String get hadith_noResults;
-
-  /// No description provided for @hadith_numberLabel.
-  ///
-  /// In ar, this message translates to:
-  /// **'رقم الحديث'**
-  String get hadith_numberLabel;
-
-  /// No description provided for @hadith_gradingLabel.
-  ///
-  /// In ar, this message translates to:
-  /// **'الدرجة'**
-  String get hadith_gradingLabel;
-
-  /// No description provided for @hadith_takhrijLabel.
-  ///
-  /// In ar, this message translates to:
-  /// **'التخريج'**
-  String get hadith_takhrijLabel;
-
-  /// No description provided for @hadith_narratorLabel.
-  ///
-  /// In ar, this message translates to:
-  /// **'الراوي'**
-  String get hadith_narratorLabel;
-
-  /// No description provided for @hadith_volumePage.
-  ///
-  /// In ar, this message translates to:
-  /// **'المجلد {volume} — صفحة {page}'**
-  String hadith_volumePage(Object volume, Object page);
-
-  /// No description provided for @hadith_sourceLabel.
-  ///
-  /// In ar, this message translates to:
-  /// **'المصدر'**
-  String get hadith_sourceLabel;
-
-  /// No description provided for @hadith_unverified.
-  ///
-  /// In ar, this message translates to:
-  /// **'لم يُوثَّق بعد'**
-  String get hadith_unverified;
-
-  /// No description provided for @hadith_verified.
-  ///
-  /// In ar, this message translates to:
-  /// **'موثَّق'**
-  String get hadith_verified;
 }
 
 class _AppLocalizationsDelegate

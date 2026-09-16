@@ -1,5 +1,5 @@
-# TEST RUN — 2026-09-16T01:30:09Z
-# database: local PostgreSQL 16, migrations 0001-0005 applied
+# TEST RUN — 2026-09-16T02:16:15Z
+# database: local PostgreSQL 16, migrations 0001-0006 applied
 
  RUN  v2.1.9 /home/user/falah/backend
  ✓ tests/api.test.ts > health & stats > GET /api/v1/health reports a live database without leaking secrets
@@ -60,6 +60,31 @@
  ✓ tests/import.test.ts > SOURCE_LOCK (database level) > still allows the verification workflow to move status
  ✓ tests/import.test.ts > other adapters > imports the CSV fixture
  ✓ tests/import.test.ts > other adapters > imports the structured HTML fixture
+ ✓ tests/integrity-rules.test.ts > the integrity rules actually catch violations > covers the twelve required rules
+ ✓ tests/integrity-rules.test.ts > the integrity rules actually catch violations > 3. catches a hash that stopped matching its text
+ ✓ tests/integrity-rules.test.ts > the integrity rules actually catch violations > 4. an empty raw_text cannot even be written (column check fires first)
+ ✓ tests/integrity-rules.test.ts > the integrity rules actually catch violations > 5. catches a duplicated hadith_number in one dataset/edition
+ ✓ tests/integrity-rules.test.ts > the integrity rules actually catch violations > 7. catches a hadith that no import run produced
+ ✓ tests/integrity-rules.test.ts > the integrity rules actually catch violations > 8. catches an unlocked hadith
+ ✓ tests/integrity-rules.test.ts > the integrity rules actually catch violations > 9. catches verified=true without a human verification record
+ ✓ tests/integrity-rules.test.ts > the integrity rules actually catch violations > 10. catches a grading attached to untraceable text
+ ✓ tests/integrity-rules.test.ts > the integrity rules actually catch violations > 10b. warns about a grading with neither grader nor source_reference
+ ✓ tests/integrity-rules.test.ts > the integrity rules actually catch violations > 11. catches a narrator with no edition
+ ✓ tests/integrity-rules.test.ts > the integrity rules actually catch violations > 11b. catches a narrator borrowed from another edition
+ ✓ tests/integrity-rules.test.ts > the integrity rules actually catch violations > 12. catches a volume beyond the edition volume_count
+ ✓ tests/integrity-rules.test.ts > the integrity rules actually catch violations > 13/14. catch a book or chapter borrowed from elsewhere
+ ✓ tests/integrity-rules.test.ts > the integrity rules actually catch violations > 16. catches placeholder religious text
+ ✓ tests/integrity-rules.test.ts > the integrity rules actually catch violations > leaves the corpus clean after every planted violation was rolled back
+ ✓ tests/verification.test.ts > human sample verification (§48) > needs an admin credential
+ ✓ tests/verification.test.ts > human sample verification (§48) > records a sample with its ids, verifier and discrepancies
+ ✓ tests/verification.test.ts > human sample verification (§48) > refuses "passed" when a record did not match or a discrepancy exists
+ ✓ tests/verification.test.ts > human sample verification (§48) > refuses a sample with no verifier, no ids, or unknown ids
+ ✓ tests/verification.test.ts > human sample verification (§48) > accepts a fully matching sample as passed
+ ✓ tests/verification.test.ts > human sample verification (§48) > lists samples and reports dataset verification status
+ ✓ tests/verification.test.ts > human sample verification (§48) > the database itself refuses an unearned pass
+ ✓ tests/verification.test.ts > human sample verification (§48) > the database refuses a sample whose size disagrees with its ids
+ ✓ tests/verification.test.ts > contract minimum (§2) > imports a record carrying nothing but text, leaving everything else null
+ ✓ tests/verification.test.ts > a sample cannot cross datasets > refuses sampled hadiths that belong to another dataset_version
  ✓ tests/unit.test.ts > arabic normalization (search only) > strips diacritics and unifies hamza/alef/ya/ta-marbuta
  ✓ tests/unit.test.ts > arabic normalization (search only) > converts Arabic-Indic digits and drops tatweel
  ✓ tests/unit.test.ts > arabic normalization (search only) > never mutates the stored text: preserveText keeps diacritics and symbols
@@ -105,10 +130,10 @@
  ✓ tests/openapi.test.ts > OpenAPI specification > marks every admin path as requiring the admin credential
  ✓ tests/openapi.test.ts > OpenAPI specification > describes the hadith schema with nullable source-dependent fields
  ✓ tests/rate-limit.test.ts > rate limiting (§27) > serves up to the limit then answers 429 with Retry-After
- Test Files  7 passed (7)
-      Tests  103 passed (103)
-   Start at  01:30:10
-   Duration  2.18s (transform 197ms, setup 0ms, collect 394ms, tests 624ms, environment 1ms, prepare 267ms)
+ Test Files  9 passed (9)
+      Tests  128 passed (128)
+   Start at  02:16:16
+   Duration  2.92s (transform 223ms, setup 0ms, collect 496ms, tests 851ms, environment 1ms, prepare 371ms)
 
 # typecheck
 tsc --noEmit: OK

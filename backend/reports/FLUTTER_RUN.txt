@@ -1,0 +1,41 @@
+============ FLUTTER RUN — 2026-09-16T02:12:14Z ============
+SDK installed into this session at /tmp/flutter (not committed):
+Flutter 3.35.4 • channel stable • https://github.com/flutter/flutter.git
+Tools • Dart 3.9.2 • DevTools 2.48.0
+
+$ flutter pub get
+Got dependencies!
+24 packages have newer versions incompatible with dependency constraints.
+
+$ flutter gen-l10n
+To use the command line arguments, delete the l10n.yaml file in the Flutter project.
+
+
+   (l10n generated with no errors)
+
+$ flutter analyze
+No issues found! (ran in 0.9s)
+
+$ flutter test   (whole suite)
+00:08 +36 ~1: All tests passed!                                                                                                                                                                        
+
+$ flutter test test/hadith_api_test.dart   (client unit tests)
+00:01 +7: All tests passed!                                                                                                                                                                            
+
+$ flutter test test/hadith_api_live_test.dart --dart-define=FALAH_LIVE_API=http://127.0.0.1:8787
+   (the Dart models parsed responses from the RUNNING API, not mocks)
+00:01 +8: All tests passed!                                                                                                                                                                            
+
+$ flutter build apk --debug
+   BLOCKED — No Android SDK found in this environment (ANDROID_HOME unset).
+   The APK is built by .github/workflows/android.yml on GitHub Actions.
+$ flutter build ios
+   BLOCKED — requires macOS + an Apple developer account. IOS_BUILD=BLOCKED.
+
+BUGS FOUND BY ACTUALLY RUNNING (fixed in this commit):
+  1. hadith_books_screen.dart used AppLocalizations.of(context) without '!',
+     which does not compile — 5 analyzer errors. Fixed.
+  2. test/hadith_api_test.dart built http.Response from a String: that
+     encodes Latin-1 and threw on every Arabic body. Fixed by sending
+     UTF-8 bytes, which is also what the real API sends.
+===========================================================

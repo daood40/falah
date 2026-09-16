@@ -34,6 +34,15 @@ Map<String, dynamic> _hadithJson({
       'text_available': textAvailable,
     };
 
+
+/// Arabic bodies must be sent as UTF-8 bytes: http.Response(String, …)
+/// encodes as Latin-1 and would throw on any Arabic character.
+http.Response _json(Object body, int status) => http.Response.bytes(
+      utf8.encode(jsonEncode(body)),
+      status,
+      headers: {'content-type': 'application/json; charset=utf-8'},
+    );
+
 HadithRepository _repo(MockClient client) =>
     HadithRepository(HadithApiClient(baseUrl: 'http://api.test', client: client));
 
@@ -41,11 +50,7 @@ void main() {
   test('parses a hadith and keeps absent fields null', () async {
     final repo = _repo(MockClient((req) async {
       expect(req.url.path, '/api/v1/hadiths/11111111-1111-1111-1111-111111111111');
-      return http.Response(
-        jsonEncode({'success': true, 'data': _hadithJson(rawText: 'TEST DATA — نصٌّ اختباريّ')}),
-        200,
-        headers: {'content-type': 'application/json; charset=utf-8'},
-      );
+      return _json({'success': true, 'data': _hadithJson(rawText: 'TEST DATA — نصٌّ اختباريّ')}, 200);
     }));
 
     final hadith = await repo.getHadith('11111111-1111-1111-1111-111111111111');
@@ -61,10 +66,8 @@ void main() {
   });
 
   test('handles the withheld-text state without inventing a fallback', () async {
-    final repo = _repo(MockClient((_) async => http.Response(
-          jsonEncode({'success': true, 'data': _hadithJson(rawText: null, textAvailable: false)}),
-          200,
-        )));
+    final repo = _repo(MockClient((_) async =>
+        _json({'success': true, 'data': _hadithJson(rawText: null, textAvailable: false)}, 200)));
 
     final hadith = await repo.getHadith('11111111-1111-1111-1111-111111111111');
     expect(hadith.textAvailable, isFalse);
@@ -73,13 +76,10 @@ void main() {
   });
 
   test('maps an API error envelope to ApiException', () async {
-    final repo = _repo(MockClient((_) async => http.Response(
-          jsonEncode({
-            'success': false,
-            'error': {'code': 'NOT_FOUND', 'message': 'Hadith not found'},
-          }),
-          404,
-        )));
+    final repo = _repo(MockClient((_) async => _json({
+          'success': false,
+          'error': {'code': 'NOT_FOUND', 'message': 'Hadith not found'},
+        }, 404)));
 
     await expectLater(
       repo.getHadith('11111111-1111-1111-1111-111111111111'),
@@ -90,14 +90,11 @@ void main() {
   test('reads pagination meta into Paged', () async {
     final repo = _repo(MockClient((req) async {
       expect(req.url.queryParameters['limit'], '2');
-      return http.Response(
-        jsonEncode({
-          'success': true,
-          'data': [_hadithJson(rawText: 'TEST A'), _hadithJson(rawText: 'TEST B')],
-          'meta': {'page': 1, 'limit': 2, 'total': 5, 'total_pages': 3},
-        }),
-        200,
-      );
+      return _json({
+        'success': true,
+        'data': [_hadithJson(rawText: 'TEST A'), _hadithJson(rawText: 'TEST B')],
+        'meta': {'page': 1, 'limit': 2, 'total': 5, 'total_pages': 3},
+      }, 200);
     }));
 
     final page = await repo.listHadiths(limit: 2);
@@ -111,7 +108,7 @@ void main() {
     var called = false;
     final repo = _repo(MockClient((_) async {
       called = true;
-      return http.Response(jsonEncode({'success': true, 'data': []}), 200);
+      return _json({'success': true, 'data': []}, 200);
     }));
     final page = await repo.search('اختباري');
     expect(called, isTrue);
@@ -119,7 +116,7 @@ void main() {
   });
 
   test('surfaces a network failure as ApiException, not a crash', () async {
-    final repo = _repo(MockClient((_) async => throw const http.ClientException('offline')));
+    final repo = _repo(MockClient((_) async => throw http.ClientException('offline')));
     await expectLater(repo.getHadith('11111111-1111-1111-1111-111111111111'),
         throwsA(isA<ApiException>()));
   });

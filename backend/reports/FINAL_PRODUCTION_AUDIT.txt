@@ -1,0 +1,89 @@
+================================================================
+FINAL PRODUCTION AUDIT — 2026-09-16T02:15:34Z
+repo: daood40/falah   branch: claude/falah-hadith-api-backend-md1ak3
+Every status below was produced by running the thing in this session.
+================================================================
+
+ITEM                | STATUS  | EVIDENCE
+--------------------+---------+---------------------------------------------
+BUILD               | PASS    | npx tsc --noEmit (backend) OK; npm run build (PWA) OK
+DATABASE            | PASS    | migrations 0001-0006 applied to PostgreSQL 16;
+                    |         | npm run db:validate → "schema valid", RLS behavioural pass
+MIGRATIONS          | PASS    | 6 files apply in order from scratch, twice in this session
+IMPORTER            | PASS    | reports/IMPORT_RUN.txt — dry-run writes nothing,
+                    |         | real run imports 3/6 fixture records, rejects 2, flags 1 dup
+REAL_DATA_IMPORT    | BLOCKED | no authorised source file exists; ketabonline is refused by
+                    |         | the egress policy (403 CONNECT). reports/CONTENT_LICENSE.txt
+DATA_VALIDATION     | PASS    | validator rejects empty text and out-of-range volume;
+                    |         | tests/import.test.ts + tests/unit.test.ts
+DATA_INTEGRITY      | PASS    | reports/DATA_INTEGRITY_FINAL.txt — 21 rules PASS, and
+                    |         | tests/integrity-rules.test.ts plants a violation per rule
+                    |         | to prove the rules are not vacuous (15 tests)
+API                 | PASS    | reports/API_ENDPOINTS_RUN.txt — 29/29 endpoints served,
+                    |         | 38 checks incl. all 11 admin routes refused without credentials
+SEARCH              | PASS    | reports/SEARCH_RUN.txt — exact, partial, diacritics, hamza,
+                    |         | Arabic-Indic digits, 4 filters, pagination; stored-text hash
+                    |         | identical before and after searching
+SECURITY            | PASS    | reports/SECURITY_REVIEW.txt — RLS 16/16, 0 write policies for
+                    |         | anon, 0 direct grants on corpus.hadiths, 401/422/400 probes,
+                    |         | injection attempts left the table intact, headers present,
+                    |         | no secret value anywhere in git
+OPENAPI             | PASS    | tests/openapi.test.ts asserts both directions: no undocumented
+                    |         | route, no documented route that is not served (28 paths / 29 ops)
+FLUTTER_TESTS       | PASS    | reports/FLUTTER_RUN.txt — SDK 3.35.4 installed in this session;
+                    |         | flutter analyze → No issues; flutter test → 36 passed, 1 skipped;
+                    |         | live contract test against the RUNNING API → 8 passed
+ANDROID_BUILD       | BLOCKED | no Android SDK in this environment; built by CI workflow
+IOS_BUILD           | BLOCKED | requires macOS + Apple developer account
+DEPLOYMENT          | BLOCKED | no hosting target, no credentials, docker daemon unavailable
+                    |         | here. Dockerfile + docker-compose.yml + backend CI exist and
+                    |         | are reviewed, but NOTHING IS DEPLOYED. No public URL exists.
+HUMAN_VERIFICATION  | BLOCKED | the workflow is built and tested (corpus.verification_samples,
+                    |         | 3 endpoints, 10 tests) but no human sample has been performed:
+                    |         | there is no imported text and no access to the printed source
+CONTENT_LICENSE     | NOT CONFIRMED | reports/CONTENT_LICENSE.txt — no permission on file
+--------------------+---------+---------------------------------------------
+
+PRODUCTION READY: NO.
+  Five items are BLOCKED and the content licence is not confirmed. The machine
+  is finished and proven; the corpus is empty by design until rights and a
+  source file exist.
+
+REAL NUMBERS (measured, none estimated)
+  Tables (schema corpus)            16
+  Views (schema corpus)             3   (hadiths_public, stats_view,
+                                         verification_status_view)
+  Migrations (repo total)           6   — 4 of them for the hadith corpus (0003-0006)
+  Books                             0
+  Chapters                          0
+  Hadiths                           0
+  Narrators                         0
+  Grading records                   0
+  References                        0
+  Verification samples (real)       0
+  Dataset version                   JAMI-KAMIL-1437-V1  (declared, empty)
+  Sources registered                1 real (ketabonline-62920, unconfirmed licence)
+  API endpoints                     29  (18 public read-only, 11 admin)
+  OpenAPI paths                     28  (29 operations — /verification-samples has GET+POST)
+  Backend tests                     128 — 128 passed, 0 failed
+  PWA tests                         75  — 75 passed, 0 failed
+  Flutter tests                     44  — 36 in the default run (the live suite
+                                         shows as 1 skipped there) + 8 live-contract
+                                         tests run against the API; all passed
+  TOTAL passed                      247  (128 backend + 75 PWA + 36 + 8 Flutter)
+  TOTAL failed                      0
+  Blocked items                     5   (real import, deployment, android, ios,
+                                         human verification)
+  API URL                           http://127.0.0.1:8787/api/v1  (local only)
+  Public URL                        NONE — nothing is deployed
+  Deployment status                 BLOCKED
+  License status                    NOT CONFIRMED
+  Human verification status         BLOCKED (workflow ready, 0 samples performed)
+
+THE ONLY THING STANDING BETWEEN THIS AND REAL DATA
+  1. An authorised copy of the edition as a file in the contract shape
+     (backend/contracts/DATA_CONTRACT.md — minimum is one field: text).
+  2. Written confirmation of redistribution rights before any public exposure.
+  Then:  npm run import -- --file <file> --adapter jami_kamil \
+            --edition jami-kamil-1437 --dataset JAMI-KAMIL-1437-V1 --dry-run
+================================================================

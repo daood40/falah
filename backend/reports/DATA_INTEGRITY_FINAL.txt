@@ -1,0 +1,42 @@
+============ DATA INTEGRITY FINAL — 2026-09-16T02:14:28Z ============
+database: falah_corpus_test · migrations 0001-0006 applied
+data: synthetic TEST fixture only. The real JAMI-KAMIL-1437-V1 dataset is EMPTY.
+rules: backend/src/scripts/integrity-checks.ts — the same list the tests assert against
+
+
+
+============ DATA INTEGRITY REPORT ============
+PASS  1. every hadith resolves to a registered source
+PASS  2. every hadith belongs to a declared dataset_version
+PASS  3. every hadith has a content_hash equal to sha256(raw_text)
+PASS  4. no hadith carries an empty raw_text
+PASS  5. hadith_number is unique per (dataset_version, edition)
+PASS  6. identical text inside one chapter is reported, never auto-deleted
+PASS  7. every hadith is traceable to a recorded import run
+PASS  8. imported text is source_locked
+PASS  9. verified=true only with a passed human verification record
+PASS  9b. a passed verification still matches the stored text
+PASS  10. every grading record belongs to a hadith with a recorded source
+PASS  10b. gradings carrying neither grader nor source_reference
+PASS  11. every narrator is attached to an edition of a registered source
+PASS  11b. a hadith narrator belongs to the same edition as the hadith
+PASS  12. volume never exceeds the edition volume_count
+PASS  12b. page and volume are positive when present
+PASS  13. book belongs to the hadith edition
+PASS  14. chapter belongs to the hadith book
+PASS  15. edition belongs to a registered source
+PASS  16. no placeholder/sample religious text in the corpus
+PASS  17. every verification sample cites hadiths of its own dataset
+-----------------------------------------------
+counts:      {"sources":2,"editions":2,"books":1,"chapters":2,"hadiths":3,"narrators":2,"verified_hadiths":0,"pending_hadiths":3,"needs_review_hadiths":0,"rejected_hadiths":0,"gradings":1,"imports":1}
+verification:[{"dataset_version":"JAMI-KAMIL-1437-V1","hadiths":0,"verified_hadiths":0,"samples":0,"passed_samples":0,"last_sample_at":null},{"dataset_version":"TEST-FIXTURE-V1","hadiths":3,"verified_hadiths":0,"samples":0,"passed_samples":0,"last_sample_at":null}]
+===============================================
+RESULT: PASS
+
+--- proof the rules are not vacuous ---
+tests/integrity-rules.test.ts plants a violation for each rule inside a
+transaction, asserts the rule catches it, then rolls back:
+
+ ✓ tests/integrity-rules.test.ts (15 tests) 71ms
+ Test Files  1 passed (1)
+      Tests  15 passed (15)

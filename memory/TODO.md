@@ -14,6 +14,7 @@
 - [ ] تأكيد حقوق النشر كتابةً قبل رفع CONTENT_LICENSE_CONFIRMED إلى true
       وتحديث corpus.sources.license_status
 - [ ] ضبط DATABASE_URL/SUPABASE_JWT_SECRET/ADMIN_API_KEY في بيئة النشر
+- [ ] اختيار مستضيف للـAPI (لا يوجد نشر ولا عنوان عام حتى الآن)
 
 ## P1 — بعد الإطلاق
 - [ ] قرار مالك (بوابة 14): تقارير أعطال عن بُعد (تغيّر نموذج البيانات
@@ -22,7 +23,8 @@
 - [ ] ‏Flutter M2: المحرر والقوالب وتصدير الصور (MIGRATION.md)
 - [ ] ربط سبحة/أذكار Flutter بالمزامنة عند تفعيل Supabase
 - [ ] شاشة قارئ الحديث في Flutter فوق hadith_repository (بعد وصول البيانات)
-- [ ] عيّنة تحقق بشرية (manual_sample) على 30 حديثًا بعد أول استيراد
+- [ ] عيّنة تحقق بشرية بعد أول استيراد عبر POST /api/v1/admin/verification-samples
+      (الآلية جاهزة ومختبرة؛ ينقصها نص مستورد ونسخة مطبوعة للمقارنة)
 - [ ] حذف الفروع القديمة من واجهة GitHub (claude/quiz-platform-build-swm4wi،
       claude/project-structure-overview-lfiuui، gh-pages) — الوكيل ممنوع من حذف refs
 

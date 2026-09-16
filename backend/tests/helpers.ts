@@ -82,4 +82,8 @@ export async function wipeTestData(): Promise<void> {
      end $$;`,
   );
   await query(`delete from corpus.raw_imports where dataset_version = 'TEST-FIXTURE-V1'`);
+  // samples reference hadith ids in an array (no FK), so removing the hadiths
+  // without removing their samples would leave orphaned ids behind — integrity
+  // rule 17 exists precisely to catch that.
+  await query(`delete from corpus.verification_samples where dataset_version = 'TEST-FIXTURE-V1'`);
 }

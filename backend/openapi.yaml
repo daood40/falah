@@ -655,6 +655,82 @@ paths:
           content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
         '422': { $ref: '#/components/responses/Validation' }
 
+  /api/v1/admin/verification-samples:
+    post:
+      tags: [admin]
+      summary: Record a human sample check of imported records against the source
+      description: |
+        Batch-level verification (§48). `passed` is refused unless every sampled
+        record matched and no discrepancy was recorded; the same rule is a
+        database constraint. AI never authors these rows.
+      security: [{ adminAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [dataset_version, sample_hadith_ids, verifier]
+              properties:
+                dataset_version: { type: string }
+                edition_id: { type: [string, 'null'], format: uuid }
+                sample_hadith_ids:
+                  type: array
+                  minItems: 1
+                  items: { type: string, format: uuid }
+                verifier: { type: string, description: The human who performed the check. }
+                source_reference: { type: [string, 'null'], description: What they compared against. }
+                exact_matches: { type: integer, minimum: 0 }
+                discrepancies:
+                  type: array
+                  items: { type: object }
+                notes: { type: [string, 'null'] }
+                status: { type: string, enum: [pending, passed, failed, blocked], default: pending }
+      responses:
+        '201': { description: Sample recorded }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/Validation' }
+    get:
+      tags: [admin]
+      summary: List recorded verification samples
+      security: [{ adminAuth: [] }]
+      parameters:
+        - { name: dataset_version, in: query, schema: { type: string } }
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200': { description: A page of samples }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/v1/admin/verification-status:
+    get:
+      tags: [admin]
+      summary: Verification state per dataset version
+      security: [{ adminAuth: [] }]
+      responses:
+        '200':
+          description: Per-dataset verification counters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        dataset_version: { type: string }
+                        hadiths: { type: integer }
+                        verified_hadiths: { type: integer }
+                        samples: { type: integer }
+                        passed_samples: { type: integer }
+                        last_sample_at: { type: [string, 'null'], format: date-time }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
   /api/v1/admin/verifications:
     get:
       tags: [admin]

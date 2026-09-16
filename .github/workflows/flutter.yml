@@ -23,4 +23,6 @@ jobs:
       - run: flutter pub get
       - run: flutter gen-l10n
       - run: flutter analyze
+      # test/hadith_api_live_test.dart skips itself unless FALAH_LIVE_API is set,
+      # so this stays green without a running backend.
       - run: flutter test

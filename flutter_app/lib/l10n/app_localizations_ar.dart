@@ -411,6 +411,59 @@ class AppLocalizationsAr extends AppLocalizations {
   String get errors_validation => 'بعض البيانات غير صحيحة. راجع المدخلات.';
 
   @override
+  String get hadith_booksTitle => 'كتب الجامع';
+
+  @override
+  String get hadith_empty => 'لا توجد أحاديث في هذا القسم بعد';
+
+  @override
+  String get hadith_error => 'تعذّر الاتصال بخادم فلاح';
+
+  @override
+  String get hadith_gradingLabel => 'الدرجة';
+
+  @override
+  String get hadith_loading => 'جارٍ التحميل…';
+
+  @override
+  String get hadith_narratorLabel => 'الراوي';
+
+  @override
+  String get hadith_noResults => 'لا نتائج مطابقة';
+
+  @override
+  String get hadith_numberLabel => 'رقم الحديث';
+
+  @override
+  String get hadith_retry => 'إعادة المحاولة';
+
+  @override
+  String get hadith_searchHint => 'ابحث في الأحاديث…';
+
+  @override
+  String get hadith_sourceLabel => 'المصدر';
+
+  @override
+  String get hadith_takhrijLabel => 'التخريج';
+
+  @override
+  String get hadith_textWithheld => 'النص غير متاح حتى تأكيد حقوق النشر';
+
+  @override
+  String get hadith_title => 'الحديث';
+
+  @override
+  String get hadith_unverified => 'لم يُوثَّق بعد';
+
+  @override
+  String get hadith_verified => 'موثَّق';
+
+  @override
+  String hadith_volumePage(Object page, Object volume) {
+    return 'المجلد $volume — صفحة $page';
+  }
+
+  @override
   String get help_cat1 => 'الإنشاء والتصميم';
 
   @override
@@ -1015,14 +1068,14 @@ class AppLocalizationsAr extends AppLocalizations {
   String get tasbih_reset => 'تصفير';
 
   @override
-  String get tasbih_tapToCount => 'اضغط للتسبيح';
-
-  @override
   String get tasbih_sourceNote => 'ورد اللفظ في القرآن الكريم:';
 
   @override
   String get tasbih_subtitle =>
       'عدّاد ذكر يعمل بلا إنترنت، وبياناتك تبقى على جهازك';
+
+  @override
+  String get tasbih_tapToCount => 'اضغط للتسبيح';
 
   @override
   String get tasbih_title => 'السبحة';
@@ -1122,57 +1175,4 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get werd_title => 'الورد اليومي';
-
-  @override
-  String get hadith_title => 'الحديث';
-
-  @override
-  String get hadith_booksTitle => 'كتب الجامع';
-
-  @override
-  String get hadith_loading => 'جارٍ التحميل…';
-
-  @override
-  String get hadith_empty => 'لا توجد أحاديث في هذا القسم بعد';
-
-  @override
-  String get hadith_error => 'تعذّر الاتصال بخادم فلاح';
-
-  @override
-  String get hadith_retry => 'إعادة المحاولة';
-
-  @override
-  String get hadith_textWithheld => 'النص غير متاح حتى تأكيد حقوق النشر';
-
-  @override
-  String get hadith_searchHint => 'ابحث في الأحاديث…';
-
-  @override
-  String get hadith_noResults => 'لا نتائج مطابقة';
-
-  @override
-  String get hadith_numberLabel => 'رقم الحديث';
-
-  @override
-  String get hadith_gradingLabel => 'الدرجة';
-
-  @override
-  String get hadith_takhrijLabel => 'التخريج';
-
-  @override
-  String get hadith_narratorLabel => 'الراوي';
-
-  @override
-  String hadith_volumePage(Object volume, Object page) {
-    return 'المجلد $volume — صفحة $page';
-  }
-
-  @override
-  String get hadith_sourceLabel => 'المصدر';
-
-  @override
-  String get hadith_unverified => 'لم يُوثَّق بعد';
-
-  @override
-  String get hadith_verified => 'موثَّق';
 }

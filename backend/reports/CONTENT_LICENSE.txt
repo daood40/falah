@@ -1,0 +1,63 @@
+================================================================
+CONTENT LICENSE — 2026-09-16T02:14:50Z
+================================================================
+
+LICENSE STATUS:
+    NOT CONFIRMED
+
+SOURCE:
+    name        ketabonline — الجامع الكامل في الحديث الصحيح الشامل
+    url         https://ketabonline.com/ar/books/62920
+    slug        ketabonline-62920
+    db status   corpus.sources.license_status = 'unconfirmed'
+    access      BLOCKED from this environment. The egress proxy answers 403 to
+                CONNECT for that host (policy denial), verified again at
+                2026-09-16T02:14:50Z. No protection of any kind was probed or
+                circumvented: no Cloudflare bypass, no CAPTCHA solving, no
+                paywall workaround, no robots/ToS evasion. One plain HTTPS
+                request was attempted and refused; that is the whole record.
+
+EDITION:
+    title            الجامع الكامل في الحديث الصحيح الشامل
+    author           محمد عبد الله الأعظمي المعروف بالضياء
+    edition_number   1
+    hijri_year       1437
+    publication_year 2016
+    volume_count     12
+    publisher        دار السلام للنشر والتوزيع – الرياض
+    dataset_version  JAMI-KAMIL-1437-V1
+    NOTE: this is metadata supplied by the project owner, nothing inferred.
+    isbn and page_count are NULL because they were never supplied.
+
+PERMISSION EVIDENCE:
+    NONE ON FILE.
+    No written permission, licence, or rights statement from the publisher
+    (دار السلام) or from ketabonline has been provided to this repository.
+    No assumption of a redistribution right has been made anywhere in the code.
+
+PUBLIC DISTRIBUTION:
+    DISABLED
+    Enforced in three independent places, each verified by a test:
+      1. CONTENT_LICENSE_CONFIRMED=false  → the public API returns
+         raw_text / matn / isnad / takhrij as null, with text_available=false
+         (tests/api.test.ts, and the inverse proven in tests/license-flag.test.ts)
+      2. corpus.app_settings.content_license_confirmed = 'false'
+         → corpus.hadiths_public withholds the same columns at the SQL level,
+         so a direct Supabase client cannot read around the API
+      3. corpus.sources.license_status = 'unconfirmed'
+         → the source itself is flagged in the catalogue served by /api/v1/sources
+    Admin credentials keep internal read access for verification work only.
+
+HOW TO FLIP IT (after rights are confirmed IN WRITING):
+    1. File the permission document and reference it in this report.
+    2. update corpus.sources set license_status = 'confirmed' where slug = 'ketabonline-62920';
+       update corpus.app_settings set value = 'true' where key = 'content_license_confirmed';
+    3. Set CONTENT_LICENSE_CONFIRMED=true in the deployment environment.
+    No code change, no migration, no redeploy of the schema is required.
+
+CURRENT CORPUS CONTENT UNDER THIS LICENCE:
+    hadiths in JAMI-KAMIL-1437-V1 : 0
+    books / chapters / narrators  : 0 / 0 / 0
+    Nothing was imported, so nothing is being withheld that exists — the gate
+    is in place ahead of the data, not after it.
+================================================================

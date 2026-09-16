@@ -18,7 +18,7 @@ class HadithBooksScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final t = AppLocalizations.of(context);
+    final t = AppLocalizations.of(context)!;
     final books = ref.watch(hadithBooksProvider);
 
     return Scaffold(

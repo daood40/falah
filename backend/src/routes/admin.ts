@@ -207,3 +207,105 @@ get('/api/v1/admin/verifications', async ({ res, req, query: q }) => {
   );
   paginated(res, rows, page, limit, total);
 });
+
+// ---------------- human sample verification (§48) ----------------
+const SAMPLE_STATUSES = ['pending', 'passed', 'failed', 'blocked'] as const;
+
+/**
+ * Records a HUMAN sample check of imported records against the source.
+ * `passed` is refused unless every sampled record matched and no discrepancy
+ * was reported — the database enforces the same rule.
+ */
+post('/api/v1/admin/verification-samples', async ({ res, req, requestId }) => {
+  const actor = admin(req);
+  const body = (await readJsonBody(req)) as Record<string, unknown>;
+
+  const datasetVersion = typeof body['dataset_version'] === 'string' ? body['dataset_version'] : '';
+  if (!datasetVersion) throw badRequest('"dataset_version" is required');
+
+  const ids = Array.isArray(body['sample_hadith_ids']) ? (body['sample_hadith_ids'] as unknown[]) : null;
+  if (!ids || ids.length === 0) throw badRequest('"sample_hadith_ids" must be a non-empty array');
+  const sampleIds = ids.map((id, i) => uuidParam(String(id), `sample_hadith_ids[${i}]`));
+
+  const verifier = typeof body['verifier'] === 'string' ? body['verifier'].trim() : '';
+  if (!verifier) throw badRequest('"verifier" is required (the human who checked)');
+
+  const status = String(body['status'] ?? 'pending');
+  if (!(SAMPLE_STATUSES as readonly string[]).includes(status)) {
+    throw badRequest(`"status" must be one of: ${SAMPLE_STATUSES.join(', ')}`);
+  }
+  const exactMatches = Number(body['exact_matches'] ?? 0);
+  if (!Number.isInteger(exactMatches) || exactMatches < 0 || exactMatches > sampleIds.length) {
+    throw badRequest('"exact_matches" must be an integer between 0 and the sample size');
+  }
+  const discrepancies = Array.isArray(body['discrepancies']) ? body['discrepancies'] : [];
+  if (status === 'passed' && (exactMatches !== sampleIds.length || discrepancies.length > 0)) {
+    throw badRequest('"passed" requires every sampled record to match with no discrepancy');
+  }
+
+  // Every sampled hadith must exist AND belong to the dataset being verified —
+  // a sample that cites another dataset's text proves nothing about this one.
+  const known = await queryOne<{ n: number }>(
+    'select count(*)::int as n from corpus.hadiths where id = any($1::uuid[])',
+    [sampleIds],
+  );
+  if ((known?.n ?? 0) !== sampleIds.length) throw notFound('One or more sampled hadiths');
+
+  const inDataset = await queryOne<{ n: number }>(
+    'select count(*)::int as n from corpus.hadiths where id = any($1::uuid[]) and dataset_version = $2',
+    [sampleIds, datasetVersion],
+  );
+  if ((inDataset?.n ?? 0) !== sampleIds.length) {
+    throw badRequest('every sampled hadith must belong to "dataset_version"');
+  }
+
+  const row = await queryOne(
+    `insert into corpus.verification_samples
+       (dataset_version, edition_id, sample_size, sample_hadith_ids, source_reference,
+        verifier, exact_matches, discrepancies, notes, status)
+     values ($1,$2,$3,$4::uuid[],$5,$6,$7,$8::jsonb,$9,$10) returning *`,
+    [
+      datasetVersion,
+      typeof body['edition_id'] === 'string' ? uuidParam(body['edition_id'], 'edition_id') : null,
+      sampleIds.length,
+      sampleIds,
+      typeof body['source_reference'] === 'string' ? body['source_reference'] : null,
+      verifier,
+      exactMatches,
+      JSON.stringify(discrepancies),
+      typeof body['notes'] === 'string' ? body['notes'] : null,
+      status,
+    ],
+  );
+  await audit(actor, 'verification.sample', 'dataset_version', datasetVersion,
+    { status, sample_size: sampleIds.length, exact_matches: exactMatches }, requestId);
+  ok(res, row, undefined, 201);
+});
+
+get('/api/v1/admin/verification-samples', async ({ res, req, query: q }) => {
+  admin(req);
+  const { page, limit, offset } = pagination(q);
+  const dataset = optionalText(q, 'dataset_version', 64);
+  const params: unknown[] = [];
+  let where = '';
+  if (dataset) {
+    params.push(dataset);
+    where = `where dataset_version = $${params.length}`;
+  }
+  const total =
+    (await queryOne<{ total: number }>(
+      `select count(*)::int as total from corpus.verification_samples ${where}`, params))?.total ?? 0;
+  params.push(limit, offset);
+  const rows = await query(
+    `select * from corpus.verification_samples ${where}
+     order by verification_date desc limit $${params.length - 1} offset $${params.length}`,
+    params,
+  );
+  paginated(res, rows, page, limit, total);
+});
+
+get('/api/v1/admin/verification-status', async ({ res, req }) => {
+  admin(req);
+  const rows = await query('select * from corpus.verification_status_view order by dataset_version');
+  ok(res, rows);
+});

@@ -1,0 +1,46 @@
+============ ENDPOINT SMOKE — 2026-09-16T02:13:35Z ============
+
+
+============ ENDPOINT SMOKE RUN ============
+base: http://127.0.0.1:8787
+PASS  GET  /api/v1/health                                                               200 (expected 200)
+PASS  GET  /api/v1/stats                                                                200 (expected 200)
+PASS  GET  /api/v1/hadiths                                                              200 (expected 200)
+PASS  GET  /api/v1/hadiths/b2b2dad8-f38a-4e51-a8d2-926db24ddcfe                         200 (expected 200)
+PASS  GET  /api/v1/hadiths/by-number/1                                                  200 (expected 200)
+PASS  GET  /api/v1/sources                                                              200 (expected 200)
+PASS  GET  /api/v1/editions                                                             200 (expected 200)
+PASS  GET  /api/v1/editions/63aa66e8-995b-4a9c-a00e-5fcb106148fb                        200 (expected 200)
+PASS  GET  /api/v1/books                                                                200 (expected 200)
+PASS  GET  /api/v1/books/5813f4f0-7fdd-481c-94d2-3b20aeac992c                           200 (expected 200)
+PASS  GET  /api/v1/books/5813f4f0-7fdd-481c-94d2-3b20aeac992c/hadiths                   200 (expected 200)
+PASS  GET  /api/v1/chapters                                                             200 (expected 200)
+PASS  GET  /api/v1/chapters/ab244343-6893-4caf-bb54-059c5861cc3b                        200 (expected 200)
+PASS  GET  /api/v1/chapters/ab244343-6893-4caf-bb54-059c5861cc3b/hadiths                200 (expected 200)
+PASS  GET  /api/v1/narrators                                                            200 (expected 200)
+PASS  GET  /api/v1/narrators/67d0e4fd-ec10-44c1-a366-a5638ff6e00b                       200 (expected 200)
+PASS  GET  /api/v1/narrators/67d0e4fd-ec10-44c1-a366-a5638ff6e00b/hadiths               200 (expected 200)
+PASS  GET  /api/v1/search?q=%D8%A7%D8%AE%D8%AA%D8%A8%D8%A7%D8%B1                        200 (expected 200)
+PASS  GET  /api/v1/admin/stats                                                          200 (expected 200)
+PASS  GET  /api/v1/admin/stats  (no credential)                                         401 (expected 401)  · must be refused
+PASS  GET  /api/v1/admin/imports                                                        200 (expected 200)
+PASS  GET  /api/v1/admin/imports  (no credential)                                       401 (expected 401)  · must be refused
+PASS  GET  /api/v1/admin/imports/0cd5dd11-983b-46c2-a12d-375d3ad9d149                   200 (expected 200)
+PASS  GET  /api/v1/admin/imports/0cd5dd11-983b-46c2-a12d-375d3ad9d149  (no credential)  401 (expected 401)  · must be refused
+PASS  GET  /api/v1/admin/dataset-versions                                               200 (expected 200)
+PASS  GET  /api/v1/admin/dataset-versions  (no credential)                              401 (expected 401)  · must be refused
+PASS  GET  /api/v1/admin/audit-logs                                                     200 (expected 200)
+PASS  GET  /api/v1/admin/audit-logs  (no credential)                                    401 (expected 401)  · must be refused
+PASS  GET  /api/v1/admin/hadiths/b2b2dad8-f38a-4e51-a8d2-926db24ddcfe                   200 (expected 200)
+PASS  GET  /api/v1/admin/hadiths/b2b2dad8-f38a-4e51-a8d2-926db24ddcfe  (no credential)  401 (expected 401)  · must be refused
+PASS  POST /api/v1/admin/hadiths/b2b2dad8-f38a-4e51-a8d2-926db24ddcfe/verify            201 (expected 201)  · hash_check only — does not mark the hadith verified
+PASS  GET  /api/v1/admin/verifications                                                  200 (expected 200)
+PASS  GET  /api/v1/admin/verifications  (no credential)                                 401 (expected 401)  · must be refused
+PASS  POST /api/v1/admin/verification-samples                                           201 (expected 201)  · status=pending — never a pass
+PASS  GET  /api/v1/admin/verification-samples                                           200 (expected 200)
+PASS  GET  /api/v1/admin/verification-samples  (no credential)                          401 (expected 401)  · must be refused
+PASS  GET  /api/v1/admin/verification-status                                            200 (expected 200)
+PASS  GET  /api/v1/admin/verification-status  (no credential)                           401 (expected 401)  · must be refused
+-------------------------------------------
+endpoints served: 29 · checks: 38 · failed: 0
+RESULT: PASS

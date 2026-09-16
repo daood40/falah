@@ -77,4 +77,5 @@ jobs:
           curl -sf http://127.0.0.1:8787/api/v1/stats  | grep -q '"hadiths"'
           curl -s  "http://127.0.0.1:8787/api/v1/search?q=%D8%A7%D9%84%D8%AD" | grep -q '"success"'
           curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8787/api/v1/admin/stats | grep -q 401
+          npm run smoke
           kill $API_PID
