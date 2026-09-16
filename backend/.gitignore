@@ -4,3 +4,8 @@ node_modules/
 !.env.example
 reports/*.json
 *.log
+
+# Source text of licensed editions — NEVER committed.
+# The repository is public and the content licence is not confirmed;
+# committing the text here would itself be public distribution.
+data/

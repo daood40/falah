@@ -7,11 +7,15 @@
  */
 import { listRoutes } from '../http/router.ts';
 import '../http/app.ts';
-import { closePool, queryOne } from '../db.ts';
+import { closePool, query, queryOne } from '../db.ts';
 import { config } from '../config.ts';
 
 const base = process.argv[2] ?? `http://127.0.0.1:${config.port}`;
 const adminKey = config.adminApiKey;
+
+interface CreatedRow {
+  data?: { id?: string; verification?: { id?: string } };
+}
 
 interface Result {
   method: string;
@@ -45,13 +49,21 @@ async function main(): Promise<void> {
     'select hadith_number from corpus.hadiths where hadith_number is not null limit 1'))?.hadith_number;
 
   const results: Result[] = [];
+  // Rows the probe itself creates are removed afterwards: a smoke run must not
+  // leave machine-made verification rows sitting in a real corpus.
+  const created: CreatedRow[] = [];
 
   for (const route of listRoutes()) {
     const isAdmin = route.path.includes('/admin/');
     let path = route.path;
     let note = '';
 
-    if (path.includes('/hadiths/by-number/')) path = path.replace(':number', number ?? '1');
+    if (path.includes('/hadiths/by-number/')) {
+      // An edition that prints no hadith numbers (e.g. الجامع الكامل) has
+      // nothing to look up here — 404 is the correct answer, not a failure.
+      path = path.replace(':number', number ?? '1');
+      if (!number) note = 'this dataset carries no hadith numbers — 404 is correct';
+    }
     else if (path.startsWith('/api/v1/books')) path = path.replace(':id', ids.book ?? '');
     else if (path.startsWith('/api/v1/chapters')) path = path.replace(':id', ids.chapter ?? '');
     else if (path.startsWith('/api/v1/narrators')) path = path.replace(':id', ids.narrator ?? '');
@@ -92,8 +104,10 @@ async function main(): Promise<void> {
       }
     }
 
-    const expected = route.method === 'POST' ? [201] : [200];
+    const expected =
+      route.method === 'POST' ? [201] : note.includes('404 is correct') ? [404] : [200];
     const res = await fetch(`${base}${path}`, init);
+    if (route.method === 'POST' && res.ok) created.push(await res.clone().json() as CreatedRow);
     results.push({
       method: route.method, path: route.path, url: path, auth: isAdmin,
       status: res.status, expected, ok: expected.includes(res.status), note,
@@ -108,6 +122,22 @@ async function main(): Promise<void> {
     }
   }
 
+  let cleaned = 0;
+  for (const row of created) {
+    const sampleId = row.data?.id;
+    const verificationId = row.data?.verification?.id;
+    if (sampleId) {
+      const del = await query<{ id: string }>(
+        'delete from corpus.verification_samples where id = $1 returning id', [sampleId]);
+      cleaned += del.length;
+    }
+    if (verificationId) {
+      const del = await query<{ id: string }>(
+        'delete from corpus.verification_records where id = $1 returning id', [verificationId]);
+      cleaned += del.length;
+    }
+  }
+
   const width = Math.max(...results.map((r) => r.url.length));
   console.log('============ ENDPOINT SMOKE RUN ============');
   console.log(`base: ${base}`);
@@ -119,7 +149,10 @@ async function main(): Promise<void> {
   }
   const failed = results.filter((r) => !r.ok).length;
   console.log('-------------------------------------------');
-  console.log(`endpoints served: ${listRoutes().length} · checks: ${results.length} · failed: ${failed}`);
+  console.log(
+    `endpoints served: ${listRoutes().length} · checks: ${results.length} · failed: ${failed}` +
+      ` · probe rows cleaned up: ${cleaned}`,
+  );
   console.log(failed === 0 ? 'RESULT: PASS' : 'RESULT: FAIL');
   if (failed > 0) process.exitCode = 1;
 }

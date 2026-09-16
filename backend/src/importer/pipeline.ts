@@ -77,18 +77,19 @@ export async function runImport(opts: ImportOptions): Promise<ImportReport> {
       errors.push(...res.errors);
       continue;
     }
-    if (rec.hadith_number !== null) {
-      if (seenNumbers.has(rec.hadith_number)) {
+    const fileKey = rec.hadith_number ?? rec.source_locator;
+    if (fileKey !== null) {
+      if (seenNumbers.has(fileKey)) {
         duplicates++;
         warnings.push({
           record: i + 1,
-          field: 'hadith_number',
+          field: rec.hadith_number !== null ? 'hadith_number' : 'source_locator',
           code: 'DUPLICATE_IN_FILE',
-          message: `hadith_number "${rec.hadith_number}" repeats in this file — kept out, nothing is deleted`,
+          message: `"${fileKey}" repeats in this file — kept out, nothing is deleted`,
         });
         continue;
       }
-      seenNumbers.add(rec.hadith_number);
+      seenNumbers.add(fileKey);
     }
     valid.push(rec);
   }
@@ -150,21 +151,33 @@ export async function runImport(opts: ImportOptions): Promise<ImportReport> {
           ? await upsertNarrator(c, edition.id, rec.narrator, narrators)
           : null;
 
-        const existing = await c.query(
-          `select id from corpus.hadiths
-           where dataset_version = $1 and edition_id = $2 and hadith_number is not distinct from $3`,
-          [datasetVersion, edition.id, rec.hadith_number],
-        );
-        if (existing.rowCount && rec.hadith_number !== null) {
-          base.duplicates++;
-          base.skipped++;
-          warnings.push({
-            record: 0,
-            field: 'hadith_number',
-            code: 'DUPLICATE_IN_DB',
-            message: `hadith_number "${rec.hadith_number}" already exists in ${datasetVersion} — left untouched`,
-          });
-          continue;
+        // Identity is the hadith number when the edition prints one, otherwise
+        // the source locator (volume/page/position). Either way a re-import
+        // leaves the existing row untouched instead of duplicating it (§37).
+        const identity: { field: string; value: string } | null =
+          rec.hadith_number !== null
+            ? { field: 'hadith_number', value: rec.hadith_number }
+            : rec.source_locator !== null
+              ? { field: 'source_locator', value: rec.source_locator }
+              : null;
+
+        if (identity) {
+          const existing = await c.query(
+            `select id from corpus.hadiths
+             where dataset_version = $1 and edition_id = $2 and ${identity.field} = $3`,
+            [datasetVersion, edition.id, identity.value],
+          );
+          if (existing.rowCount) {
+            base.duplicates++;
+            base.skipped++;
+            warnings.push({
+              record: 0,
+              field: identity.field,
+              code: 'DUPLICATE_IN_DB',
+              message: `${identity.field} "${identity.value}" already exists in ${datasetVersion} — left untouched`,
+            });
+            continue;
+          }
         }
 
         const numeric = rec.hadith_number?.match(/^\d+/)?.[0];
@@ -172,14 +185,16 @@ export async function runImport(opts: ImportOptions): Promise<ImportReport> {
           `insert into corpus.hadiths
              (edition_id, book_id, chapter_id, hadith_number, hadith_number_int, volume_number,
               page_number, raw_text, matn, isnad, narrator_id, takhrij, grading,
-              original_reference, original_hadith_number, dataset_version, raw_import_id)
-           values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17) returning id`,
+              original_reference, original_hadith_number, dataset_version, raw_import_id,
+              source_locator, source_ordinal)
+           values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19) returning id`,
           [
             edition.id, bookId, chapterId, rec.hadith_number,
             numeric ? Number(numeric) : null,
             rec.volume_number, rec.page_number, rec.raw_text, rec.matn, rec.isnad,
             narratorId, rec.takhrij, rec.grading, rec.original_reference,
             rec.original_hadith_number, datasetVersion, importId,
+            rec.source_locator, rec.source_ordinal,
           ],
         );
         const hadithId = (inserted.rows[0] as { id: string }).id;
@@ -285,7 +300,8 @@ async function upsertBook(
   const res = await c.query<{ id: string }>(
     `insert into corpus.books (edition_id, external_key, name, order_number)
      values ($1,$2,$3,$4)
-     on conflict (edition_id, external_key) do update set name = excluded.name
+     on conflict (edition_id, external_key) do update
+       set name = excluded.name, order_number = excluded.order_number
      returning id`,
     [editionId, book.key, book.name, book.order_number],
   );
@@ -305,7 +321,8 @@ async function upsertChapter(
   const res = await c.query<{ id: string }>(
     `insert into corpus.chapters (book_id, parent_id, external_key, name, chapter_number, order_number)
      values ($1,$2,$3,$4,$5,$6)
-     on conflict (book_id, external_key) do update set name = excluded.name
+     on conflict (book_id, external_key) do update
+       set name = excluded.name, order_number = excluded.order_number
      returning id`,
     [bookId, parentId, ch.key, ch.name, ch.chapter_number, ch.order_number],
   );
@@ -324,11 +341,13 @@ async function upsertNarrator(
   const cached = cache.get(normalized);
   if (cached) return cached;
   const res = await c.query<{ id: string }>(
-    `insert into corpus.narrators (edition_id, name, normalized_name, kunya, laqab, biography)
-     values ($1,$2,$3,$4,$5,$6)
+    `insert into corpus.narrators
+       (edition_id, name, normalized_name, kunya, laqab, biography, source_reference)
+     values ($1,$2,$3,$4,$5,$6,$7)
      on conflict (edition_id, normalized_name) do update set name = corpus.narrators.name
      returning id`,
-    [editionId, narrator.name, normalized, narrator.kunya, narrator.laqab, narrator.biography],
+    [editionId, narrator.name, normalized, narrator.kunya, narrator.laqab, narrator.biography,
+     narrator.source_reference ?? null],
   );
   const id = (res.rows[0] as { id: string }).id;
   cache.set(normalized, id);

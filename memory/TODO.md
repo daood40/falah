@@ -9,8 +9,9 @@
       إصدار يحوي المزامنة، وإضافة حذف حساب
 
 ## P0 — خادم الحديث (خطوات مالك)
-- [ ] توفير ملف «الجامع الكامل» بصيغة عقد البيانات
-      (backend/contracts/DATA_CONTRACT.md) لتشغيل الاستيراد
+- [x] توفير ملفات «الجامع الكامل» — استُوردت 15,961 حديثًا (2026-09-16)
+- [ ] عيّنة تحقق بشرية: قارن 30 حديثًا بالمطبوع ثم
+      POST /api/v1/admin/verification-samples (بدونها verified=false للجميع)
 - [ ] تأكيد حقوق النشر كتابةً قبل رفع CONTENT_LICENSE_CONFIRMED إلى true
       وتحديث corpus.sources.license_status
 - [ ] ضبط DATABASE_URL/SUPABASE_JWT_SECRET/ADMIN_API_KEY في بيئة النشر

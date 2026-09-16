@@ -170,7 +170,8 @@ get('/api/v1/narrators/:id/hadiths', async ({ res, params, query: q, req }) => {
     (await queryOne<{ total: number }>(`select count(*)::int as total ${HADITH_FROM} ${where}`, f.params))?.total ?? 0;
   const rows = await query<HadithRow>(
     `select ${HADITH_SELECT} ${HADITH_FROM} ${where}
-     order by h.hadith_number_int nulls last limit ${f.push(limit)} offset ${f.push(offset)}`,
+     order by h.hadith_number_int nulls last, h.volume_number nulls last,
+              h.page_number nulls last, h.source_ordinal nulls last limit ${f.push(limit)} offset ${f.push(offset)}`,
     f.params,
   );
   const isAdmin = isAdminRequest(req);
@@ -192,7 +193,8 @@ async function listChildHadiths(
     (await queryOne<{ total: number }>(`select count(*)::int as total ${HADITH_FROM} ${where}`, f.params))?.total ?? 0;
   const rows = await query<HadithRow>(
     `select ${HADITH_SELECT} ${HADITH_FROM} ${where}
-     order by h.hadith_number_int nulls last, h.created_at
+     order by h.hadith_number_int nulls last, h.volume_number nulls last,
+              h.page_number nulls last, h.source_ordinal nulls last, h.created_at
      limit ${f.push(limit)} offset ${f.push(offset)}`,
     f.params,
   );

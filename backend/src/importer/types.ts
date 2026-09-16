@@ -20,11 +20,25 @@ export interface SourceRecord {
     order_number: number | null;
     parent_key: string | null;
   } | null;
-  narrator: { name: string; kunya: string | null; laqab: string | null; biography: string | null } | null;
+  narrator: {
+    name: string;
+    kunya: string | null;
+    laqab: string | null;
+    biography: string | null;
+    /** How the name was obtained, e.g. copied from the opening «عن …» segment. */
+    source_reference?: string | null;
+  } | null;
   narrators: { name: string; position: number | null; role: string | null }[];
   sources: { source_name: string; reference: string | null; reference_number: string | null }[];
   gradings: { grading: string; grader: string | null; source_reference: string | null; notes: string | null }[];
   references: { reference_type: 'quran' | 'hadith' | 'book' | 'page' | 'other'; reference_text: string }[];
+  /**
+   * Where the record sits in the printed source (volume/page/index), for
+   * editions that carry no hadith numbering. Provenance, never a hadith number.
+   */
+  source_locator: string | null;
+  /** Reading order inside the volume, as extracted. */
+  source_ordinal: number | null;
   /** Fields present in the file that the adapter did not map — reported, never guessed. */
   unmapped: Record<string, unknown>;
 }
@@ -59,5 +73,7 @@ export const emptyRecord = (raw_text: string): SourceRecord => ({
   sources: [],
   gradings: [],
   references: [],
+  source_locator: null,
+  source_ordinal: null,
   unmapped: {},
 });

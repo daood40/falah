@@ -37,7 +37,9 @@ async function listHadiths(q: URLSearchParams, isAdmin: boolean) {
   );
   const rows = await query<HadithRow>(
     `select ${HADITH_SELECT} ${HADITH_FROM} ${where}
-     order by h.hadith_number_int ${dir} nulls last, h.created_at ${dir}
+     order by h.hadith_number_int ${dir} nulls last,
+              h.volume_number ${dir} nulls last, h.page_number ${dir} nulls last,
+              h.source_ordinal ${dir} nulls last, h.created_at ${dir}
      limit ${f.push(limit)} offset ${f.push(offset)}`,
     f.params,
   );

@@ -1,63 +1,65 @@
 ================================================================
-CONTENT LICENSE — 2026-09-16T02:14:50Z
+CONTENT LICENSE — 2026-09-16T06:11:29Z
 ================================================================
 
 LICENSE STATUS:
     NOT CONFIRMED
 
 SOURCE:
-    name        ketabonline — الجامع الكامل في الحديث الصحيح الشامل
-    url         https://ketabonline.com/ar/books/62920
-    slug        ketabonline-62920
-    db status   corpus.sources.license_status = 'unconfirmed'
-    access      BLOCKED from this environment. The egress proxy answers 403 to
-                CONNECT for that host (policy denial), verified again at
-                2026-09-16T02:14:50Z. No protection of any kind was probed or
-                circumvented: no Cloudflare bypass, no CAPTCHA solving, no
-                paywall workaround, no robots/ToS evasion. One plain HTTPS
-                request was attempted and refused; that is the whole record.
+    text actually imported
+        name     المكتبة الشاملة — الجامع الكامل في الحديث الصحيح الشامل
+        url      https://shamela.ws/book/47
+        slug     shamela-47   (corpus.sources.license_status = 'unconfirmed')
+        how      12 UTF-8 volume files supplied by the project owner in this
+                 session. Nothing was fetched, scraped or unlocked by this
+                 system: no Cloudflare bypass, no CAPTCHA, no paywall, no
+                 robots/ToS evasion. ketabonline.com remains blocked by the
+                 environment's egress policy and was never reached.
+    digital reference the project started from
+        name     ketabonline — الجامع الكامل في الحديث الصحيح الشامل
+        url      https://ketabonline.com/ar/books/62920
+        slug     ketabonline-62920   (registered, unconfirmed, no text taken)
 
 EDITION:
-    title            الجامع الكامل في الحديث الصحيح الشامل
-    author           محمد عبد الله الأعظمي المعروف بالضياء
-    edition_number   1
-    hijri_year       1437
-    publication_year 2016
-    volume_count     12
-    publisher        دار السلام للنشر والتوزيع – الرياض
+    title            الجامع الكامل في الحديث الصحيح الشامل المرتب على أبواب الفقه
+    author           أبو أحمد محمد عبد الله الأعظمي المعروف بـ«الضياء»
+    edition_number   1        hijri_year 1437        publication_year 2016
+    volume_count     12       publisher  دار السلام للنشر والتوزيع – الرياض
     dataset_version  JAMI-KAMIL-1437-V1
-    NOTE: this is metadata supplied by the project owner, nothing inferred.
-    isbn and page_count are NULL because they were never supplied.
+    isbn / page_count are NULL — not supplied, therefore not invented.
 
 PERMISSION EVIDENCE:
     NONE ON FILE.
-    No written permission, licence, or rights statement from the publisher
-    (دار السلام) or from ketabonline has been provided to this repository.
-    No assumption of a redistribution right has been made anywhere in the code.
+    The owner supplied the files, which settles access, not redistribution.
+    No licence, written permission, or rights statement from the publisher
+    (دار السلام) or from المكتبة الشاملة has been filed in this repository.
+    The copyright page of the edition itself reads
+    «جميع حقوق الطبع محفوظة للمؤلف» (ج1 ص4) — all printing rights reserved.
 
 PUBLIC DISTRIBUTION:
-    DISABLED
-    Enforced in three independent places, each verified by a test:
-      1. CONTENT_LICENSE_CONFIRMED=false  → the public API returns
-         raw_text / matn / isnad / takhrij as null, with text_available=false
-         (tests/api.test.ts, and the inverse proven in tests/license-flag.test.ts)
-      2. corpus.app_settings.content_license_confirmed = 'false'
-         → corpus.hadiths_public withholds the same columns at the SQL level,
-         so a direct Supabase client cannot read around the API
-      3. corpus.sources.license_status = 'unconfirmed'
-         → the source itself is flagged in the catalogue served by /api/v1/sources
-    Admin credentials keep internal read access for verification work only.
+    DISABLED — and the text now exists, so this is the live gate, not a plan.
+      1. CONTENT_LICENSE_CONFIRMED=false → the public API returns
+         raw_text / matn / isnad / takhrij as null with text_available=false.
+         Verified live: reports/API_RUN.txt shows a public read of a real
+         record with raw_text=null next to the same record read with an admin
+         credential, where the text is present.
+      2. corpus.app_settings.content_license_confirmed='false' → the SQL view
+         corpus.hadiths_public withholds the same columns, so a direct Supabase
+         client cannot read around the API.
+      3. The 29 MB of source text lives in backend/data/, which is GIT-IGNORED.
+         The repository is public; committing the text would itself be
+         publication. Only the schema, the parser and the reports are committed.
+      4. corpus.sources.license_status='unconfirmed' for both source rows.
 
-HOW TO FLIP IT (after rights are confirmed IN WRITING):
-    1. File the permission document and reference it in this report.
-    2. update corpus.sources set license_status = 'confirmed' where slug = 'ketabonline-62920';
-       update corpus.app_settings set value = 'true' where key = 'content_license_confirmed';
+HOW TO FLIP IT (only after rights are confirmed in writing):
+    1. File the permission document and cite it in this report.
+    2. update corpus.sources set license_status='confirmed' where slug='shamela-47';
+       update corpus.app_settings set value='true' where key='content_license_confirmed';
     3. Set CONTENT_LICENSE_CONFIRMED=true in the deployment environment.
-    No code change, no migration, no redeploy of the schema is required.
+    No code change and no migration are needed.
 
-CURRENT CORPUS CONTENT UNDER THIS LICENCE:
-    hadiths in JAMI-KAMIL-1437-V1 : 0
-    books / chapters / narrators  : 0 / 0 / 0
-    Nothing was imported, so nothing is being withheld that exists — the gate
-    is in place ahead of the data, not after it.
+CORPUS UNDER THIS LICENCE (imported, withheld):
+    hadiths 15,961 · books 67 · chapters 5,338 · narrators 1,643
+    grading records 15,762 · takhrij links 29,146 · import runs 12
+    human verification: 0 samples — see FINAL_PRODUCTION_AUDIT.txt
 ================================================================

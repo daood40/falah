@@ -10,9 +10,14 @@ Backend + REST API لبيانات كتب الحديث، مبني أولًا حو
 التصميم متعدّد المصادر منذ اليوم الأول: `sources → editions → books → chapters → hadiths`،
 فإضافة البخاري أو مسلم لاحقًا لا تتطلب تغيير المخطط ولا الـAPI.
 
-> **حالة البيانات الآن:** الجداول والـAPI والمستورد جاهزة ومختبرة، ولا يوجد **أي** نص
-> حديث مستورد. `ketabonline.com` محجوب من بيئة التنفيذ ولم يُتجاوز أي حماية، ولم يُفترض
-> أن الموقع يسمح بإعادة التوزيع. لإكمال الاستيراد: `contracts/DATA_CONTRACT.md`.
+> **حالة البيانات الآن:** الطبعة مستوردة كاملة — **15,961 حديثًا** في 67 كتابًا
+> و5,338 بابًا و1,643 راويًا، من 12 ملفًا قدّمها صاحب المشروع (تصدير الشاملة
+> للطبعة المطبوعة). كل سجل تُحقّق منه آليًا مقابل ملف المصدر: النص حرفيًا،
+> والصفحة المعلنة، والبصمة — 15961/15961.
+>
+> **الترخيص غير مؤكد**، لذلك: النص محجوب عن الـAPI العام (`text_available:false`)،
+> وملفات المصدر في `backend/data/` **خارج git** (المستودع عام). التفاصيل في
+> `reports/CONTENT_LICENSE.txt`.
 
 ## 1. المشروع
 
@@ -23,7 +28,7 @@ Backend + REST API لبيانات كتب الحديث، مبني أولًا حو
 | البحث | Full Text Search + `pg_trgm` بتطبيع عربي |
 | الأمن | RLS، أدوار Supabase، JWT إداري، تحديد معدّل، ترويسات، سجلّ تدقيق |
 | التوثيق | `openapi.yaml` (OpenAPI 3.1، 28 مسارًا / 29 عملية) |
-| الاختبارات | Vitest على PostgreSQL حقيقي — 128 اختبارًا |
+| الاختبارات | Vitest على PostgreSQL حقيقي — 145 اختبارًا |
 
 **القاعدة الحاكمة (SOURCE_LOCK):** لا يُولَّد نص شرعي ولا يُصحَّح ولا يُعاد صياغته ولا
 يُستكمل بالتخمين. ما لا يوجد في المصدر يبقى `NULL`. لا يوجد أي مسار في هذا النظام —
@@ -63,9 +68,14 @@ Flutter FALAH
 * `check hadiths_verified_consistent` يمنع `verified=true` بلا `verification_status='verified'`.
 * `view corpus.hadiths_public` يحجب النص ما لم يكن علم الترخيص `true`.
 
-الهجرات: `../supabase/migrations/0003_hadith_corpus.sql` ·
-`0004_hadith_corpus_search.sql` · `0005_hadith_corpus_rls.sql` ·
-`0006_hadith_verification_samples.sql` (تراكمية فوق 0001/0002 لتطبيق فلاح).
+الهجرات: `0003_hadith_corpus.sql` · `0004_hadith_corpus_search.sql` ·
+`0005_hadith_corpus_rls.sql` · `0006_hadith_verification_samples.sql` ·
+`0007_hadith_source_locator.sql` · `0008_shamela_source.sql`
+(تراكمية فوق 0001/0002 لتطبيق فلاح).
+
+**طبعة بلا ترقيم:** «الجامع الكامل» لا يطبع رقمًا مسلسلًا للأحاديث، فـ`hadith_number`
+يبقى `NULL` لكل السجلات. الهوية هي `source_locator` (`ج1/ص107/#1`) — موضع في المطبوع
+لا رقم حديث، وهو ما يجعل إعادة الاستيراد لا تُكرّر شيئًا.
 
 ## 4. Import process
 
@@ -81,8 +91,21 @@ npm run import -- --file ./data/jami-kamil.json --adapter jami_kamil \
   --edition jami-kamil-1437 --dataset JAMI-KAMIL-1437-V1 --actor "اسمك"
 ```
 
-المحوّلات (`src/importer/adapters/`): `jami_kamil` · `generic_json` · `generic_csv` ·
-`generic_html`. إضافة مصدر جديد = ملف محوّل واحد، بلا مساس بالـAPI.
+المحوّلات (`src/importer/adapters/`): `jami_kamil_shamela` (نصّ الشاملة لهذه الطبعة) ·
+`jami_kamil` (عقد JSON) · `generic_json` · `generic_csv` · `generic_html`.
+إضافة مصدر جديد = ملف محوّل واحد، بلا مساس بالـAPI.
+
+استيراد الطبعة كاملة (الملفات في `backend/data/`، خارج git):
+
+```bash
+bash scripts/import-jami-kamil.sh --dry-run   # فحص 12 مجلدًا بلا كتابة
+bash scripts/import-jami-kamil.sh             # الاستيراد (46 ثانية)
+node --experimental-strip-types src/scripts/sample-verify.ts 15961   # مطابقة كل سجل بالمصدر
+```
+
+ما لا يفعله المحوّل عمدًا: لا يخترع رقم حديث، ولا يفصل متنًا عن سند، ولا يصحّح
+إملاءً (خطأ «الشعارير» ج1 ص158 مخزَّن كما ورد)، ولا يأخذ اسم الراوي إلا إذا أغلقته
+أداة المصدر نفسها (`عن فلان قال/أنّ…`) — وإلا `NULL` (14,754 من 15,961).
 
 كل تشغيل يكتب سجلًا في `corpus.raw_imports` وتقريرًا في `reports/`، ويُنشئ
 `verification_records` من نوع `hash_check` — وهي **لا** تجعل الحديث `verified`
@@ -182,7 +205,7 @@ if (hadith.textAvailable) Text(hadith.rawText!); // لا نص بديل ولا ت
 ## 13. Testing
 
 ```bash
-npm run db:reset && npm test    # 128 اختبارًا على PostgreSQL حقيقي
+npm run db:reset && npm test    # 145 اختبارًا على PostgreSQL حقيقي
 npm run typecheck
 npm run verify                  # تقرير سلامة البيانات (21 قاعدة)
 npm run smoke                   # نداء فعلي لكل نقطة نهاية مقابل خادم يعمل

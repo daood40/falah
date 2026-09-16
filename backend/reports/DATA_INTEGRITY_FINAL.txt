@@ -1,7 +1,6 @@
-============ DATA INTEGRITY FINAL — 2026-09-16T02:14:28Z ============
-database: falah_corpus_test · migrations 0001-0006 applied
-data: synthetic TEST fixture only. The real JAMI-KAMIL-1437-V1 dataset is EMPTY.
-rules: backend/src/scripts/integrity-checks.ts — the same list the tests assert against
+============ DATA INTEGRITY FINAL — 2026-09-16T06:10:10Z ============
+database: falah_corpus · migrations 0001-0008 · dataset JAMI-KAMIL-1437-V1
+data: the real edition — 15,961 records from the owner-supplied volumes
 
 
 
@@ -28,15 +27,24 @@ PASS  15. edition belongs to a registered source
 PASS  16. no placeholder/sample religious text in the corpus
 PASS  17. every verification sample cites hadiths of its own dataset
 -----------------------------------------------
-counts:      {"sources":2,"editions":2,"books":1,"chapters":2,"hadiths":3,"narrators":2,"verified_hadiths":0,"pending_hadiths":3,"needs_review_hadiths":0,"rejected_hadiths":0,"gradings":1,"imports":1}
-verification:[{"dataset_version":"JAMI-KAMIL-1437-V1","hadiths":0,"verified_hadiths":0,"samples":0,"passed_samples":0,"last_sample_at":null},{"dataset_version":"TEST-FIXTURE-V1","hadiths":3,"verified_hadiths":0,"samples":0,"passed_samples":0,"last_sample_at":null}]
+counts:      {"sources":2,"editions":1,"books":67,"chapters":5338,"hadiths":15961,"narrators":1643,"verified_hadiths":0,"pending_hadiths":15961,"needs_review_hadiths":0,"rejected_hadiths":0,"gradings":15762,"imports":12}
+verification:[{"dataset_version":"JAMI-KAMIL-1437-V1","hadiths":15961,"verified_hadiths":0,"samples":0,"passed_samples":0,"last_sample_at":null}]
 ===============================================
 RESULT: PASS
 
---- proof the rules are not vacuous ---
-tests/integrity-rules.test.ts plants a violation for each rule inside a
-transaction, asserts the rule catches it, then rolls back:
+--- structural verification of EVERY record against the source files ---
+========= STRUCTURAL SAMPLE VERIFICATION =========
+sample size            15961
+text found verbatim    15961/15961
+page marker agrees     15961/15961
+content_hash agrees    15961/15961
+failures               0
+-------------------------------------------------
+This is a machine check of the IMPORT, not a human check of the
+HADITH. verified stays false and verification_status stays pending
+until a human compares a sample against the printed edition.
+=================================================
 
- ✓ tests/integrity-rules.test.ts (15 tests) 71ms
+--- the rules are not vacuous: a violation is planted per rule, then rolled back ---
  Test Files  1 passed (1)
       Tests  15 passed (15)
