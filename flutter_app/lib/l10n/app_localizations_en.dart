@@ -1134,4 +1134,57 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get werd_title => 'Daily werd';
+
+  @override
+  String get hadith_title => 'Hadith';
+
+  @override
+  String get hadith_booksTitle => 'Collection books';
+
+  @override
+  String get hadith_loading => 'Loading…';
+
+  @override
+  String get hadith_empty => 'No hadiths in this section yet';
+
+  @override
+  String get hadith_error => 'Could not reach the FALAH server';
+
+  @override
+  String get hadith_retry => 'Retry';
+
+  @override
+  String get hadith_textWithheld => 'Text unavailable until publishing rights are confirmed';
+
+  @override
+  String get hadith_searchHint => 'Search hadiths…';
+
+  @override
+  String get hadith_noResults => 'No matching results';
+
+  @override
+  String get hadith_numberLabel => 'Hadith number';
+
+  @override
+  String get hadith_gradingLabel => 'Grading';
+
+  @override
+  String get hadith_takhrijLabel => 'Takhrij';
+
+  @override
+  String get hadith_narratorLabel => 'Narrator';
+
+  @override
+  String hadith_volumePage(Object volume, Object page) {
+    return 'Volume $volume — page $page';
+  }
+
+  @override
+  String get hadith_sourceLabel => 'Source';
+
+  @override
+  String get hadith_unverified => 'Not yet verified';
+
+  @override
+  String get hadith_verified => 'Verified';
 }

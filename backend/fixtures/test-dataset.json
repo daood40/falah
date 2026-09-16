@@ -1,0 +1,54 @@
+{
+  "_comment": "TEST FIXTURE ONLY — synthetic non-religious strings used by the automated tests. This file must never be imported into a production dataset.",
+  "edition": { "slug": "test-fixture-edition", "title": "TEST FIXTURE EDITION" },
+  "records": [
+    {
+      "hadith_number": "1",
+      "volume": 1,
+      "page": 25,
+      "text": "TEST DATA — نصٌّ اختباريٌّ للفحص الآليّ، لا يُمثِّل نصًّا شرعيًّا — أ إ آ ٱ ى ة ؤ ئ ـــ ٠١٢٣٤٥٦٧٨٩ «اقتباس» ﴿رمز﴾",
+      "book": { "key": "b1", "name": "قسم اختباري أول", "order": 1 },
+      "chapter": { "key": "c1", "name": "باب اختباري أول", "number": "1", "order": 1 },
+      "narrator": { "name": "راوٍ اختباريّ أوّل", "kunya": "أبو الاختبار" },
+      "takhrij": "TEST TAKHRIJ — مرجع اختباري",
+      "grading": "TEST GRADE — درجة اختبارية",
+      "sources": [{ "source_name": "TEST SOURCE A", "reference": "قسم اختباري" }],
+      "gradings": [{ "grading": "TEST GRADE — درجة اختبارية", "grader": "TEST GRADER" }],
+      "narrators": [{ "name": "راوٍ اختباريّ أوّل", "position": 1 }],
+      "references": [{ "reference_type": "page", "reference_text": "1/25" }],
+      "unknown_extra_field": "kept out of the import, reported as unmapped"
+    },
+    {
+      "hadith_number": "2",
+      "volume": 1,
+      "page": 26,
+      "text": "TEST DATA — سجلّ اختباريّ ثانٍ مع فصل صريح للمتن والسند",
+      "matn": "TEST MATN — متن اختباري",
+      "isnad": "TEST ISNAD — سند اختباري",
+      "book": { "key": "b1", "name": "قسم اختباري أول", "order": 1 },
+      "chapter": { "key": "c2", "name": "باب اختباري ثانٍ", "number": "2", "order": 2, "parent_key": "c1" },
+      "narrator": "راوٍ اختباريّ ثانٍ"
+    },
+    {
+      "hadith_number": "3",
+      "volume": 2,
+      "page": 7,
+      "text": "TEST DATA — سجلّ اختباريّ ثالث بلا باب ولا راوٍ"
+    },
+    {
+      "hadith_number": "3",
+      "volume": 2,
+      "page": 7,
+      "text": "TEST DATA — تكرار مقصود لرقم موجود؛ يجب أن يُبلَّغ عنه لا أن يُحذف غيره"
+    },
+    {
+      "hadith_number": "4",
+      "text": "",
+      "note": "intentionally invalid: empty text must be rejected, never filled in"
+    },
+    {
+      "volume": 99,
+      "text": "TEST DATA — مجلّد خارج نطاق الطبعة الاختبارية"
+    }
+  ]
+}

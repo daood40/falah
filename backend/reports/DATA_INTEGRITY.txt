@@ -1,0 +1,35 @@
+# DATA INTEGRITY REPORT — 2026-09-16T01:30:35Z
+# database: falah_corpus_test (local PostgreSQL 16, migrations 0001-0005)
+
+
+
+============ DATA INTEGRITY REPORT ============
+PASS  every hadith has non-empty raw_text
+PASS  content_hash equals sha256(raw_text)
+PASS  imported text is source_locked
+PASS  verified=true only with verification_status=verified
+PASS  verified hadiths have a verification record
+PASS  verification records match the current text hash
+PASS  every hadith belongs to a known dataset_version
+PASS  book belongs to the hadith edition
+PASS  chapter belongs to the hadith book
+PASS  edition belongs to a registered source
+PASS  no placeholder/sample text in the corpus
+PASS  hadith numbers are unique per (dataset, edition)
+-----------------------------------------------
+{
+  "sources": 2,
+  "editions": 2,
+  "books": 1,
+  "chapters": 2,
+  "hadiths": 3,
+  "narrators": 2,
+  "verified_hadiths": 0,
+  "pending_hadiths": 3,
+  "needs_review_hadiths": 0,
+  "rejected_hadiths": 0,
+  "gradings": 1,
+  "imports": 1
+}
+===============================================
+RESULT: PASS

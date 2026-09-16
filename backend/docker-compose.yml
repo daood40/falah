@@ -1,0 +1,29 @@
+# Local stack: Postgres + the API. Supabase replaces the db service in the cloud.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_PASSWORD: falah
+      POSTGRES_DB: falah
+    ports: ['5432:5432']
+    volumes:
+      - ../supabase/migrations:/docker-entrypoint-initdb.d:ro
+      - falah-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      retries: 10
+
+  api:
+    build: .
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      DATABASE_URL: postgresql://postgres:falah@db:5432/falah
+      ENVIRONMENT: staging
+      CONTENT_LICENSE_CONFIRMED: 'false'
+      PORT: '8787'
+    ports: ['8787:8787']
+
+volumes:
+  falah-db:

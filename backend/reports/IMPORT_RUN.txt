@@ -1,0 +1,69 @@
+# IMPORT REPORT — 2026-09-16T01:30:35Z
+# fixture: backend/fixtures/test-dataset.json — synthetic TEST DATA, never scripture
+# (the real Jami-Kamil dataset is empty: the source file is still missing)
+
+## DRY RUN
+================ IMPORT REPORT ================
+SOURCE             TEST FIXTURE SOURCE
+EDITION            TEST FIXTURE EDITION
+DATASET VERSION    TEST-FIXTURE-V1
+ADAPTER            jami_kamil
+FILE               test-dataset.json
+FILE HASH          f7a3f71cd252393871fb7a4fb7eb1b8da6e0981ec797b9f1049716826ac1bd11
+MODE               DRY RUN (no database writes)
+-----------------------------------------------
+TOTAL RECORDS      6
+IMPORTED           0
+SKIPPED            3
+DUPLICATES         1
+INVALID            2
+MISSING DATA       4
+HASHES VERIFIED    0
+HASH MISMATCHES    0
+ERRORS             2
+WARNINGS           9
+STATUS             DRY_RUN
+===============================================
+  ERROR   #5 raw_text: raw_text is empty — the record carries no source text
+  ERROR   #6 volume_number: volume 99 > 12
+  WARNING #1 matn: source does not separate matn/isnad — both stay null, raw_text is authoritative
+  WARNING #1 *: unmapped source fields kept out of the import: unknown_extra_field
+  WARNING #3 matn: source does not separate matn/isnad — both stay null, raw_text is authoritative
+  WARNING #4 matn: source does not separate matn/isnad — both stay null, raw_text is authoritative
+  WARNING #4 hadith_number: hadith_number "3" repeats in this file — kept out, nothing is deleted
+  WARNING #5 *: unmapped source fields kept out of the import: note
+  WARNING #6 hadith_number: no hadith number in the source record
+  WARNING #6 matn: source does not separate matn/isnad — both stay null, raw_text is authoritative
+
+## REAL IMPORT
+================ IMPORT REPORT ================
+SOURCE             TEST FIXTURE SOURCE
+EDITION            TEST FIXTURE EDITION
+DATASET VERSION    TEST-FIXTURE-V1
+ADAPTER            jami_kamil
+FILE               test-dataset.json
+FILE HASH          f7a3f71cd252393871fb7a4fb7eb1b8da6e0981ec797b9f1049716826ac1bd11
+MODE               IMPORT
+-----------------------------------------------
+TOTAL RECORDS      6
+IMPORTED           3
+SKIPPED            3
+DUPLICATES         1
+INVALID            2
+MISSING DATA       4
+HASHES VERIFIED    3
+HASH MISMATCHES    0
+ERRORS             2
+WARNINGS           9
+STATUS             COMPLETED
+===============================================
+  ERROR   #5 raw_text: raw_text is empty — the record carries no source text
+  ERROR   #6 volume_number: volume 99 > 12
+  WARNING #1 matn: source does not separate matn/isnad — both stay null, raw_text is authoritative
+  WARNING #1 *: unmapped source fields kept out of the import: unknown_extra_field
+  WARNING #3 matn: source does not separate matn/isnad — both stay null, raw_text is authoritative
+  WARNING #4 matn: source does not separate matn/isnad — both stay null, raw_text is authoritative
+  WARNING #4 hadith_number: hadith_number "3" repeats in this file — kept out, nothing is deleted
+  WARNING #5 *: unmapped source fields kept out of the import: note
+  WARNING #6 hadith_number: no hadith number in the source record
+  WARNING #6 matn: source does not separate matn/isnad — both stay null, raw_text is authoritative
