@@ -1,7 +1,17 @@
 ================================================================
 FALAH QURAN API — LICENSE AUDIT
 ================================================================
-generated_at : 2026-09-16
+generated_at : 2026-09-16 (updated)
+scope        : five licences are audited SEPARATELY and must never be conflated:
+                 (1) software licence of the npm package,
+                 (2) Quran text dataset licence,
+                 (3) translation licences (one per translator — see
+                     reports/TRANSLATION_LICENSE_AUDIT.txt),
+                 (4) audio licence,
+                 (5) reciter metadata licence.
+               A licence file inside a package covers what the packager may
+               license. It does NOT automatically cover the scripture text or a
+               third party's translation inside it.
 method       : evidence read from the installed packages themselves
                (node_modules/<pkg>/{package.json,LICENSE*,README.md}) and the
                npm registry metadata. Upstream sites (tanzil.net, quranenc.com,
@@ -10,9 +20,32 @@ method       : evidence read from the installed packages themselves
                them. Nothing here is assumed; unverifiable = NOT_CONFIRMED.
 
 ----------------------------------------------------------------
+0) SOFTWARE LICENSE (the packaging, not the content)
+----------------------------------------------------------------
+PACKAGE                 : quran-json (npm) — the JSON files, the build scripts
+                          and the repository layout
+COPYRIGHT HOLDER        : Risan Bagja Pradana (per README and LICENSE.txt)
+LICENSE                 : conflicting — see §1. Whatever it is, it can only
+                          cover what the packager owns: the compilation and the
+                          code, not the Quran text and not the translations.
+STATUS                  : irrelevant to our redistribution question on its own;
+                          recorded here so the two questions stay separate.
+
+PACKAGE                 : quran-meta (npm)
+COPYRIGHT HOLDER        : Quran-Center (LICENSE: "Copyright (c) 2020 Quran-Center")
+LICENSE                 : MIT — consistent everywhere
+STATUS                  : CONFIRMED for the software and for the numeric
+                          metadata it ships (§3).
+
+----------------------------------------------------------------
 1) QURAN DATA LICENSE — NOT_CONFIRMED
 ----------------------------------------------------------------
 SOURCE                  : quran-json (npm), author Risan Bagja Pradana
+COPYRIGHT HOLDER        : UNKNOWN for the text itself. The package names
+                          The Noble Qur'an Encyclopedia (quranenc.com) as the
+                          origin of the Uthmani text but carries no grant from
+                          them, and we could not reach quranenc.com from this
+                          environment to read their terms.
 DATASET                 : dist/quran.json (Uthmani text) — sha256
                           d8a8adff387f60ce3ff7dbe3238dd9b27120bfe29d8fcb07ad2e89cad37cefd4
 EDITION                 : quran-json-uthmani-hafs (Hafs 'an Asim, Uthmani script)
@@ -46,9 +79,12 @@ EFFECT IN THE SYSTEM    : quran.sources.status = 'restricted';
 OWNER ACTION REQUIRED   : obtain a written statement (from the package author
                           and/or quranenc.com) naming one licence and granting
                           redistribution, then flip the flags.
+NOTE                    : the mere availability of these files on npm/GitHub is
+                          NOT evidence of a right to redistribute them.
 
 ----------------------------------------------------------------
 2) TRANSLATION LICENSES — NOT_CONFIRMED (all 10, LICENSE_PENDING)
+     full per-language detail: reports/TRANSLATION_LICENSE_AUDIT.txt
 ----------------------------------------------------------------
 All translation rows inherit the quran-json package licence, which is the
 conflict described above. In addition, each translation is an authored work

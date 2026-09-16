@@ -136,7 +136,7 @@ Errors never carry SQL, stack traces, secrets or internal paths.
 54 operations — see `openapi/openapi.yaml` (validated in CI against the router).
 
 ```
-GET  /api/v1/health · /stats · /sources · /editions · /datasets
+GET  /api/v1/health · /version · /openapi.yaml · /stats · /sources · /editions · /datasets
 GET  /api/v1/surahs · /surahs/{id} · /surahs/{id}/ayahs · /surahs/{id}/audio
 GET  /api/v1/ayahs/{id} · /ayahs/by-key/{surah}:{ayah} · /ayahs/{id}/audio
 GET  /api/v1/juzs · /juzs/{n} · /juzs/{n}/ayahs
@@ -206,6 +206,22 @@ final people = await ref.watch(reciterRepositoryProvider).getReciters();
 final audio  = await ref.watch(audioRepositoryProvider).getAyahAudio(ayah.id);
 ```
 
+## 6-bis. Human verification gate
+
+Automated checks prove the stored bytes match the source. They cannot judge the
+source. A dataset version therefore reaches `published` **only** after a named
+person records an approved verification (migration 0004 enforces this with a
+trigger — no importer, admin action or manual UPDATE can bypass it):
+
+```bash
+npm run verify:human -- --version=2026.09.16-1 --verifier="اسم المراجع" \
+  --role="مراجع شرعي" --scope="عينة 200 آية + السجدات + حدود الأجزاء" \
+  --sample=200 --result=approved --notes="..."
+```
+
+`GET /api/v1/version` reports the state (`human_verification.verified`), and
+until then the dataset stays at `verified`.
+
 ## 7. Running it
 
 ```bash
@@ -216,6 +232,19 @@ npm run db:apply                # applies supabase/migrations/*.sql in order
 npm run import -- --version=$(date +%Y.%m.%d)-1 --translations=en --publish
 npm run serve                   # http://localhost:8787/api/v1/health
 ```
+
+Or as a container:
+
+```bash
+docker build -t falah-quran-api .
+docker run --rm -p 8787:8787 \
+  -e DATABASE_URL=... -e SUPABASE_JWT_SECRET=... -e ENVIRONMENT=production \
+  falah-quran-api
+```
+
+Clients: see `API_USAGE.md` and the runnable `examples/` (cURL, JavaScript,
+TypeScript, Dart, Flutter, Python, PHP). No example hardcodes a host — they all
+read `FALAH_API_BASE_URL`.
 
 Requires Node 22.6+ (TypeScript is executed directly) and PostgreSQL 16 with
 `pgcrypto` and `pg_trgm`.

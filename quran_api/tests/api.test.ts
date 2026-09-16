@@ -25,6 +25,28 @@ describe('system endpoints', () => {
     expect(JSON.stringify(body)).not.toMatch(/secret|password|postgresql:\/\//i);
   });
 
+  it('reports the API release, dataset version and human-verification state', async () => {
+    const { status, body } = await api.request('/api/v1/version');
+    expect(status).toBe(200);
+    expect(body.data.api_version).toBe('v1');
+    expect(body.data.api_release).toMatch(/^\d+\.\d+\.\d+$/);
+    expect(body.data.dataset.version).toBe('test-1');
+    expect(body.data.dataset.source_file_hash).toHaveLength(64);
+    // No human has signed this dataset off in the test run.
+    expect(body.data.human_verification.verified).toBe(false);
+    expect(body.data.dataset.status).toBe('verified');
+    expect(body.data.openapi_url).toBe('/api/v1/openapi.yaml');
+  });
+
+  it('serves its own OpenAPI document', async () => {
+    const response = await fetch(`${api.baseUrl}/api/v1/openapi.yaml`);
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toContain('application/yaml');
+    const text = await response.text();
+    expect(text).toContain('openapi: 3.1.0');
+    expect(text).toContain('/api/v1/surahs');
+  });
+
   it('returns real counts', async () => {
     const { body } = await api.request('/api/v1/stats');
     expect(body.data).toMatchObject({

@@ -2,66 +2,69 @@
 FALAH QURAN API
 FINAL PRODUCTION AUDIT
 ----------------------------------
-generated_at : 2026-09-16
-environment  : local verification — PostgreSQL 16.13, Node 22.22.2,
-               Flutter 3.35.4 / Dart 3.9.2. Every status below was produced by
-               running the command named next to it, in this environment.
+generated_at : 2026-09-16 (second pass — public API readiness)
+environment  : PostgreSQL 16.13 · Node 22.22.2 · Flutter 3.35.4 / Dart 3.9.2
+rule         : every status below was produced by running the thing it
+               describes. Nothing is asserted from reading code alone.
 
-BUILD:                PASS   tsc --noEmit (strict) 0 errors · flutter analyze: no issues
-                             · npm run build (PWA): built in 2.23s, main bundle
-                             388.12 kB / gzip 129.59 kB
-DATABASE:             PASS   schema `quran`: 31 tables · 31 with RLS forced ·
-                             29 policies · 79 indexes
-MIGRATIONS:           PASS   0001+0002+0003 applied from an empty database
-QURAN DATA:           PASS   import run: 68,596 records · failed 0 · invalid 0 ·
-                             missing 0 · duplicates 0 · verified 68,596
-QURAN INTEGRITY:      PASS   41/41 checks in reports/QURAN_FINAL_INTEGRITY.txt
-                             + 30/30 in reports/integrity-report.json
-                             (6,236 SHA-256 recomputed from stored text AND
-                             compared byte-for-byte with the source package)
-SEARCH:               PASS   FTS (GIN tsvector) + pg_trgm + alef-less skeleton;
-                             Uthmani and plain spellings return the same hits
-TRANSLATIONS:         PASS (data) / LICENSE_PENDING (rights)
-                             10 languages × 6,236 · 0 duplicates · 0 empty ·
-                             all hashes verified
-RECITERS:             BLOCKED  0 records — no licensed reciter dataset supplied.
-                             Import contract ready (schemas/audio-manifest.schema.json)
-QIRAAT:               PASS   1 (Asim) — recorded by quran-meta, nothing invented
-RIWAYAT:              PASS   1 (Hafs 'an Asim) — linked to its qiraah
-AUDIO:                BLOCKED  0 recitations, 0 files — no licensed dataset and
-                             the recitation CDNs are rejected by this
-                             environment's egress policy. No bypass attempted.
-AUDIO INTEGRITY:      PASS   verification pipeline tested against missing file,
-                             wrong content-type, size mismatch, checksum
-                             mismatch; manifest schema validation rejects
-                             incomplete metadata before any write
-OFFLINE:              PASS   manifest + checksum + dataset-version gating;
-                             tampered cache dropped and reported; a download
-                             whose checksum does not match is refused and the
-                             previous cache kept (rollback)
-SECURITY:             PASS   JWT (HS256, alg:none/forged/expired rejected) ·
-                             CORS allow-list verified live · rate limiting 429 ·
-                             parameterised SQL · no SQL/stack/secret leakage ·
-                             no service-role key anywhere in Flutter, PWA,
-                             OpenAPI or git
-RLS:                  PASS   enforced in the database (SET LOCAL ROLE + JWT
-                             claims); cross-user read = 0 rows; write to public
-                             catalogue denied for anon/authenticated
-API:                  PASS   54 operations, all families answered live
-OPENAPI:              PASS   48 paths / 54 operations, contract matches router
-FLUTTER:              PASS   analyze clean · 48/48 tests
-                             ANDROID_BUILD: BLOCKED (no Android SDK; dl.google.com
-                             and Google Maven rejected by egress policy — CI
-                             workflow .github/workflows/android.yml builds the APK)
-                             IOS_BUILD: BLOCKED (no macOS environment)
-TESTS:                PASS   195/195 (API 72 · PWA 75 · Flutter 48) · 0 failed
-DEPLOYMENT:           BLOCKED  no DATABASE_URL / hosting credentials supplied.
-                             Nothing was deployed; no URL is claimed.
-QURAN LICENSE:        NOT_CONFIRMED  conflicting licence statements upstream
-                             (see reports/LICENSE_AUDIT.txt §1)
-AUDIO LICENSE:        NOT_CONFIRMED  no dataset, no terms to verify
-TRANSLATION LICENSES: NOT_CONFIRMED  10/10 LICENSE_PENDING
-PRODUCTION READY:     NO
+CATEGORY            | STATUS  | EVIDENCE
+--------------------|---------|--------------------------------------------------
+Build               | PASS    | tsc --noEmit strict 0 errors · flutter analyze
+                    |         | "No issues found" · npm run build 388.12 kB
+                    |         | (gzip 129.59 kB) in 2.27s
+Database            | PASS    | schema `quran`: 32 tables · RLS forced on all ·
+                    |         | 30 policies · 81 indexes
+Migrations          | PASS    | 0001+0002+0003+0004 applied from empty DB
+Quran Data          | PASS    | import run: 68,596 records · 0 failed/invalid/
+                    |         | missing/duplicate · 68,596 verified
+Integrity           | PASS    | reports/QURAN_FINAL_INTEGRITY.txt 41/41, 0
+                    |         | discrepancy · reports/integrity-report.json 30/30
+                    |         | (6,236 SHA-256 recomputed and matched to source)
+Search              | PASS    | FTS + GIN + pg_trgm + alef-less skeleton; Uthmani
+                    |         | and plain spellings return identical hit counts;
+                    |         | injection attempts return 0 rows
+Translations        | PASS    | data: 10 × 6,236 = 62,360 rows, 0 duplicates,
+                    | PENDING | 0 empty, all hashes verified
+                    | (rights)| rights: reports/TRANSLATION_LICENSE_AUDIT.txt —
+                    |         | 10/10 LICENSE_PENDING, not served publicly
+Reciters            | BLOCKED | 0 records; no licensed dataset supplied. Import
+                    |         | contract ready (schemas/audio-manifest.schema.json)
+Audio               | BLOCKED | 0 recitations / 0 files; no licensed dataset and
+                    |         | the recitation CDNs are rejected by this
+                    |         | environment's egress policy. No bypass attempted.
+API                 | PASS    | 56 operations; 37-call live sweep across every
+                    |         | family returned the expected data
+OpenAPI             | PASS    | 50 paths / 56 operations; router↔spec checked in
+                    |         | both directions (CI + test); served at
+                    |         | GET /api/v1/openapi.yaml
+Security            | PASS    | reports/API_PRODUCTION_AUDIT.txt §6 — headers,
+                    |         | CORS allow-list, 429, JWT rejections, 4xx mapping,
+                    |         | secret scan PASS (and proven to catch a planted key)
+RLS                 | PASS    | enforced in the database; cross-user read = 0 rows;
+                    |         | anon/authenticated cannot write the catalogue
+SOURCE_LOCK         | PASS    | trigger refuses any raw_text change; no API path
+                    |         | writes Quran tables (code scan + test)
+Flutter             | PASS    | analyze clean · 49/49 tests · build configs for
+                    |         | development/staging/production, no URL in code
+Android             | BLOCKED | no Android SDK here (dl.google.com and Google
+                    |         | Maven rejected by egress policy). CI workflow
+                    |         | .github/workflows/android.yml builds APK/AAB.
+                    |         | No artifact produced in this environment ⇒ not PASS
+iOS                 | BLOCKED | no macOS/Xcode available
+Deployment          | BLOCKED | no DATABASE_URL / Supabase credentials / host.
+                    |         | Dockerfile + .env.example + db:apply ready.
+License             | NOT_CONFIRMED | reports/LICENSE_AUDIT.txt — quran-json ships
+                    |         | conflicting licences (package.json CC-BY-4.0 vs
+                    |         | LICENSE.txt CC-BY-SA-4.0) and no upstream grant
+Human Verification  | PENDING | migration 0004 + trigger + CLI + 5 tests; no
+                    |         | approved verification exists, so the dataset
+                    |         | stays at `verified`, never `published`
+CI/CD               | PASS    | ci.yml fails on: secret detected, checksum/
+                    |         | integrity mismatch, OpenAPI drift, RLS failure,
+                    |         | source-lock failure, invalid audio manifest,
+                    |         | licence-flag inconsistency, any failing test
+
+PRODUCTION READY: NO
 
 ----------------------------------
 REAL COUNTS
@@ -80,75 +83,87 @@ Riwayat:           1
 Reciters:          0
 Recitations:       0
 Audio files:       0
-Tables:            31 (schema `quran`)
-Migrations:        3  (0001, 0002, 0003)
-API endpoints:     54
-OpenAPI paths:     48 (54 operations)
-Tests:             195
-Passed:            195
+Tables:            32 (schema `quran`)
+Migrations:        4  (0001, 0002, 0003, 0004)
+API endpoints:     56 operations
+OpenAPI paths:     50
+Tests:             203   (API 79 · PWA 75 · Flutter 49)
+Passed:            203
 Failed:            0
-Blocked:           4  (reciters, audio, deployment, android/ios build)
+Blocked:           5   (reciters, audio, deployment, android, ios)
+Pending:           2   (human verification, licence confirmation)
 Dataset version:   2026.09.16-1
-Source file hash:  d8a8adff387f60ce3ff7dbe3238dd9b27120bfe29d8fcb07ad2e89cad37cefd4
+Dataset SHA-256:   d8a8adff387f60ce3ff7dbe3238dd9b27120bfe29d8fcb07ad2e89cad37cefd4
+
+----------------------------------
+FINAL API INFORMATION
+----------------------------------
+PUBLIC API BASE URL : NOT DEPLOYED
+API VERSION         : v1 (api_release 1.1.0)
+OPENAPI URL         : <BASE>/api/v1/openapi.yaml   (file: quran_api/openapi/openapi.yaml)
+HEALTH URL          : <BASE>/api/v1/health
+VERSION URL         : <BASE>/api/v1/version
+SOURCES URL         : <BASE>/api/v1/sources
+STATS URL           : <BASE>/api/v1/stats
+
+DATASET VERSION     : 2026.09.16-1
+DATASET SHA-256     : d8a8adff387f60ce3ff7dbe3238dd9b27120bfe29d8fcb07ad2e89cad37cefd4
+
+DEPLOYMENT STATUS   : BLOCKED — owner credentials required
+LICENSE STATUS      : NOT_CONFIRMED
+TRANSLATION STATUS  : LICENSE_PENDING (10/10)
+AUDIO STATUS        : BLOCKED — no licensed dataset
+ANDROID STATUS      : BLOCKED — no SDK here; build via GitHub Actions
+IOS STATUS          : BLOCKED — no macOS
+
+TOTAL TESTS         : 203
+PASS                : 203
+FAIL                : 0
+BLOCKED             : 5
+
+PRODUCTION READY    : NO
 
 ----------------------------------
 BLOCKERS
 ----------------------------------
-B1 DEPLOYMENT — no production DATABASE_URL, Supabase credentials or hosting
-   target was provided, so nothing was deployed and no health check against a
-   real service could be run. Fabricating a URL or a "deployed" status is not
-   acceptable, so this stays BLOCKED.
-
-B2 QURAN LICENSE — quran-json@3.1.2 ships two different licence statements
-   (package.json: CC-BY-4.0; LICENSE.txt and README: CC-BY-SA-4.0) and does not
-   document a redistribution grant from the upstream text holder
-   (quranenc.com). Until the owner resolves this, CONTENT_LICENSE_CONFIRMED and
-   PUBLIC_DATA_ENABLED stay false and the source row is marked 'restricted'.
-
-B3 TRANSLATION LICENSES — the 10 translations are authored works whose
-   individual rights holders have not granted redistribution in anything we can
-   read. All are LICENSE_PENDING and are not publicly served.
-
-B4 RECITERS — no licensed reciter dataset exists in the project. No reciter was
-   invented. The import contract and validation are ready and tested.
-
-B5 AUDIO — no licensed audio dataset, and the public recitation CDNs are
-   rejected by this environment's egress policy. No circumvention was attempted.
-   Audio import + verification are implemented and tested against a fake
-   network; they will run unchanged on a real manifest.
-
-B6 ANDROID/IOS BUILD — the Android SDK cannot be installed here (dl.google.com
-   and Google Maven are rejected by the egress policy) and there is no macOS
-   host for iOS. The APK is built by GitHub Actions instead.
+B1 DEPLOYMENT — no DATABASE_URL, Supabase credentials or hosting target. Nothing
+   was deployed; no public URL is claimed.
+B2 QURAN LICENSE — conflicting licence statements inside quran-json@3.1.2 and no
+   grant from the upstream text holder.
+B3 TRANSLATION LICENSES — 10 authored works, no per-translator permission.
+B4 RECITERS — no licensed dataset; none invented.
+B5 AUDIO — no licensed dataset; recitation CDNs unreachable under this
+   environment's egress policy; no circumvention attempted.
+B6 ANDROID/IOS ARTIFACTS — no Android SDK here, no macOS. CI builds the APK/AAB.
+B7 HUMAN VERIFICATION — no person has signed off the dataset yet; the gate keeps
+   it at `verified`.
 
 ----------------------------------
 REQUIRED OWNER ACTIONS
 ----------------------------------
-1. DATABASE_URL for the production/staging Postgres (Supabase connection
-   string), plus SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
-   (server side only) and SUPABASE_JWT_SECRET. Never send them in chat or
-   commit them — set them in the host environment / GitHub secrets.
-2. Hosting target for the API (any Node 22 host or container) and the public
-   API_BASE_URL to publish.
-3. Quran text licence decision: obtain one unambiguous licence statement +
-   redistribution permission, then set CONTENT_LICENSE_CONFIRMED=true and
-   PUBLIC_DATA_ENABLED=true.
-4. Translation licences: per-language permission, or tell me which languages to
-   drop before publishing.
-5. Licensed reciter dataset (names/metadata + riwayah + source + licence).
-6. Licensed audio manifest validating against
-   quran_api/schemas/audio-manifest.schema.json (URL, format, codec, bitrate,
-   sample rate, duration, size, SHA-256, licence, attribution per file).
-7. Human/scholarly verification sign-off of the published edition before any
-   public release (HUMAN/DATA VERIFICATION is not something an agent can
-   declare PASS).
+1. DATABASE_URL + SUPABASE_URL + SUPABASE_ANON_KEY + SUPABASE_SERVICE_ROLE_KEY
+   (server only) + SUPABASE_JWT_SECRET, set in the host environment / GitHub
+   secrets — never in chat, never in git.
+2. A hosting target (any Node 22 host or container runtime) and the public
+   HTTPS base URL, e.g. https://api.falah.app.
+3. One unambiguous Quran text licence with redistribution permission, then
+   CONTENT_LICENSE_CONFIRMED=true and PUBLIC_DATA_ENABLED=true.
+4. Translation permissions per language, or the list of languages to drop.
+5. A licensed reciter dataset and an audio manifest validating against
+   schemas/audio-manifest.schema.json.
+6. A human verification of the dataset:
+   npm run verify:human -- --version=2026.09.16-1 --verifier="<name>" \
+     --role="<role>" --scope="<what was reviewed>" --sample=<n> --result=approved
+7. Run the Android Release workflow in GitHub Actions to produce APK/AAB.
 
 ----------------------------------
 EVIDENCE FILES
 ----------------------------------
-reports/QURAN_FINAL_INTEGRITY.txt   full re-verification, 41 checks, PASS
-reports/integrity-report.json       machine-readable integrity checks, 30/30
-reports/import-report.json          the actual import run counters
-reports/LICENSE_AUDIT.txt           licence evidence per dataset
-reports/test-report.md              test runs and the QA break-attempt round
+reports/QURAN_FINAL_INTEGRITY.txt      41/41 checks, 0 discrepancy
+reports/integrity-report.json          30/30 machine-readable checks
+reports/import-report.json             the actual import counters
+reports/LICENSE_AUDIT.txt              five licences audited separately
+reports/TRANSLATION_LICENSE_AUDIT.txt  per-language rights record
+reports/API_PRODUCTION_AUDIT.txt       API-as-a-service audit
+reports/test-report.md                 test runs + QA break attempts
 ----------------------------------

@@ -17,7 +17,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "integrity": "node scripts/integrity-report.ts",
-    "integrity:final": "node scripts/final-integrity-report.ts"
+    "integrity:final": "node scripts/final-integrity-report.ts",
+    "verify:human": "node src/import/human-verification-cli.ts"
   },
   "dependencies": {
     "pg": "^8.13.1",

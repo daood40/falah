@@ -324,6 +324,37 @@ components:
     Stats:
       type: object
       additionalProperties: { type: integer }
+    Version:
+      type: object
+      properties:
+        api_version: { type: string, examples: ['v1'] }
+        api_release: { type: string, examples: ['1.1.0'] }
+        environment: { type: string }
+        dataset:
+          type: [object, 'null']
+          properties:
+            version: { type: string }
+            status:
+              type: string
+              enum: [draft, validated, imported, verified, published, failed, superseded]
+            edition: { type: [string, 'null'] }
+            record_count: { type: integer }
+            source_file_hash: { type: string }
+            imported_at: { type: string, format: date-time }
+        human_verification:
+          type: object
+          description: A dataset can only reach `published` after a named person approves it.
+          properties:
+            verified: { type: boolean }
+            verified_at: { type: [string, 'null'], format: date-time }
+            verifier: { type: [string, 'null'] }
+        license_flags:
+          type: object
+          properties:
+            contentLicenseConfirmed: { type: boolean }
+            audioLicenseConfirmed: { type: boolean }
+            publicDataEnabled: { type: boolean }
+        openapi_url: { type: string }
     Bookmark:
       type: object
       properties:
@@ -387,6 +418,30 @@ paths:
                   - type: object
                     properties: { data: { $ref: '#/components/schemas/Health' } }
         '429': { $ref: '#/components/responses/RateLimited' }
+  /api/v1/version:
+    get:
+      tags: [system]
+      summary: API release, dataset version and human-verification state
+      responses:
+        '200':
+          description: Version information
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties: { data: { $ref: '#/components/schemas/Version' } }
+  /api/v1/openapi.yaml:
+    get:
+      tags: [system]
+      summary: This OpenAPI document, served by the API itself
+      responses:
+        '200':
+          description: The OpenAPI 3.1 document
+          content:
+            application/yaml:
+              schema: { type: string }
   /api/v1/stats:
     get:
       tags: [system]

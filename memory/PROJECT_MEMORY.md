@@ -21,6 +21,12 @@
 - لا يعمل: المزامنة والحسابات (لا مفاتيح Supabase بعد)؛ iOS مؤجل (لا حساب Apple).
 
 ## أين توقّفنا
+2026-09-16 (Public API): صار الـAPI خدمة مستقلة موثّقة — `/version` و
+`/openapi.yaml` حيّان، `API_USAGE.md` وسبعة أمثلة عملاء (شُغّلت فعليًا)،
+Dockerfile للإنتاج، إعدادات بيئات Flutter (dev/staging/prod بلا رابط مضمّن)،
+بوابة اعتماد بشري في هجرة 0004 تمنع النشر بلا توقيع شخص، وفحص أسرار في CI.
+203 اختبارًا PASS. الباقي كله على المالك: نشر + تراخيص + صوت + اعتماد بشري.
+
 2026-09-16 (تدقيق نهائي): التقارير الثلاثة في `quran_api/reports/`
 (QURAN_FINAL_INTEGRITY 41/41 · LICENSE_AUDIT · FINAL_PRODUCTION_AUDIT).
 اكتُشف تضارب ترخيص في quran-json (package.json يقول CC BY 4.0 وLICENSE.txt

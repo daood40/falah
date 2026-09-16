@@ -51,3 +51,16 @@
   `acceptDownload` يرفض Dataset لا يطابق الـchecksum ويُبقي النسخة السابقة.
 - **PRODUCTION READY = NO** بقرار صريح: النشر لم يحدث، والتراخيص غير مؤكدة،
   ولا Dataset صوتي — لا تُرفع الحالة إلا بتحقق فعلي.
+
+## 2026-09-16 — API عام مستقل + بوابة اعتماد بشري
+
+- **الـAPI خدمة مستقلة**: يعمل بـ`DATABASE_URL` وحده (Dockerfile، health/version،
+  OpenAPI يُخدَم من الخدمة نفسها). Flutter صار عميلًا واحدًا من سبعة أمثلة.
+- **لا رابط مضمّن**: `QURAN_API_BASE_URL` يأتي من
+  `flutter_app/config/<env>.json` عبر `--dart-define-from-file`، وملفا staging
+  وproduction فارغان عمدًا حتى ينشر المالك (فارغ ⇒ التطبيق يعمل offline بلا شبكة).
+- **بوابة الاعتماد البشري (هجرة 0004)**: جدول `human_verifications` + trigger
+  يمنع `published` بلا سطر `approved`. الاختبارات الآلية لا تكفي لإعلان
+  "verified" على نص شرعي.
+- **فحص الأسرار في CI**: `scripts/secret-scan.sh` يفشل عند أي مفتاح مزروع
+  (مُختبَر فعليًا)، ويتجاهل فقط بيانات CI المؤقتة والقوالب.

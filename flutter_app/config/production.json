@@ -1,0 +1,5 @@
+{
+  "QURAN_API_BASE_URL": "",
+  "QURAN_API_EDITION": "quran-json-uthmani-hafs",
+  "FALAH_ENV": "production"
+}

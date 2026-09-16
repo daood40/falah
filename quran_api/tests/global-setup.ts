@@ -3,7 +3,12 @@ import path from 'node:path';
 import pg from 'pg';
 import { runImport } from '../src/import/pipeline.ts';
 
-const MIGRATIONS = ['0001_init.sql', '0002_v2.sql', '0003_quran_platform.sql'];
+const MIGRATIONS = [
+  '0001_init.sql',
+  '0002_v2.sql',
+  '0003_quran_platform.sql',
+  '0004_human_verification.sql',
+];
 const TEST_DB = process.env.TEST_DB_NAME ?? 'falah_quran_test';
 
 /**

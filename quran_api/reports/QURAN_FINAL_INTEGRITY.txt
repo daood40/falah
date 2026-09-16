@@ -1,7 +1,7 @@
 ================================================================
 FALAH QURAN API — FINAL DATA INTEGRITY VERIFICATION
 ================================================================
-generated_at : 2026-09-16T02:14:05.828Z
+generated_at : 2026-09-16T03:22:02.008Z
 sources      : quran-json@3.1.2 (text + translations)
                quran-meta@6.0.17 (Hafs mushaf structure)
 database     : postgresql://***@localhost:55432/postgres?host=/tmp

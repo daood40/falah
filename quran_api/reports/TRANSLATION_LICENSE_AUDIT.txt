@@ -1,0 +1,135 @@
+================================================================
+FALAH QURAN API — TRANSLATION LICENSE AUDIT
+================================================================
+generated_at : 2026-09-16
+method       : each translation is audited on its own. Evidence comes from the
+               installed package (node_modules/quran-json/README.md §Data Source
+               and LICENSE.txt) and from the database rows themselves. The
+               upstream sites (tanzil.net, quranenc.com) are NOT reachable from
+               this environment, so nothing below claims to have read their
+               terms. No licence was inferred, and none was invented.
+
+RULE APPLIED : a translation is a separate authored work. The packager's licence
+               can cover the packager's compilation; it cannot, by itself, grant
+               the rights of ten different translators and publishers.
+               Therefore every language below is LICENSE_PENDING and is NOT
+               served publicly (CONTENT_LICENSE_CONFIRMED=false,
+               PUBLIC_DATA_ENABLED=false).
+
+DATA STATE   : 10 translations × 6,236 ayahs = 62,360 rows.
+               0 duplicates · 0 empty rows · every SHA-256 recomputed and
+               matching (reports/QURAN_FINAL_INTEGRITY.txt §7).
+               No translation text was generated, corrected or reworded by any
+               model at any point.
+
+----------------------------------------------------------------
+PER-LANGUAGE RECORD
+----------------------------------------------------------------
+Fields: slug · language · translator (copyright holder as named by the package) ·
+        dataset origin · licence claimed by the package · redistribution ·
+        commercial · evidence · status
+
+1. en-saheeh · English
+   translator      : Umm Muhammad (Saheeh International)
+   dataset origin  : tanzil.net/trans/en.sahih (per quran-json README)
+   licence claimed : the quran-json package licence (conflicting: CC-BY-4.0 vs
+                     CC-BY-SA-4.0) — no separate grant from the translator
+   redistribution  : NOT_CONFIRMED
+   commercial      : NOT_CONFIRMED
+   evidence        : node_modules/quran-json/README.md §Data Source
+   status          : LICENSE_PENDING
+
+2. fr-hamidullah · French
+   translator      : Muhammad Hamidullah
+   dataset origin  : tanzil.net/trans/fr.hamidullah
+   licence claimed : package licence only
+   redistribution  : NOT_CONFIRMED   commercial: NOT_CONFIRMED
+   evidence        : node_modules/quran-json/README.md §Data Source
+   status          : LICENSE_PENDING
+
+3. tr-diyanet · Turkish
+   translator      : Turkish Directorate of Religious Affairs (Diyanet İşleri)
+   dataset origin  : tanzil.net/trans/tr.diyanet
+   licence claimed : package licence only — an official body's publication
+                     typically carries its own terms
+   redistribution  : NOT_CONFIRMED   commercial: NOT_CONFIRMED
+   evidence        : node_modules/quran-json/README.md §Data Source
+   status          : LICENSE_PENDING
+
+4. ur-maududi · Urdu
+   translator      : Abul A'la Maududi
+   dataset origin  : tanzil.net/trans/ur.maududi
+   licence claimed : package licence only
+   redistribution  : NOT_CONFIRMED   commercial: NOT_CONFIRMED
+   evidence        : node_modules/quran-json/README.md §Data Source
+   status          : LICENSE_PENDING
+
+5. id-affairs · Indonesian
+   translator      : Indonesian Islamic Affairs Ministry (Kementerian Agama)
+   dataset origin  : quranenc.com/en/browse/indonesian_affairs
+   licence claimed : package licence only
+   redistribution  : NOT_CONFIRMED   commercial: NOT_CONFIRMED
+   evidence        : node_modules/quran-json/README.md §Data Source
+   status          : LICENSE_PENDING
+
+6. es-garcia · Spanish
+   translator      : Muhammad Isa García
+   dataset origin  : tanzil.net/trans/es.garcia
+   licence claimed : package licence only
+   redistribution  : NOT_CONFIRMED   commercial: NOT_CONFIRMED
+   evidence        : node_modules/quran-json/README.md §Data Source
+   status          : LICENSE_PENDING
+
+7. ru-kuliev · Russian
+   translator      : Elmir Kuliev
+   dataset origin  : tanzil.net/trans/ru.kuliev
+   licence claimed : package licence only
+   redistribution  : NOT_CONFIRMED   commercial: NOT_CONFIRMED
+   evidence        : node_modules/quran-json/README.md §Data Source
+   status          : LICENSE_PENDING
+
+8. sv-bernstrom · Swedish
+   translator      : Knut Bernström
+   dataset origin  : tanzil.net/trans/sv.bernstrom
+   licence claimed : package licence only
+   redistribution  : NOT_CONFIRMED   commercial: NOT_CONFIRMED
+   evidence        : node_modules/quran-json/README.md §Data Source
+   status          : LICENSE_PENDING
+
+9. bn-khan · Bengali
+   translator      : Muhiuddin Khan
+   dataset origin  : tanzil.net/trans/bn.bengali
+   licence claimed : package licence only
+   redistribution  : NOT_CONFIRMED   commercial: NOT_CONFIRMED
+   evidence        : node_modules/quran-json/README.md §Data Source
+   status          : LICENSE_PENDING
+
+10. zh-makin · Chinese
+    translator     : Muhammad Makin (Ma Jian)
+    dataset origin : quranenc.com/en/browse/chinese_makin
+    licence claimed: package licence only
+    redistribution : NOT_CONFIRMED   commercial: NOT_CONFIRMED
+    evidence       : node_modules/quran-json/README.md §Data Source
+    status         : LICENSE_PENDING
+
+----------------------------------------------------------------
+ENFORCEMENT TODAY
+----------------------------------------------------------------
+- quran.sources.status for `quran-json` = 'restricted'.
+- CONTENT_LICENSE_CONFIRMED=false, PUBLIC_DATA_ENABLED=false ⇒ anonymous callers
+  receive HTTP 451 on every content endpoint, including translations.
+- GET /api/v1/downloads/quran returns downloadable=false and no download URL.
+- GET /api/v1/sources exposes the licence text and attribution for each source,
+  so any client can show the required attribution.
+
+----------------------------------------------------------------
+OWNER DECISION NEEDED (one of)
+----------------------------------------------------------------
+A. Obtain written redistribution permission per translation, record it here and
+   in quran.translations.license, then enable public access.
+B. Keep only the languages whose rights can be documented and drop the rest:
+     npm run import -- --version=<new> --translations=<allowed list> --publish
+   (a new dataset version; nothing is edited in place).
+C. Ship the app without translations until rights are settled — the Quran text
+   and the structure work on their own.
+================================================================

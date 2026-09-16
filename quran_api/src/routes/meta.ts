@@ -1,6 +1,19 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import type { Route } from '../http/router.ts';
 
-/** /health, /stats, /sources, /editions, /qiraat, /riwayat, /translations */
+/** Read once at boot: the spec that ships with this build. */
+const OPENAPI_PATH = path.join(import.meta.dirname, '..', '..', 'openapi', 'openapi.yaml');
+let openapiCache: string | null = null;
+const openapiDocument = (): string => {
+  openapiCache ??= readFileSync(OPENAPI_PATH, 'utf8');
+  return openapiCache;
+};
+
+/** Build identifier of the API itself (independent of the dataset version). */
+export const API_RELEASE = '1.1.0';
+
+/** /health, /version, /openapi.yaml, /stats, /sources, /editions, /qiraat, /riwayat, /translations */
 export const metaRoutes: Route[] = [
   {
     method: 'GET',
@@ -30,6 +43,73 @@ export const metaRoutes: Route[] = [
           license_flags: env.flags,
         },
       };
+    },
+  },
+  {
+    method: 'GET',
+    path: '/api/v1/version',
+    handler: async ({ client, env }) => {
+      const { rows } = await client.query<{
+        version: string;
+        status: string;
+        import_date: string;
+        source_file_hash: string;
+        record_count: number;
+        edition_slug: string | null;
+        human_verified: boolean;
+        verified_at: string | null;
+        verifier_name: string | null;
+      }>(
+        `select dv.version, dv.status, dv.import_date, dv.source_file_hash, dv.record_count,
+                e.slug as edition_slug,
+                (hv.id is not null) as human_verified,
+                hv.verified_at, hv.verifier_name
+         from quran.quran_dataset_versions dv
+         left join quran.quran_editions e on e.id = dv.edition_id
+         left join lateral (
+           select id, verified_at, verifier_name from quran.human_verifications
+           where dataset_version_id = dv.id and result = 'approved'
+           order by verified_at desc limit 1
+         ) hv on true
+         order by dv.import_date desc limit 1`,
+      );
+      const dataset = rows[0] ?? null;
+      return {
+        data: {
+          api_version: 'v1',
+          api_release: API_RELEASE,
+          environment: env.environment,
+          dataset: dataset && {
+            version: dataset.version,
+            status: dataset.status,
+            edition: dataset.edition_slug,
+            record_count: dataset.record_count,
+            source_file_hash: dataset.source_file_hash,
+            imported_at: dataset.import_date,
+          },
+          human_verification: {
+            verified: dataset?.human_verified ?? false,
+            verified_at: dataset?.verified_at ?? null,
+            verifier: dataset?.verifier_name ?? null,
+          },
+          license_flags: env.flags,
+          openapi_url: '/api/v1/openapi.yaml',
+        },
+      };
+    },
+  },
+  {
+    method: 'GET',
+    path: '/api/v1/openapi.yaml',
+    handler: async ({ res }) => {
+      const document = openapiDocument();
+      res.writeHead(200, {
+        'content-type': 'application/yaml; charset=utf-8',
+        'content-length': Buffer.byteLength(document),
+        'cache-control': 'public, max-age=300',
+      });
+      res.end(document);
+      return { data: null, raw: true };
     },
   },
   {

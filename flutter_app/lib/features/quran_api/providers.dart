@@ -1,7 +1,9 @@
 /// Riverpod wiring for the Quran API layer.
 ///
-/// `QURAN_API_BASE_URL` is passed with --dart-define; when it is empty the app
-/// keeps using the bundled offline repository and no network call is made.
+/// Configuration comes from `--dart-define-from-file=config/<env>.json`
+/// (see `config/README.md`). When `QURAN_API_BASE_URL` is empty the app keeps
+/// using the bundled offline repository and makes no network call, so a build
+/// can never fall back to a developer machine or a guessed host.
 library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,8 +20,18 @@ import 'offline/quran_cache.dart';
 
 const quranApiBaseUrl = String.fromEnvironment('QURAN_API_BASE_URL');
 const quranApiEdition = String.fromEnvironment('QURAN_API_EDITION');
+const falahEnv = String.fromEnvironment('FALAH_ENV', defaultValue: 'development');
 
+/// True only when a base URL was configured for this build.
 final quranApiEnabledProvider = Provider<bool>((_) => quranApiBaseUrl.isNotEmpty);
+
+/// Outside development the API must be reached over HTTPS; a plain-HTTP base
+/// URL in a staging/production build is a configuration error, not a fallback.
+bool isApiBaseUrlValid() {
+  if (quranApiBaseUrl.isEmpty) return false;
+  if (falahEnv == 'development') return true;
+  return quranApiBaseUrl.startsWith('https://');
+}
 
 /// Supabase access token provider — overridden by the auth layer once a user
 /// is signed in. Anonymous by default.

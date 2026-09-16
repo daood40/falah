@@ -51,3 +51,19 @@
 | flutter build apk | BLOCKED — لا Android SDK (dl.google.com محجوب) |
 | النشر | BLOCKED — لا DATABASE_URL |
 | PRODUCTION READY | NO |
+
+## 2026-09-16 (جولة الـPublic API)
+
+| ما شُغّل | النتيجة |
+|---|---|
+| vitest (quran_api) | 79/79 PASS |
+| vitest (PWA) | 75/75 PASS |
+| flutter analyze/test | نظيف · 49/49 PASS |
+| npm run build (PWA) | PASS |
+| OpenAPI contract | 50 مسارًا · 56 عملية · مطابق |
+| integrity:final | PASS 41/41 |
+| بوابة الاعتماد البشري (هجرة 0004) | PASS 5 اختبارات · الحالة PENDING |
+| أمثلة العملاء (curl/JS/TS/Dart/Python/PHP) | شُغّلت حيًّا مقابل الخدمة — كلها PASS |
+| secret-scan | PASS · ويفشل عند زرع مفتاح service_role |
+| النشر / Android / iOS | BLOCKED |
+| PRODUCTION READY | NO |

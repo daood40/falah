@@ -15,7 +15,13 @@ export type Ctx = {
   client: pg.PoolClient;
 };
 
-export type HandlerResult = { data: unknown; meta?: Meta; status?: number };
+export type HandlerResult = {
+  data: unknown;
+  meta?: Meta;
+  status?: number;
+  /** The handler already wrote the response (e.g. the OpenAPI document). */
+  raw?: boolean;
+};
 export type Handler = (ctx: Ctx) => Promise<HandlerResult>;
 
 export type Route = {

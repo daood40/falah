@@ -1,0 +1,143 @@
+================================================================
+FALAH QURAN API — API PRODUCTION AUDIT
+================================================================
+generated_at : 2026-09-16
+scope        : the API as a standalone service — independence, contract,
+               versioning, security, performance and deployment readiness.
+method       : every line was produced by running the thing it describes
+               against the live service (local instance, real database).
+
+----------------------------------------------------------------
+1) INDEPENDENCE — PASS
+----------------------------------------------------------------
+The service runs on its own: `node src/server.ts` with DATABASE_URL and
+(optionally) SUPABASE_JWT_SECRET. It does not import Flutter, does not read the
+app's assets, and does not call any source website at request time.
+
+  layout       quran_api/src/{config,db,core,http,routes,repositories,import,auth}
+  database     supabase/migrations/0001..0004 (schema `quran`)
+  dataset      imported ahead of time, versioned, hash-verified
+  clients      flutter_app/lib/features/quran_api/ is one client among many;
+               examples/ ships six more (curl, JS, TS, Dart, Python, PHP)
+  container    Dockerfile (node:22-alpine, non-root, HEALTHCHECK on /api/v1/health)
+
+Verified: the six runnable examples were executed against the live API in this
+environment and all returned real data (114 surahs, 2:255 text + hash, search
+hits, full al-Baqarah via pagination).
+
+----------------------------------------------------------------
+2) CONTRACT — PASS
+----------------------------------------------------------------
+  router operations        56
+  OpenAPI paths            50   (56 operations)
+  router → OpenAPI         no undocumented operation
+  OpenAPI → router         no documented-but-missing operation
+  checker                  npm run openapi:validate (also a vitest case)
+  served live              GET /api/v1/openapi.yaml → 200, application/yaml
+
+Any discrepancy fails the build: the check runs in CI and as a test.
+
+----------------------------------------------------------------
+3) VERSIONING — PASS
+----------------------------------------------------------------
+  path prefix              /api/v1 on every route
+  release identifier       api_release = 1.1.0 (GET /api/v1/version)
+  dataset identifier       dataset.version + source_file_hash in the same payload
+  forward path             /api/v2 can be mounted beside v1; v1 fields are only
+                           ever added, never removed or re-typed
+
+----------------------------------------------------------------
+4) LIVE ENDPOINT SWEEP — PASS
+----------------------------------------------------------------
+37 calls across every family answered with the expected shape and counts:
+  /health 200 · /version 200 · /stats 200 (114/6236/30/60/240/604/7/15/10)
+  /sources 2 · /editions 1 · /datasets 1
+  /surahs 114 · /surahs/{id} · /surahs/{id}/ayahs · /ayahs/by-key/2:255
+  /juzs 30 · /juzs/{n}/ayahs · /hizbs 60 · /hizbs/{n}/ayahs · /rubs/{n}/ayahs
+  /pages/{p} · /pages/{p}/ayahs · /manzils 7 · /manzils/{n}/ayahs · /sajdahs 15
+  /search · /translations 10 · /qiraat 1 · /riwayat 1
+  /reciters 0 · /audio/search 0 (correct: no licensed audio)
+  /downloads/quran (downloadable=false)
+  /me/* GET·POST·PUT·DELETE with a real Supabase-style token
+
+----------------------------------------------------------------
+5) PERFORMANCE (local, single instance, cold cache) — PASS
+----------------------------------------------------------------
+  GET /health                          7.4 ms
+  GET /surahs?limit=114                4.1 ms
+  GET /surahs/2/ayahs?limit=100        8.9 ms
+  GET /search?q=الرحمن&limit=20       31.2 ms
+  GET /pages/1/ayahs                   2.4 ms
+Indexes: 81 in schema `quran` (B-tree per division, GIN tsvector ×2, GIN trgm ×2).
+No `SELECT *` anywhere; every query lists its columns and is parameterised.
+
+----------------------------------------------------------------
+6) SECURITY — PASS
+----------------------------------------------------------------
+  transport            HTTPS expected in production (TLS terminated by the host);
+                       the service binds plain HTTP behind it and sets HSTS
+  security headers     nosniff · DENY frames · no-referrer · CSP default-src 'none'
+                       · HSTS · CORP same-site · restrictive permissions-policy
+  CORS                 allow-list verified live: listed origin echoed, foreign
+                       origin gets no ACAO header
+  rate limiting        verified live: 429 after the configured budget
+  auth                 HS256 Supabase tokens; forged signature, alg:none, wrong
+                       secret and expiry all rejected
+  authorisation        RLS in the database (SET LOCAL ROLE + JWT claims), not in
+                       API code; cross-user read returns 0 rows
+  input validation     every path/query parameter validated; oversized limit,
+                       bad uuid, bad key format and hostile paths return 4xx
+  SQL injection        parameterised everywhere; injection attempts return 0 rows
+                       and the dataset is unchanged afterwards
+  error leakage        no SQL, stack trace, secret or internal path in any body;
+                       PostgreSQL SQLSTATEs mapped to clean 4xx
+  secret exposure      scripts/secret-scan.sh — PASS on the repo, and proven to
+                       FAIL on a planted service-role JWT; wired into CI
+  XSS                  the API only emits JSON with a fixed content type and
+                       never reflects HTML; CSP blocks rendering by default
+
+----------------------------------------------------------------
+7) READ-ONLY / SOURCE_LOCK / ADMIN — PASS
+----------------------------------------------------------------
+  public API           no endpoint writes Quran text, surah, ayah, juz, hizb,
+                       page, sajdah, manzil or source (verified by code scan:
+                       zero INSERT/UPDATE/DELETE against those tables in
+                       src/routes and src/repositories)
+  database             trigger `ayahs_source_lock` refuses any change to
+                       raw_text even for a superuser
+  grants               anon/authenticated hold SELECT only on catalogue tables
+  admin                cannot edit scripture either; changes go through a new
+                       dataset version → import → validate → hash → verify →
+                       human verification → publish
+
+----------------------------------------------------------------
+8) HUMAN VERIFICATION GATE — PENDING (by design)
+----------------------------------------------------------------
+Migration 0004 adds `quran.human_verifications` (verifier, role, date, scope,
+sample count, result, notes, evidence URL) and a trigger that refuses to set a
+dataset version to `published` without an approved row. Tested: publishing is
+refused without one, allowed with one, and a `rejected` row does not unlock it.
+`npm run verify:human -- …` records a verification; GET /api/v1/version reports
+the state. Today: no human verification exists ⇒ PENDING.
+
+----------------------------------------------------------------
+9) DEPLOYMENT — BLOCKED (owner credentials required)
+----------------------------------------------------------------
+Ready: Dockerfile, .env.example, migrations runner (`npm run db:apply`),
+import + verification CLIs, health/version endpoints, CI.
+Missing: DATABASE_URL, Supabase credentials and a hosting target. Nothing was
+deployed; no public base URL exists and none is claimed.
+
+  PUBLIC API BASE URL : NOT DEPLOYED
+  local instance      : http://localhost:8787 (development only)
+
+----------------------------------------------------------------
+VERDICT
+----------------------------------------------------------------
+API as a service           : PASS (independent, documented, tested)
+Contract / versioning      : PASS
+Security                   : PASS
+Read-only guarantees       : PASS
+Human verification         : PENDING
+Deployment                 : BLOCKED — owner credentials required
+================================================================

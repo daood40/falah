@@ -22,6 +22,11 @@
       (`npm run import:audio -- manifest.json`؛ العقد في
       `quran_api/schemas/audio-manifest.schema.json` والقالب بجانبه)
 
+- [ ] الاعتماد البشري للـDataset (بدونه تبقى النسخة `verified` ولا تُنشر):
+      `npm run verify:human -- --version=2026.09.16-1 --verifier="..." --scope="..." --sample=N --result=approved`
+- [ ] بعد النشر: ضع الرابط في `flutter_app/config/{staging,production}.json`
+      (`QURAN_API_BASE_URL`) — لا يوجد رابط مضمّن في الكود
+
 ## P1 — بعد الإطلاق
 - [ ] قرار مالك (بوابة 14): تقارير أعطال عن بُعد (تغيّر نموذج البيانات
       و«لا تتبع») أم الاكتفاء بالسجل المحلي — docs/QA_REPORT.md

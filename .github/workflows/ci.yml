@@ -6,6 +6,14 @@ on:
   pull_request:
 
 jobs:
+  secrets:
+    name: Secret scan (fails the build on a committed secret)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - run: ./scripts/secret-scan.sh
+
   quality:
     name: Typecheck · Lint · Test · Build
     runs-on: ubuntu-latest
@@ -87,7 +95,9 @@ jobs:
     env:
       DATABASE_URL: postgresql://postgres:falah@localhost:5432/postgres
       QURAN_DATASET_VERSION: ci
-      PUBLIC_DATA_ENABLED: 'true'
+      # Licence flags stay false in CI: the tests enable what they need per case,
+      # and the licence gate below asserts the production default is safe.
+      PUBLIC_DATA_ENABLED: 'false'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -108,6 +118,23 @@ jobs:
         run: npm run integrity
       - name: Final integrity report (full re-verification)
         run: npm run integrity:final -- --out=/tmp/QURAN_FINAL_INTEGRITY.txt
+      - name: Audio manifest gate (an incomplete manifest must be refused)
+        run: |
+          if npm run --silent import:audio -- schemas/audio-manifest.template.json --validate-only; then
+            echo "FAIL: the empty manifest template was accepted"; exit 1
+          fi
+          echo "OK: incomplete audio manifest refused"
+      - name: License gate (public data stays off until rights are confirmed)
+        run: |
+          node -e "
+            const { loadEnv } = await import('./src/config/env.ts');
+            const flags = loadEnv().flags;
+            if (flags.publicDataEnabled && !flags.contentLicenseConfirmed) {
+              console.error('FAIL: PUBLIC_DATA_ENABLED without CONTENT_LICENSE_CONFIRMED');
+              process.exit(1);
+            }
+            console.log('OK: licence flags consistent', JSON.stringify(flags));
+          " --input-type=module
       - run: npm test
       - uses: actions/upload-artifact@v4
         if: always()

@@ -30,6 +30,9 @@ export type ImportReport = {
   };
   issues: ValidationIssue[];
   errors: string[];
+  /** False until a named person records an approved verification (migration 0004). */
+  human_verified: boolean;
+  dataset_status: string;
   status: 'success' | 'failed';
 };
 
@@ -77,6 +80,9 @@ export async function runImport(
     audio_files: 0,
   };
 
+  let humanVerified = false;
+  let datasetStatus = options.mode === 'import' ? 'pending' : 'not-written';
+
   const finish = (status: 'success' | 'failed'): ImportReport => ({
     pipeline_version: PIPELINE_VERSION,
     mode: options.mode,
@@ -88,6 +94,8 @@ export async function runImport(
     counters,
     issues,
     errors,
+    human_verified: humanVerified,
+    dataset_status: datasetStatus,
     status,
   });
 
@@ -349,7 +357,28 @@ export async function runImport(
   errors.push(...verification.errors);
 
   // ---------- PUBLISH ----------
-  const status = verification.failed === 0 ? (options.publish ? 'published' : 'verified') : 'failed';
+  // Publishing additionally requires an approved human verification for this
+  // dataset version (migration 0004 enforces it in the database too). Without
+  // one the run still succeeds, but the version stays at `verified`.
+  const { rows: humanRows } = await client.query<{ count: string }>(
+    `select count(*)::text as count from quran.human_verifications
+     where dataset_version_id = $1 and result = 'approved'`,
+    [datasetVersionId],
+  );
+  const humanApproved = Number(humanRows[0]?.count ?? 0) > 0;
+  if (options.publish && !humanApproved) {
+    errors.push(
+      'HUMAN_VERIFICATION_REQUIRED: dataset stays at `verified` — record an approved human verification before publishing',
+    );
+  }
+  const status =
+    verification.failed === 0
+      ? options.publish && humanApproved
+        ? 'published'
+        : 'verified'
+      : 'failed';
+  humanVerified = humanApproved;
+  datasetStatus = status;
   await client.query(
     `update quran.quran_dataset_versions set status = $2, record_count = $3 where id = $1`,
     [datasetVersionId, status, dataset.ayahs.length],

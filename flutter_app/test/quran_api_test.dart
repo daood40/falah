@@ -7,6 +7,7 @@ import 'package:falah/features/quran_api/data/quran_api_data_source.dart';
 import 'package:falah/features/quran_api/data/quran_api_repository.dart';
 import 'package:falah/features/quran_api/domain/models.dart';
 import 'package:falah/features/quran_api/offline/quran_cache.dart';
+import 'package:falah/features/quran_api/providers.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Records requests and replays canned API envelopes — no network in tests.
@@ -90,6 +91,15 @@ Map<String, dynamic> ok(Object data, [Map<String, dynamic> meta = const {}]) => 
 };
 
 void main() {
+  group('build configuration', () {
+    test('no API base URL is compiled in unless a config file supplies one', () {
+      // The default test build passes no --dart-define, so the app must stay
+      // offline-only rather than pointing at a developer machine.
+      expect(quranApiBaseUrl, isEmpty);
+      expect(isApiBaseUrlValid(), isFalse);
+    });
+  });
+
   group('API client', () {
     test('unwraps the envelope and sends the access token', () async {
       final transport = FakeTransport({

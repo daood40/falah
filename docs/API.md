@@ -14,7 +14,8 @@
 
 منصة بيانات القرآن الخاصة بنا: PostgreSQL + REST للقراءة فقط على `/api/v1`
 (54 نقطة نهاية، OpenAPI في `quran_api/openapi/openapi.yaml`). التفاصيل الكاملة
-في `quran_api/README.md`. المصادر: `quran-json@3.1.2` (نص عثماني + 10 ترجمات،
+في `quran_api/README.md` ودليل الاستخدام في `quran_api/API_USAGE.md`
+(+ أمثلة جاهزة بسبع لغات في `quran_api/examples/`). المصادر: `quran-json@3.1.2` (نص عثماني + 10 ترجمات،
 CC BY-SA 4.0) و`quran-meta@6.0.17` (بنية المصحف، MIT). لا يُستدعى أي موقع مصدر
 وقت الطلب؛ الاستيراد مسبق ومُتحقَّق منه بالبصمات.
 

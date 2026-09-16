@@ -114,6 +114,26 @@ admin write-path scan               لا INSERT/UPDATE/DELETE على نص الق
 npm run build (PWA)                 PASS — 388KB / gzip 129.59KB
 ```
 
+## 7-ter. جولة الـPublic API (2026-09-16)
+
+```
+vitest (quran_api)                  79/79 PASS  (+7: /version, /openapi.yaml,
+                                    بوابة الاعتماد البشري ×5)
+flutter analyze / test              نظيف · 49/49 PASS
+vitest (PWA) · npm run build        75/75 PASS · بناء ناجح
+OpenAPI                             50 مسارًا · 56 عملية · مطابق للراوتر
+integrity:final                     PASS 41/41 · 0 discrepancy
+أمثلة العملاء (شُغّلت حيًّا)        curl · JavaScript · TypeScript · Dart ·
+                                    Python · PHP — كلها أعادت بيانات حقيقية
+                                    (114 سورة · 2:255 + بصمتها · بحث · ترقيم)
+secret-scan                         PASS · وأثبت الفشل عند زرع مفتاح service_role
+زمن الاستجابة (محلي)                health 7.4ms · surahs 4.1ms ·
+                                    surah ayahs 8.9ms · search 31.2ms
+```
+
+عيبان وُجدا بتشغيل الأمثلة فعليًا وأُصلحا: مثال TypeScript كان يستعمل
+parameter properties التي يرفضها Node، ومثال PHP كان يعيد تعريف `Exception::$code`.
+
 ## 8. ما لم يُختبر هنا ولماذا
 
 - **التلاوات الصوتية**: المنفذ الخارجي في هذه البيئة يحجب
@@ -121,4 +141,6 @@ npm run build (PWA)                 PASS — 388KB / gzip 129.59KB
   (`connect_rejected` من البروكسي)، ولا حقوق إعادة توزيع مؤكدة. لذلك لم تُستورد
   أي ملفات صوتية حقيقية. خط الاستيراد والتحقق مختبَر بالكامل بمنفذ شبكة مزيّف
   (`tests/audio.test.ts`): ملف مفقود، نوع محتوى خاطئ، حجم مخالف، بصمة مخالفة.
-- **النشر**: لم يُنشر أي خادم — `NOT DEPLOYED`.
+- **النشر**: لم يُنشر أي خادم — `NOT DEPLOYED` (لا DATABASE_URL ولا مضيف).
+- **Android/iOS artifacts**: لا Android SDK هنا (dl.google.com محجوب) ولا macOS؛
+  البناء يتم في GitHub Actions.

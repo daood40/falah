@@ -70,6 +70,7 @@ export function createApp(env: Env, db: Db): App {
       const result = await withRls(db, userId, (client) =>
         route.handler({ req, res, url, query: url.searchParams, params, env, userId, client }),
       );
+      if (result.raw) return; // handler wrote the body itself
       if (req.method === 'HEAD') {
         res.writeHead(result.status ?? 200, { 'content-type': 'application/json; charset=utf-8' });
         res.end();

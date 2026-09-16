@@ -40,10 +40,13 @@ Import (تشغيل حقيقي):              PASS   114 سورة · 6,236 آية
 Structure:                         PASS   30 جزءًا · 60 حزبًا · 240 ربعًا ·
                                           604 صفحات · 7 منازل · 15 سجدة
 Integrity report:                  PASS   30/30 فحصًا (إعادة حساب 6,236 بصمة)
-API tests (vitest + PostgreSQL):   PASS   72/72
+API tests (vitest + PostgreSQL):   PASS   79/79
 OpenAPI:                           PASS   48 مسارًا · 54 عملية · مطابق للراوتر
 Typecheck (strict):                PASS   0 أخطاء
-Flutter analyze/test:              PASS   0 مشاكل · 48/48 (19 جديدة)
+Flutter analyze/test:              PASS   0 مشاكل · 49/49 (20 جديدة)
+Human verification gate:           PENDING — لا اعتماد بشري بعد (هجرة 0004)
+Public API (مستقل):                PASS   56 عملية · 50 مسار OpenAPI · 7 أمثلة عميل
+Secret scan:                       PASS   (ويُثبت الفشل عند زرع مفتاح حقيقي)
 Integrity (نصّي نهائي):            PASS   41/41 فحصًا (QURAN_FINAL_INTEGRITY.txt)
 Licence audit:                     NOT_CONFIRMED — تضارب ترخيص في المصدر
 Audio/Reciters:                    BLOCKED لا Dataset مرخّص + المنفذ محجوب
