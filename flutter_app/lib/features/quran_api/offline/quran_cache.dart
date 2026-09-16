@@ -44,11 +44,22 @@ class InMemoryCacheStorage implements CacheStorage {
 String contentHashOf(String text) =>
     sha256.convert(utf8.encode(text.replaceAll(RegExp(r'\s+'), ' ').trim())).toString();
 
+/// Reported when stored data fails its integrity check, so the UI can show an
+/// error instead of silently serving or dropping a corrupted dataset.
+typedef IntegrityFailureCallback =
+    void Function(String key, String reason);
+
 class QuranOfflineCache {
-  QuranOfflineCache({required CacheStorage storage, this.datasetVersion})
-    : _storage = storage;
+  QuranOfflineCache({
+    required CacheStorage storage,
+    this.datasetVersion,
+    this.onIntegrityFailure,
+  }) : _storage = storage;
 
   final CacheStorage _storage;
+
+  /// Called when a cached entry is dropped because its checksum did not match.
+  final IntegrityFailureCallback? onIntegrityFailure;
 
   /// When set, entries stored under a different dataset version are ignored.
   final String? datasetVersion;
@@ -119,6 +130,10 @@ class QuranOfflineCache {
     for (final ayah in ayahs) {
       if (contentHashOf(ayah.text) != ayah.contentHash) {
         await _storage.delete(_surahKey(surah));
+        onIntegrityFailure?.call(
+          _surahKey(surah),
+          'checksum mismatch at ${ayah.surahNumber}:${ayah.ayahNumber}',
+        );
         return null;
       }
     }
@@ -160,6 +175,25 @@ class QuranOfflineCache {
   Future<bool> isUpToDate(String remoteDatasetVersion) async {
     final manifest = await readManifest();
     return manifest?.datasetVersion == remoteDatasetVersion;
+  }
+
+  /// Verifies a downloaded dataset against the manifest checksum before it is
+  /// used. A mismatch reports the failure and refuses the dataset — the caller
+  /// keeps the previous cache (rollback) instead of switching to bad data.
+  Future<bool> acceptDownload({
+    required String payload,
+    required QuranDownloadManifest manifest,
+  }) async {
+    final actual = contentHashOf(payload);
+    if (actual != manifest.checksum) {
+      onIntegrityFailure?.call(
+        'quran:download',
+        'dataset checksum mismatch: expected ${manifest.checksum}, got $actual',
+      );
+      return false;
+    }
+    await writeManifest(manifest);
+    return true;
   }
 
   Future<void> clear() async {

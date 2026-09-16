@@ -1,16 +1,27 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import pg from 'pg';
-import { importAudioManifest, verifyAudioUrl, type AudioManifest } from '../src/import/audio.ts';
+import { createHash } from 'node:crypto';
+import {
+  importAudioManifest,
+  validateAudioManifest,
+  verifyAudioUrl,
+  type AudioManifest,
+} from '../src/import/audio.ts';
 import { startHarness, testUrl, type Harness } from './helpers.ts';
 
 let pool: pg.Pool;
 let api: Harness;
 
+const CHECKSUM = 'a'.repeat(64);
+
 const manifest: AudioManifest = {
   source: {
     id: 'test-audio-source',
     name: 'Test audio source (mock)',
+    url: 'https://example.invalid/',
     license: 'test-only',
+    license_url: 'https://example.invalid/license',
+    attribution_text: 'test',
     status: 'restricted',
     version: '1',
   },
@@ -23,11 +34,37 @@ const manifest: AudioManifest = {
     quality: '128',
     format: 'mp3',
     bitrate: 128,
+    sample_rate: 44100,
     status: 'restricted',
+    version: '1',
   },
   files: [
-    { sequence_number: 1, surah: 1, ayah: 1, audio_url: 'https://example.invalid/001001.mp3', format: 'mp3', bitrate: 128 },
-    { sequence_number: 2, surah: 1, ayah: 2, audio_url: 'https://example.invalid/001002.mp3', format: 'mp3', bitrate: 128 },
+    {
+      sequence_number: 1,
+      surah: 1,
+      ayah: 1,
+      audio_url: 'https://example.invalid/001001.mp3',
+      format: 'mp3',
+      codec: 'mp3',
+      bitrate: 128,
+      sample_rate: 44100,
+      duration_ms: 5000,
+      file_size: 11,
+      checksum: CHECKSUM,
+    },
+    {
+      sequence_number: 2,
+      surah: 1,
+      ayah: 2,
+      audio_url: 'https://example.invalid/001002.mp3',
+      format: 'mp3',
+      codec: 'mp3',
+      bitrate: 128,
+      sample_rate: 44100,
+      duration_ms: 6000,
+      file_size: 11,
+      checksum: CHECKSUM,
+    },
   ],
 };
 
@@ -52,6 +89,50 @@ beforeAll(async () => {
 afterAll(async () => {
   await pool.end();
   await api.close();
+});
+
+describe('audio manifest schema', () => {
+  it('accepts a complete manifest', () => {
+    expect(validateAudioManifest(manifest)).toEqual([]);
+  });
+
+  it('refuses a manifest that is missing licensed metadata', () => {
+    const incomplete = {
+      ...manifest,
+      files: [{ sequence_number: 1, surah: 1, audio_url: 'https://example.invalid/1.mp3' }],
+    };
+    const issues = validateAudioManifest(incomplete);
+    expect(issues.join(' ')).toMatch(/codec/);
+    expect(issues.join(' ')).toMatch(/duration_ms/);
+    expect(issues.join(' ')).toMatch(/file_size/);
+    expect(issues.join(' ')).toMatch(/checksum/);
+  });
+
+  it('refuses invented formats, bad URLs and duplicate sequence numbers', () => {
+    const broken = {
+      ...manifest,
+      source: { ...manifest.source, license: '' },
+      files: [
+        { ...manifest.files[0]!, format: 'wma' as never, audio_url: 'not-a-url' },
+        { ...manifest.files[1]!, sequence_number: 1 },
+      ],
+    };
+    const issues = validateAudioManifest(broken).join(' ');
+    expect(issues).toMatch(/format must be one of/);
+    expect(issues).toMatch(/audio_url must be an absolute/);
+    expect(issues).toMatch(/sequence_number is duplicated/);
+    expect(issues).toMatch(/source.license/);
+  });
+
+  it('writes nothing when the manifest is invalid', async () => {
+    const report = await importAudioManifest(
+      { query: async () => { throw new Error('must not touch the database'); } } as never,
+      { ...manifest, files: [] } as AudioManifest,
+      { mode: 'import', network: false, datasetVersion: 'test-1' },
+    );
+    expect(report.totals.imported).toBe(0);
+    expect(report.errors.join(' ')).toMatch(/manifest invalid/);
+  });
 });
 
 describe('audio verification', () => {
@@ -92,11 +173,22 @@ describe('audio manifest import', () => {
     const client = await pool.connect();
     try {
       await client.query('begin');
+      // The first file's declared checksum matches the fake body; the second
+      // URL does not exist. Only the first may end up verified.
+      const body = Buffer.from('audio-bytes');
+      const realChecksum = createHash('sha256').update(body).digest('hex');
+      const checked: AudioManifest = {
+        ...manifest,
+        files: [
+          { ...manifest.files[0]!, checksum: realChecksum, file_size: body.length },
+          { ...manifest.files[1]!, checksum: realChecksum, file_size: body.length },
+        ],
+      };
       const report = await importAudioManifest(
         client,
-        manifest,
+        checked,
         { mode: 'import', network: true, datasetVersion: 'test-1' },
-        fakeFetch(new Set(['https://example.invalid/001001.mp3'])),
+        fakeFetch(new Set(['https://example.invalid/001001.mp3']), body),
       );
       expect(report.totals).toMatchObject({ files: 2, imported: 2, verified: 1, failed: 1 });
 

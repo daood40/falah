@@ -38,3 +38,16 @@
 - **Flutter بلا اعتماديات جديدة**: التخزين والصوت خلف منافذ (`CacheStorage`,
   `AudioBackend`) — محوّل just_audio موثّق في docs/FLUTTER_AUDIO.md ويُضاف عند
   تأكيد حقوق الصوت، حتى لا نشحن اعتمادية غير مستعملة.
+
+## 2026-09-16 — تدقيق الإكمال
+
+- **تضارب ترخيص quran-json**: الحزمة نفسها تحمل بيانين متعارضين. القرار: لا
+  نفترض الأفضل — `quran.sources.status = 'restricted'` والترجمات LICENSE_PENDING،
+  والأعلام تبقى false حتى يأتي بيان مكتوب. الدليل في `reports/LICENSE_AUDIT.txt`.
+- **عقد manifest صوتي صارم** (`schemas/audio-manifest.schema.json`): كل حقل تقني
+  (codec/bitrate/sample rate/duration/size/SHA-256) وكل حقل ترخيص إلزامي، ويُرفض
+  الـmanifest الناقص قبل أي اتصال شبكة أو كتابة — حتى لا تُملأ الفجوات بالتخمين.
+- **الكاش يبلّغ عن فشل السلامة** (`onIntegrityFailure`) بدل الحذف الصامت، و
+  `acceptDownload` يرفض Dataset لا يطابق الـchecksum ويُبقي النسخة السابقة.
+- **PRODUCTION READY = NO** بقرار صريح: النشر لم يحدث، والتراخيص غير مؤكدة،
+  ولا Dataset صوتي — لا تُرفع الحالة إلا بتحقق فعلي.

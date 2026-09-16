@@ -172,6 +172,52 @@ void main() {
       expect(await storage.read('quran:surah:1'), isNull);
     });
 
+    test('reports the integrity failure instead of failing silently', () async {
+      final failures = <String>[];
+      final cache = QuranOfflineCache(
+        storage: InMemoryCacheStorage(),
+        onIntegrityFailure: (key, reason) => failures.add('$key: $reason'),
+      );
+      await cache.writeSurahAyahs(1, [
+        QuranAyah.fromJson(ayahJson(text: 'نص محرّف', hash: contentHashOf(basmala))),
+      ]);
+      expect(await cache.readSurahAyahs(1), isNull);
+      expect(failures.single, contains('checksum mismatch'));
+    });
+
+    test('refuses a downloaded dataset whose checksum does not match', () async {
+      final failures = <String>[];
+      final storage = InMemoryCacheStorage();
+      final cache = QuranOfflineCache(
+        storage: storage,
+        onIntegrityFailure: (key, reason) => failures.add(reason),
+      );
+      final manifest = QuranDownloadManifest.fromJson({
+        'dataset_version': 'v2',
+        'checksum': contentHashOf('correct payload'),
+        'record_count': 1,
+        'size': 15,
+        'downloadable': true,
+        'license_note': '',
+      });
+
+      final rejected = await cache.acceptDownload(
+        payload: 'tampered payload',
+        manifest: manifest,
+      );
+      expect(rejected, isFalse);
+      expect(failures.single, contains('checksum mismatch'));
+      expect(await cache.readManifest(), isNull, reason: 'rollback: manifest untouched');
+
+      final accepted = await cache.acceptDownload(
+        payload: 'correct payload',
+        manifest: manifest,
+      );
+      expect(accepted, isTrue);
+      expect(await cache.isUpToDate('v2'), isTrue);
+      expect(await cache.isUpToDate('v3'), isFalse);
+    });
+
     test('ignores entries from a superseded dataset version', () async {
       final storage = InMemoryCacheStorage();
       await QuranOfflineCache(storage: storage, datasetVersion: 'v1')

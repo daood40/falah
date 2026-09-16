@@ -15,13 +15,13 @@ export type AudioManifest = {
   source: {
     id: string;
     name: string;
-    url?: string;
-    license?: string;
-    license_url?: string;
-    attribution_text?: string;
+    url: string;
+    license: string;
+    license_url: string;
+    attribution_text: string;
     /** 'restricted' unless redistribution rights are documented. */
-    status?: 'pending' | 'approved' | 'restricted' | 'blocked';
-    version?: string;
+    status: 'pending' | 'approved' | 'restricted' | 'blocked';
+    version: string;
   };
   reciter: {
     slug: string;
@@ -35,14 +35,14 @@ export type AudioManifest = {
   recitation: {
     name: string;
     type: 'murattal' | 'mujawwad' | 'muallim' | 'translation';
-    riwayah_slug?: string | null;
-    edition_slug?: string | null;
-    quality?: string | null;
-    format?: string | null;
-    bitrate?: number | null;
-    sample_rate?: number | null;
-    status?: 'restricted' | 'streaming_only' | 'public';
-    version?: string | null;
+    riwayah_slug: string;
+    edition_slug: string | null;
+    quality: string;
+    format: string;
+    bitrate: number;
+    sample_rate: number;
+    status: 'restricted' | 'streaming_only' | 'public';
+    version: string;
   };
   files: {
     sequence_number: number;
@@ -51,13 +51,15 @@ export type AudioManifest = {
     audio_url: string;
     stream_url?: string | null;
     download_url?: string | null;
-    format?: string | null;
-    codec?: string | null;
-    bitrate?: number | null;
-    sample_rate?: number | null;
-    duration_ms?: number | null;
-    file_size?: number | null;
-    checksum?: string | null;
+    /** Everything below must come from the licensed dataset — never guessed. */
+    format: 'mp3' | 'm4a' | 'ogg' | 'aac' | 'flac' | 'opus' | 'wav';
+    codec: string;
+    bitrate: number;
+    sample_rate: number;
+    duration_ms: number;
+    file_size: number;
+    /** SHA-256 hex digest published with the dataset. */
+    checksum: string;
   }[];
 };
 
@@ -80,6 +82,133 @@ export type AudioImportReport = {
 };
 
 const AUDIO_CONTENT_TYPES = ['audio/', 'application/octet-stream'];
+
+const ALLOWED_FORMATS = ['mp3', 'm4a', 'ogg', 'aac', 'flac', 'opus', 'wav'];
+const RECITATION_TYPES = ['murattal', 'mujawwad', 'muallim', 'translation'];
+const STATUSES = ['restricted', 'streaming_only', 'public'];
+const SOURCE_STATUSES = ['pending', 'approved', 'restricted', 'blocked'];
+
+/**
+ * Enforces `schemas/audio-manifest.schema.json` before anything is written.
+ * Nothing about a recitation may be guessed, so every field the schema marks
+ * required must be present and non-empty — a manifest that omits the codec,
+ * duration, size, checksum or licence is rejected, not filled in.
+ */
+export function validateAudioManifest(manifest: unknown): string[] {
+  const issues: string[] = [];
+  const isObject = (value: unknown): value is Record<string, unknown> =>
+    typeof value === 'object' && value !== null && !Array.isArray(value);
+
+  if (!isObject(manifest)) return ['manifest must be a JSON object'];
+
+  const text = (holder: Record<string, unknown>, path: string, key: string): void => {
+    const value = holder[key];
+    if (typeof value !== 'string' || value.trim().length === 0) {
+      issues.push(`${path}.${key} is required and must be a non-empty string`);
+    }
+  };
+  const int = (
+    holder: Record<string, unknown>,
+    path: string,
+    key: string,
+    min: number,
+  ): void => {
+    const value = holder[key];
+    if (typeof value !== 'number' || !Number.isInteger(value) || value < min) {
+      issues.push(`${path}.${key} is required and must be an integer >= ${min}`);
+    }
+  };
+  const oneOf = (
+    holder: Record<string, unknown>,
+    path: string,
+    key: string,
+    allowed: string[],
+  ): void => {
+    if (typeof holder[key] !== 'string' || !allowed.includes(holder[key] as string)) {
+      issues.push(`${path}.${key} must be one of: ${allowed.join(', ')}`);
+    }
+  };
+  const url = (holder: Record<string, unknown>, path: string, key: string): void => {
+    const value = holder[key];
+    if (typeof value !== 'string' || !/^https?:\/\/\S+$/.test(value)) {
+      issues.push(`${path}.${key} must be an absolute http(s) URL`);
+    }
+  };
+
+  const source = manifest.source;
+  if (!isObject(source)) issues.push('source is required');
+  else {
+    text(source, 'source', 'id');
+    text(source, 'source', 'name');
+    url(source, 'source', 'url');
+    text(source, 'source', 'license');
+    url(source, 'source', 'license_url');
+    text(source, 'source', 'attribution_text');
+    text(source, 'source', 'version');
+    oneOf(source, 'source', 'status', SOURCE_STATUSES);
+  }
+
+  const reciter = manifest.reciter;
+  if (!isObject(reciter)) issues.push('reciter is required');
+  else {
+    text(reciter, 'reciter', 'slug');
+    text(reciter, 'reciter', 'name_ar');
+    if (typeof reciter.slug === 'string' && !/^[a-z0-9-]+$/.test(reciter.slug)) {
+      issues.push('reciter.slug must match ^[a-z0-9-]+$');
+    }
+  }
+
+  const recitation = manifest.recitation;
+  if (!isObject(recitation)) issues.push('recitation is required');
+  else {
+    text(recitation, 'recitation', 'name');
+    oneOf(recitation, 'recitation', 'type', RECITATION_TYPES);
+    text(recitation, 'recitation', 'riwayah_slug');
+    text(recitation, 'recitation', 'quality');
+    text(recitation, 'recitation', 'format');
+    text(recitation, 'recitation', 'version');
+    int(recitation, 'recitation', 'bitrate', 8);
+    int(recitation, 'recitation', 'sample_rate', 8000);
+    oneOf(recitation, 'recitation', 'status', STATUSES);
+  }
+
+  const files = manifest.files;
+  if (!Array.isArray(files) || files.length === 0) {
+    issues.push('files must be a non-empty array');
+  } else {
+    const seen = new Set<number>();
+    files.forEach((entry, index) => {
+      const path = `files[${index}]`;
+      if (!isObject(entry)) {
+        issues.push(`${path} must be an object`);
+        return;
+      }
+      int(entry, path, 'sequence_number', 1);
+      int(entry, path, 'surah', 1);
+      if (typeof entry.surah === 'number' && entry.surah > 114) {
+        issues.push(`${path}.surah must be <= 114`);
+      }
+      if (entry.ayah !== null && entry.ayah !== undefined) int(entry, path, 'ayah', 1);
+      url(entry, path, 'audio_url');
+      oneOf(entry, path, 'format', ALLOWED_FORMATS);
+      text(entry, path, 'codec');
+      int(entry, path, 'bitrate', 8);
+      int(entry, path, 'sample_rate', 8000);
+      int(entry, path, 'duration_ms', 1);
+      int(entry, path, 'file_size', 1);
+      if (typeof entry.checksum !== 'string' || !/^[a-f0-9]{64}$/.test(entry.checksum)) {
+        issues.push(`${path}.checksum must be a SHA-256 hex digest from the dataset`);
+      }
+      const sequence = entry.sequence_number;
+      if (typeof sequence === 'number') {
+        if (seen.has(sequence)) issues.push(`${path}.sequence_number is duplicated`);
+        seen.add(sequence);
+      }
+    });
+  }
+
+  return issues;
+}
 
 /** Live check of one audio URL. HEAD first; full GET only when a checksum is required. */
 export async function verifyAudioUrl(
@@ -123,6 +252,17 @@ export async function importAudioManifest(
   options: { mode: 'dry-run' | 'import'; network: boolean; datasetVersion: string },
   fetchImpl: typeof fetch = fetch,
 ): Promise<AudioImportReport> {
+  const issues = validateAudioManifest(manifest);
+  if (issues.length > 0) {
+    return {
+      mode: options.mode,
+      network: options.network,
+      totals: { files: manifest.files?.length ?? 0, imported: 0, verified: 0, failed: 0, skipped: 0 },
+      verifications: [],
+      errors: issues.map((issue) => `manifest invalid: ${issue}`),
+    };
+  }
+
   const report: AudioImportReport = {
     mode: options.mode,
     network: options.network,

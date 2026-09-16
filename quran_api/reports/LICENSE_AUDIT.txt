@@ -1,0 +1,151 @@
+================================================================
+FALAH QURAN API — LICENSE AUDIT
+================================================================
+generated_at : 2026-09-16
+method       : evidence read from the installed packages themselves
+               (node_modules/<pkg>/{package.json,LICENSE*,README.md}) and the
+               npm registry metadata. Upstream sites (tanzil.net, quranenc.com,
+               creativecommons.org) were NOT reachable from this environment
+               (egress policy: connect_rejected), so no claim below rests on
+               them. Nothing here is assumed; unverifiable = NOT_CONFIRMED.
+
+----------------------------------------------------------------
+1) QURAN DATA LICENSE — NOT_CONFIRMED
+----------------------------------------------------------------
+SOURCE                  : quran-json (npm), author Risan Bagja Pradana
+DATASET                 : dist/quran.json (Uthmani text) — sha256
+                          d8a8adff387f60ce3ff7dbe3238dd9b27120bfe29d8fcb07ad2e89cad37cefd4
+EDITION                 : quran-json-uthmani-hafs (Hafs 'an Asim, Uthmani script)
+VERSION                 : 3.1.2
+LICENSE (conflicting)   : package.json  → "license": "CC-BY-4.0"
+                          LICENSE.txt   → "Attribution-ShareAlike 4.0 International"
+                          README.md §License → "CC-BY-SA 4.0"
+ATTRIBUTION REQUIREMENTS: attribution required under either reading; stored in
+                          quran.sources.attribution_text and returned by
+                          GET /api/v1/sources.
+REDISTRIBUTION          : NOT_CONFIRMED — two conflicting licence statements in
+                          the same release, and the package does not state that
+                          the upstream rights holder of the text
+                          (The Noble Qur'an Encyclopedia — quranenc.com, per
+                          README §Data Source) granted it that licence.
+COMMERCIAL USE          : NOT_CONFIRMED (depends on which licence actually
+                          applies and on the upstream terms).
+MODIFICATION RULES      : irrelevant to us by policy — SOURCE_LOCK forbids any
+                          modification of the text; the database enforces it
+                          with a trigger on quran.ayahs.raw_text.
+EVIDENCE                : node_modules/quran-json/package.json:13
+                          node_modules/quran-json/LICENSE.txt:1
+                          node_modules/quran-json/README.md:124
+                          registry metadata: license = CC-BY-4.0
+EFFECT IN THE SYSTEM    : quran.sources.status = 'restricted';
+                          CONTENT_LICENSE_CONFIRMED=false and
+                          PUBLIC_DATA_ENABLED=false, so the text is not served
+                          to anonymous callers and no offline download is
+                          offered (GET /api/v1/downloads/quran returns
+                          downloadable=false).
+OWNER ACTION REQUIRED   : obtain a written statement (from the package author
+                          and/or quranenc.com) naming one licence and granting
+                          redistribution, then flip the flags.
+
+----------------------------------------------------------------
+2) TRANSLATION LICENSES — NOT_CONFIRMED (all 10, LICENSE_PENDING)
+----------------------------------------------------------------
+All translation rows inherit the quran-json package licence, which is the
+conflict described above. In addition, each translation is an authored work
+with its own copyright holder, and the package does not carry a redistribution
+grant from any of them. They are therefore treated as LICENSE_PENDING: imported
+for internal/staging use, never exposed publicly while the flags are false.
+
+  slug            lang  translator                                 rows   state
+  en-saheeh       en    Umm Muhammad (Saheeh International)         6236  LICENSE_PENDING
+  fr-hamidullah   fr    Muhammad Hamidullah                         6236  LICENSE_PENDING
+  tr-diyanet      tr    Turkish Directorate of Religious Affairs    6236  LICENSE_PENDING
+  ur-maududi      ur    Abul A'la Maududi                           6236  LICENSE_PENDING
+  id-affairs      id    Indonesian Islamic Affairs Ministry         6236  LICENSE_PENDING
+  es-garcia       es    Muhammad Isa García                         6236  LICENSE_PENDING
+  ru-kuliev       ru    Elmir Kuliev                                6236  LICENSE_PENDING
+  sv-bernstrom    sv    Knut Bernström                              6236  LICENSE_PENDING
+  bn-khan         bn    Muhiuddin Khan                              6236  LICENSE_PENDING
+  zh-makin        zh    Muhammad Makin (Ma Jian)                    6236  LICENSE_PENDING
+
+SOURCE OF THE TEXTS     : tanzil.net for bn, en, es, fr, ru, sv, tr, ur;
+                          quranenc.com for id, zh (per quran-json README
+                          §Data Source).
+COMPLETENESS            : 6,236/6,236 rows each, 0 duplicates, 0 empty rows,
+                          every SHA-256 recomputed and matching
+                          (reports/QURAN_FINAL_INTEGRITY.txt §7).
+AI GENERATION           : none. No translation text was generated, corrected or
+                          altered by any model; the importer copies bytes and
+                          hashes them.
+OWNER ACTION REQUIRED   : per-translation permission, or drop the languages
+                          whose rights cannot be documented before publishing.
+
+----------------------------------------------------------------
+3) MUSHAF STRUCTURE LICENSE — CONFIRMED
+----------------------------------------------------------------
+SOURCE                  : quran-meta (npm), Quran-Center
+DATASET                 : Hafs surah table, juz / hizb-quarter / page / manzil /
+                          ruku / sajdah boundaries
+VERSION                 : 6.0.17
+LICENSE                 : MIT — consistent in package.json and LICENSE
+ATTRIBUTION             : copyright notice must ship with the software;
+                          stored in quran.sources.attribution_text.
+REDISTRIBUTION          : PERMITTED by MIT.
+COMMERCIAL USE          : PERMITTED by MIT.
+EVIDENCE                : node_modules/quran-meta/package.json ("license":"MIT")
+                          node_modules/quran-meta/LICENSE:1 ("MIT License")
+NOTE                    : this covers structural metadata only (numbers and
+                          boundaries), not any Quran text.
+
+----------------------------------------------------------------
+4) RECITERS LICENSE — BLOCKED (no dataset)
+----------------------------------------------------------------
+STATE                   : 0 reciter records. No reciter dataset was supplied and
+                          none was invented. Nothing to license yet.
+PIPELINE READINESS      : schemas/audio-manifest.schema.json defines the exact
+                          contract (reciter, riwayah, source, licence,
+                          attribution, per-file technical metadata). The
+                          importer rejects an incomplete manifest before any
+                          network call or database write.
+OWNER ACTION REQUIRED   : provide a licensed reciter dataset with, per reciter:
+                          name(s), country/bio/years/photo only if the source
+                          states them, riwayah, source URL, licence and
+                          attribution text.
+
+----------------------------------------------------------------
+5) AUDIO LICENSE — BLOCKED (no dataset, no reachable source)
+----------------------------------------------------------------
+STATE                   : 0 recitations, 0 audio files.
+WHY                     : (a) no owner-supplied licensed audio dataset;
+                          (b) this environment's egress policy rejects the
+                          public recitation CDNs (cdn.islamic.network,
+                          everyayah.com, api.alquran.cloud → connect_rejected).
+                          No bypass of any kind was attempted or implemented —
+                          no proxy hopping, no CAPTCHA/Cloudflare circumvention,
+                          no mirroring.
+VERIFICATION READY      : verifyAudioUrl() checks HTTP status, content type,
+                          declared size and SHA-256 before a file may be marked
+                          verified; unverified files are never playable
+                          (Flutter AudioPlayerService refuses them) and
+                          download_url stays null while
+                          AUDIO_LICENSE_CONFIRMED=false.
+OWNER ACTION REQUIRED   : a manifest that validates against
+                          schemas/audio-manifest.schema.json, from a source that
+                          permits redistribution or at least streaming, with the
+                          licence text and attribution recorded.
+
+----------------------------------------------------------------
+SUMMARY
+----------------------------------------------------------------
+QURAN DATA LICENSE     : NOT_CONFIRMED  (conflicting licence statements upstream)
+TRANSLATION LICENSES   : NOT_CONFIRMED  (10/10 LICENSE_PENDING)
+MUSHAF STRUCTURE       : CONFIRMED      (MIT, quran-meta)
+RECITERS LICENSE       : BLOCKED        (no dataset)
+AUDIO LICENSE          : BLOCKED        (no dataset, CDNs unreachable)
+
+PUBLIC EXPOSURE TODAY  : CONTENT_LICENSE_CONFIRMED=false
+                         AUDIO_LICENSE_CONFIRMED=false
+                         PUBLIC_DATA_ENABLED=false
+                         ⇒ content endpoints answer 451 to anonymous callers;
+                           authenticated staging users may read; no downloads.
+================================================================

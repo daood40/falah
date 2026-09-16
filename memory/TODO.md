@@ -11,11 +11,16 @@
 ## P0 — منصة بيانات القرآن (خطوات مالك)
 - [ ] تشغيل الـAPI فعليًا: تزويد `DATABASE_URL` (Supabase) و`SUPABASE_JWT_SECRET`
       ثم `npm run db:apply && npm run import -- --publish` (quran_api/README.md §7)
-- [ ] قرار الترخيص: تأكيد حق إعادة توزيع النص (CC BY-SA 4.0 يلزم النسبة
-      والمشاركة بالمثل) قبل رفع `CONTENT_LICENSE_CONFIRMED` و`PUBLIC_DATA_ENABLED`
+- [ ] حسم تضارب ترخيص quran-json: `package.json` يقول CC BY 4.0 و`LICENSE.txt`
+      يقول CC BY-SA 4.0، ولا إذن صريح من صاحب النص الأصلي (quranenc.com).
+      يلزم بيان مكتوب قبل رفع `CONTENT_LICENSE_CONFIRMED` و`PUBLIC_DATA_ENABLED`
+      (التفاصيل: quran_api/reports/LICENSE_AUDIT.txt)
+- [ ] تراخيص الترجمات العشر (كلها LICENSE_PENDING) — إذن لكل مترجم أو حذف اللغات
+      غير الموثقة قبل النشر
 - [ ] توفير Dataset صوتي مرخّص (manifest يذكر القارئ والرواية والترخيص وروابط
       الملفات) لتفعيل التلاوات — البنية والاستيراد والتحقق جاهزة
-      (`npm run import:audio -- manifest.json`)
+      (`npm run import:audio -- manifest.json`؛ العقد في
+      `quran_api/schemas/audio-manifest.schema.json` والقالب بجانبه)
 
 ## P1 — بعد الإطلاق
 - [ ] قرار مالك (بوابة 14): تقارير أعطال عن بُعد (تغيّر نموذج البيانات

@@ -30,15 +30,17 @@ export const SOURCES: SourceDefinition[] = [
     url: 'https://github.com/risan/quran-json',
     api_url: 'https://cdn.jsdelivr.net/npm/quran-json@3.1.2/dist/',
     description:
-      'Uthmani Quran text from The Noble Qur\'an Encyclopedia (quranenc.com); translations sourced from tanzil.net and quranenc.com.',
+      'Uthmani Quran text from The Noble Qur\'an Encyclopedia (quranenc.com); translations sourced from tanzil.net and quranenc.com. LICENCE UNRESOLVED: package.json declares CC-BY-4.0 while LICENSE.txt and README declare CC-BY-SA-4.0, and neither states that the upstream rights holders (quranenc.com, tanzil.net, the individual translators) granted redistribution. See reports/LICENSE_AUDIT.txt.',
     language: 'ar',
-    license: 'CC-BY-SA-4.0',
+    license: 'CC-BY-SA-4.0 (LICENSE.txt) / CC-BY-4.0 (package.json) — unresolved',
     license_url: 'https://github.com/risan/quran-json/blob/master/LICENSE.txt',
     attribution_required: true,
     attribution_text:
       'Quran text & translations: quran-json (CC BY-SA 4.0) — Risan Bagja Pradana; text from quranenc.com, translations from tanzil.net.',
     version: QURAN_JSON_VERSION,
-    status: 'approved',
+    // Usable internally; NOT cleared for public redistribution until the owner
+    // resolves the licence conflict recorded in reports/LICENSE_AUDIT.txt.
+    status: 'restricted',
   },
   {
     id: 'quran-meta',

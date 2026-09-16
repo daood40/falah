@@ -21,6 +21,13 @@
 - لا يعمل: المزامنة والحسابات (لا مفاتيح Supabase بعد)؛ iOS مؤجل (لا حساب Apple).
 
 ## أين توقّفنا
+2026-09-16 (تدقيق نهائي): التقارير الثلاثة في `quran_api/reports/`
+(QURAN_FINAL_INTEGRITY 41/41 · LICENSE_AUDIT · FINAL_PRODUCTION_AUDIT).
+اكتُشف تضارب ترخيص في quran-json (package.json يقول CC BY 4.0 وLICENSE.txt
+يقول CC BY-SA 4.0) فصار مصدر النص `restricted` والترجمات LICENSE_PENDING.
+أُضيف عقد manifest صارم للصوت + تحقق يرفض أي بيانات ناقصة.
+PRODUCTION READY = NO (نشر + تراخيص + Dataset صوتي).
+
 2026-09-16: بُنيت منصة بيانات القرآن كاملة وشُغّلت فعليًا: هجرة 0003، استيراد
 114 سورة/6,236 آية/62,360 ترجمة (10 لغات) بـ0 أخطاء، تقرير سلامة 30/30،
 65 اختبار API على PostgreSQL حقيقي، OpenAPI مطابق للراوتر، وطبقة Flutter

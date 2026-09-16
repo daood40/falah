@@ -69,8 +69,12 @@ columns (`search_text`, `search_skeleton`) may change; the text may not.
 
 | Source | Content | Licence | Status |
 |---|---|---|---|
-| `quran-json@3.1.2` | Uthmani text (from quranenc.com) + 10 translations (tanzil.net / quranenc.com) | CC BY-SA 4.0 | approved |
+| `quran-json@3.1.2` | Uthmani text (from quranenc.com) + 10 translations (tanzil.net / quranenc.com) | **conflicting**: `package.json` says CC-BY-4.0, `LICENSE.txt`/README say CC-BY-SA-4.0 | **restricted** — redistribution NOT confirmed |
 | `quran-meta@6.0.17` | Hafs mushaf structure: juz, hizb quarter, page, manzil, ruku, sajdah, surah metadata | MIT | approved |
+
+The licence conflict is documented with evidence in `reports/LICENSE_AUDIT.txt`.
+Until the owner resolves it, the text and all 10 translations are treated as
+LICENSE_PENDING: imported for internal/staging use, never served publicly.
 
 Attribution text is stored per source and returned by `GET /api/v1/sources`.
 No site was scraped; no protection was bypassed; both datasets are published
@@ -101,11 +105,23 @@ import is one transaction: a failed validation writes nothing.
 
 ### Audio import
 
-Audio is never guessed. `npm run import:audio -- manifest.json` takes a manifest
-that states the reciter, riwayah, licence and every file URL, verifies each URL
-over HTTP (status, content type, size, optional SHA-256) and marks
-`verified = true` **only** for files that passed. Use `--dry-run` to check
-without writing and `--no-network` to import metadata as `pending`.
+Audio is never guessed. The manifest contract is
+`schemas/audio-manifest.schema.json` (template: `schemas/audio-manifest.template.json`)
+and it is enforced in code: a manifest missing the codec, bitrate, sample rate,
+duration, file size, SHA-256, licence or attribution is **rejected before any
+network call or database write**.
+
+```bash
+npm run import:audio -- manifest.json --validate-only   # schema check only
+npm run import:audio -- manifest.json --dry-run         # + live URL checks, no writes
+npm run import:audio -- manifest.json                   # verify + import
+npm run import:audio -- manifest.json --no-network      # import as `pending`
+```
+
+Each URL is checked over HTTP (status, content type, declared size, SHA-256) and
+`verified = true` is set **only** for files that passed. Unverified files are
+never playable in the app, and `download_url` stays null while
+`AUDIO_LICENSE_CONFIRMED=false`.
 
 ## 5. API
 
@@ -236,5 +252,13 @@ the OpenAPI contract. No mocked database and no fixture Quran text.
 
 ## 10. Reports
 
-`reports/import-report.json` and `reports/integrity-report.json` are produced by
-the commands above and committed as the evidence for `docs/GATES.md`.
+Committed evidence for `docs/GATES.md`:
+
+| File | Produced by |
+|---|---|
+| `reports/import-report.json` | `npm run import -- …` |
+| `reports/integrity-report.json` | `npm run integrity` |
+| `reports/QURAN_FINAL_INTEGRITY.txt` | `npm run integrity:final` |
+| `reports/LICENSE_AUDIT.txt` | licence evidence read from the packages |
+| `reports/test-report.md` | the test runs themselves |
+| `reports/FINAL_PRODUCTION_AUDIT.txt` | the final gate — currently PRODUCTION READY: NO |

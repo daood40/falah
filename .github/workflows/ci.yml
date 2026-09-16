@@ -104,6 +104,14 @@ jobs:
         run: npm run import -- --validate-only --version=ci
       - name: Import + verify the dataset
         run: npm run import -- --version=ci --translations=en --publish
-      - name: Integrity report
+      - name: Integrity report (machine-readable)
         run: npm run integrity
+      - name: Final integrity report (full re-verification)
+        run: npm run integrity:final -- --out=/tmp/QURAN_FINAL_INTEGRITY.txt
       - run: npm test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: quran-integrity-report
+          path: /tmp/QURAN_FINAL_INTEGRITY.txt
+          retention-days: 14

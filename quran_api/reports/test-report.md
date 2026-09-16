@@ -51,12 +51,12 @@ node scripts/integrity-report.ts     PASS — 30/30 checks, 0 failed
 ```
 tests/api.test.ts        26 tests   PASS
 tests/security.test.ts   14 tests   PASS
-tests/import.test.ts      9 tests   PASS
 tests/unit.test.ts       12 tests   PASS
-tests/audio.test.ts       4 tests   PASS
+tests/import.test.ts      9 tests   PASS
+tests/audio.test.ts       8 tests   PASS
 tests/openapi.test.ts     3 tests   PASS
 ------------------------------------------
-Test Files 6 passed · Tests 68 passed (0 failed) · 3.4s
+Test Files 6 passed · Tests 72 passed (0 failed) · 3.7s
 ```
 
 يغطي: الاستجابة الموحدة، الترقيم وحدوده (`limit=1000000` → 422)، معرّفات غير
@@ -94,10 +94,24 @@ tsc -p quran_api/tsconfig.json --noEmit        PASS (strict, 0 errors)
 
 ```
 flutter analyze                     No issues found! (11.7s)
-flutter test                        46 tests passed (0 failed)
-  ├─ test/quran_api_test.dart            10 passed (جديد)
+flutter test                        48 tests passed (0 failed)
+  ├─ test/quran_api_test.dart            12 passed (جديد)
   ├─ test/audio_player_service_test.dart  7 passed (جديد)
   └─ الاختبارات السابقة                  29 passed
+flutter build apk                   BLOCKED — لا Android SDK (dl.google.com محجوب)
+```
+
+## 7-bis. تدقيق نهائي (2026-09-16، جولة الإكمال)
+
+```
+QURAN_FINAL_INTEGRITY.txt           PASS 41/41 فحصًا · 0 discrepancy
+LICENSE_AUDIT.txt                   QURAN=NOT_CONFIRMED · TRANSLATIONS=PENDING
+                                    STRUCTURE=CONFIRMED(MIT) · AUDIO/RECITERS=BLOCKED
+live endpoint sweep (37 نداءً)      كل العائلات 200/201 بالبيانات المتوقعة
+CORS allow-list / 401 / 429         تحقّق حيّ
+secret scan (git grep)              لا مفتاح service_role في Flutter/PWA/OpenAPI/Git
+admin write-path scan               لا INSERT/UPDATE/DELETE على نص القرآن من الـAPI
+npm run build (PWA)                 PASS — 388KB / gzip 129.59KB
 ```
 
 ## 8. ما لم يُختبر هنا ولماذا

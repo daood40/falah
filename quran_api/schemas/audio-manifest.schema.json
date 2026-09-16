@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://falah.app/schemas/audio-manifest.schema.json",
+  "title": "FALAH audio manifest",
+  "description": "Input contract for `npm run import:audio`. Every field required here must come from the licensed dataset itself — the importer refuses a manifest with missing or guessed values.",
+  "type": "object",
+  "required": ["source", "reciter", "recitation", "files"],
+  "additionalProperties": false,
+  "properties": {
+    "source": {
+      "type": "object",
+      "required": ["id", "name", "url", "license", "license_url", "attribution_text", "status", "version"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "url": { "type": "string", "format": "uri" },
+        "license": { "type": "string", "minLength": 1 },
+        "license_url": { "type": "string", "format": "uri" },
+        "attribution_text": { "type": "string", "minLength": 1 },
+        "status": { "enum": ["pending", "approved", "restricted", "blocked"] },
+        "version": { "type": "string", "minLength": 1 }
+      }
+    },
+    "reciter": {
+      "type": "object",
+      "required": ["slug", "name_ar"],
+      "additionalProperties": false,
+      "properties": {
+        "slug": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "name_ar": { "type": "string", "minLength": 1 },
+        "name_en": { "type": ["string", "null"] },
+        "country": { "type": ["string", "null"] },
+        "bio": { "type": ["string", "null"] },
+        "photo_url": { "type": ["string", "null"] },
+        "website": { "type": ["string", "null"] }
+      }
+    },
+    "recitation": {
+      "type": "object",
+      "required": ["name", "type", "riwayah_slug", "edition_slug", "quality", "format", "bitrate", "sample_rate", "status", "version"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "type": { "enum": ["murattal", "mujawwad", "muallim", "translation"] },
+        "riwayah_slug": { "type": "string", "minLength": 1 },
+        "edition_slug": { "type": ["string", "null"] },
+        "quality": { "type": "string", "minLength": 1 },
+        "format": { "type": "string", "minLength": 1 },
+        "bitrate": { "type": "integer", "minimum": 8 },
+        "sample_rate": { "type": "integer", "minimum": 8000 },
+        "status": { "enum": ["restricted", "streaming_only", "public"] },
+        "version": { "type": "string", "minLength": 1 }
+      }
+    },
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["sequence_number", "surah", "audio_url", "format", "codec", "bitrate", "sample_rate", "duration_ms", "file_size", "checksum"],
+        "additionalProperties": false,
+        "properties": {
+          "sequence_number": { "type": "integer", "minimum": 1 },
+          "surah": { "type": "integer", "minimum": 1, "maximum": 114 },
+          "ayah": { "type": ["integer", "null"], "minimum": 1 },
+          "audio_url": { "type": "string", "format": "uri" },
+          "stream_url": { "type": ["string", "null"] },
+          "download_url": { "type": ["string", "null"] },
+          "format": { "enum": ["mp3", "m4a", "ogg", "aac", "flac", "opus", "wav"] },
+          "codec": { "type": "string", "minLength": 1 },
+          "bitrate": { "type": "integer", "minimum": 8 },
+          "sample_rate": { "type": "integer", "minimum": 8000 },
+          "duration_ms": { "type": "integer", "minimum": 1 },
+          "file_size": { "type": "integer", "minimum": 1 },
+          "checksum": { "type": "string", "pattern": "^[a-f0-9]{64}$", "description": "SHA-256 of the file, taken from the licensed dataset" }
+        }
+      }
+    }
+  }
+}

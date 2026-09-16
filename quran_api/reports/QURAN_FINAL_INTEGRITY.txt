@@ -1,0 +1,122 @@
+================================================================
+FALAH QURAN API — FINAL DATA INTEGRITY VERIFICATION
+================================================================
+generated_at : 2026-09-16T02:14:05.828Z
+sources      : quran-json@3.1.2 (text + translations)
+               quran-meta@6.0.17 (Hafs mushaf structure)
+database     : postgresql://***@localhost:55432/postgres?host=/tmp
+rule         : nothing is repaired automatically; differences are listed
+               as DISCREPANCY. Quran text is never edited by this tool.
+
+[1] EDITION & DATASET VERSION
+  edition      : quran-json-uthmani-hafs (المصحف — رسم عثماني (حفص عن عاصم))
+  riwayah      : hafs   qiraah: asim   script: uthmani
+  source_id    : quran-json   version: 2026.09.16-1
+  dataset      : 2026.09.16-1  status=published  records=6236
+  source hash  : d8a8adff387f60ce3ff7dbe3238dd9b27120bfe29d8fcb07ad2e89cad37cefd4
+  imported at  : 2026-09-16T02:07:52.104Z
+  PASS  source file hash matches the package on disk expected=d8a8adff387f60ce3ff7dbe3238dd9b27120bfe29d8fcb07ad2e89cad37cefd4 actual=d8a8adff387f60ce3ff7dbe3238dd9b27120bfe29d8fcb07ad2e89cad37cefd4
+
+[2] STRUCTURAL COUNTS (expected = parsed from the source packages)
+  PASS  surahs                                       expected=114 actual=114
+  PASS  ayahs                                        expected=6236 actual=6236
+  PASS  juzs                                         expected=30 actual=30
+  PASS  hizbs (distinct)                             expected=60 actual=60
+  PASS  rub al-hizb                                  expected=240 actual=240
+  PASS  pages                                        expected=604 actual=604
+  PASS  manzils                                      expected=7 actual=7
+  PASS  sajdah ayahs                                 expected=15 actual=15
+
+[3] NUMBERING
+  PASS  surah numbers 1..114 contiguous              expected=0 actual=0
+  PASS  global ayah numbering without gaps           expected=0 actual=0
+  PASS  ayah numbers restart at 1 in every surah     expected=0 actual=0
+  PASS  declared ayah_count = stored ayahs           expected=0 actual=0
+  PASS  duplicate (surah, ayah) pairs                expected=0 actual=0
+
+[4] JUZ / HIZB / PAGE / MANZIL MAPPINGS
+  PASS  ayah.juz matches juz boundaries              expected=0 actual=0
+  PASS  ayah.rub matches hizb-quarter boundaries     expected=0 actual=0
+  PASS  ayah.page matches page boundaries            expected=0 actual=0
+  PASS  ayah.manzil matches manzil boundaries        expected=0 actual=0
+  PASS  sajdah positions match the source list       expected=0 actual=0
+
+[5] TEXT, SHA-256 AND DERIVED REPRESENTATIONS
+  PASS  ayah rows compared                           expected=6236 actual=6236
+  PASS  sha256(stored text) = stored hash            expected=0 actual=0
+  PASS  stored hash = source hash                    expected=0 actual=0
+  PASS  stored text = source text (byte for byte)    expected=0 actual=0
+  PASS  text_uthmani = raw_text                      expected=0 actual=0
+  PASS  text_simple stays NULL (absent in source)    expected=0 actual=0
+  PASS  search_text = documented normalisation       expected=0 actual=0
+  PASS  search_skeleton = documented normalisation   expected=0 actual=0
+  PASS  source_locked on every ayah                  expected=0 actual=0
+  PASS  verification_status = verified               expected=0 actual=0
+  PASS  ayahs without Arabic letters                 expected=0 actual=0
+  PASS  ayahs with a NULL/empty text                 expected=0 actual=0
+  PASS  source metadata present on every ayah        expected=0 actual=0
+  PASS  dataset_version present on every ayah        expected=0 actual=0
+
+[6] SOURCE LOCK (raw_text immutability)
+  PASS  UPDATE of raw_text is rejected by the trigger expected=true actual=true
+
+[7] TRANSLATIONS
+  bn-khan          lang=bn  rows=6236   distinct=6236   empty=0 missing_hash=0
+    translator : Muhiuddin Khan
+    title      : Muhiuddin Khan
+    licence    : CC-BY-SA-4.0   version: 2026.09.16-1
+  en-saheeh        lang=en  rows=6236   distinct=6236   empty=0 missing_hash=0
+    translator : Umm Muhammad (Saheeh International)
+    title      : Saheeh International
+    licence    : CC-BY-SA-4.0   version: 2026.09.16-1
+  es-garcia        lang=es  rows=6236   distinct=6236   empty=0 missing_hash=0
+    translator : Muhammad Isa García
+    title      : García
+    licence    : CC-BY-SA-4.0   version: 2026.09.16-1
+  fr-hamidullah    lang=fr  rows=6236   distinct=6236   empty=0 missing_hash=0
+    translator : Muhammad Hamidullah
+    title      : Hamidullah
+    licence    : CC-BY-SA-4.0   version: 2026.09.16-1
+  id-affairs       lang=id  rows=6236   distinct=6236   empty=0 missing_hash=0
+    translator : Indonesian Islamic Affairs Ministry
+    title      : Kementerian Agama
+    licence    : CC-BY-SA-4.0   version: 2026.09.16-1
+  ru-kuliev        lang=ru  rows=6236   distinct=6236   empty=0 missing_hash=0
+    translator : Elmir Kuliev
+    title      : Kuliev
+    licence    : CC-BY-SA-4.0   version: 2026.09.16-1
+  sv-bernstrom     lang=sv  rows=6236   distinct=6236   empty=0 missing_hash=0
+    translator : Knut Bernström
+    title      : Bernström
+    licence    : CC-BY-SA-4.0   version: 2026.09.16-1
+  tr-diyanet       lang=tr  rows=6236   distinct=6236   empty=0 missing_hash=0
+    translator : Turkish Directorate of Religious Affairs
+    title      : Diyanet İşleri
+    licence    : CC-BY-SA-4.0   version: 2026.09.16-1
+  ur-maududi       lang=ur  rows=6236   distinct=6236   empty=0 missing_hash=0
+    translator : Abul A'la Maududi
+    title      : Maududi
+    licence    : CC-BY-SA-4.0   version: 2026.09.16-1
+  zh-makin         lang=zh  rows=6236   distinct=6236   empty=0 missing_hash=0
+    translator : Muhammad Makin
+    title      : Ma Jian (Makin)
+    licence    : CC-BY-SA-4.0   version: 2026.09.16-1
+  PASS  translations with full coverage              expected=10 actual=10
+  PASS  sha256(translation text) = stored hash       expected=0 actual=0
+  PASS  orphan translation rows                      expected=0 actual=0
+
+[8] QIRAAT · RIWAYAT · RECITERS · AUDIO
+  qiraat        : 1
+  riwayat       : 1
+  reciters      : 0
+  recitations   : 0
+  audio files   : 0
+  PASS  every riwayah belongs to a qiraah            expected=0 actual=0
+  PASS  audio rows without a surah/ayah/juz mapping  expected=0 actual=0
+  PASS  verified audio without checksum or size      expected=0 actual=0
+  note: 0 reciters / 0 audio files is the correct state — no licensed
+        audio dataset has been supplied, and no placeholder rows exist.
+
+================================================================
+RESULT: PASS — no discrepancy found. Nothing was modified.
+================================================================

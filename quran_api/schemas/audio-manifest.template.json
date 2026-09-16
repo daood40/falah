@@ -1,0 +1,50 @@
+{
+  "source": {
+    "id": "",
+    "name": "",
+    "url": "",
+    "license": "",
+    "license_url": "",
+    "attribution_text": "",
+    "status": "restricted",
+    "version": ""
+  },
+  "reciter": {
+    "slug": "",
+    "name_ar": "",
+    "name_en": null,
+    "country": null,
+    "bio": null,
+    "photo_url": null,
+    "website": null
+  },
+  "recitation": {
+    "name": "",
+    "type": "murattal",
+    "riwayah_slug": "hafs",
+    "edition_slug": "quran-json-uthmani-hafs",
+    "quality": "",
+    "format": "",
+    "bitrate": 0,
+    "sample_rate": 0,
+    "status": "restricted",
+    "version": ""
+  },
+  "files": [
+    {
+      "sequence_number": 1,
+      "surah": 1,
+      "ayah": 1,
+      "audio_url": "",
+      "stream_url": null,
+      "download_url": null,
+      "format": "mp3",
+      "codec": "",
+      "bitrate": 0,
+      "sample_rate": 0,
+      "duration_ms": 0,
+      "file_size": 0,
+      "checksum": ""
+    }
+  ]
+}

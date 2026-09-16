@@ -33,3 +33,21 @@
 | flutter test | 46/46 PASS (17 جديدة) |
 | الصوت | BLOCKED — لا Dataset مرخّص + CDN محجوب في البيئة |
 | النشر | NOT DEPLOYED |
+
+## 2026-09-16 (تدقيق الإكمال النهائي)
+
+| ما شُغّل | النتيجة |
+|---|---|
+| vitest (quran_api) | 72/72 PASS |
+| flutter analyze/test | نظيف · 48/48 PASS |
+| vitest (PWA) | 75/75 PASS |
+| npm run build (PWA) | PASS — 388KB / gzip 129.59KB |
+| integrity:final (نصّي) | PASS 41/41 · 0 discrepancy |
+| integrity (json) | PASS 30/30 |
+| OpenAPI contract | 48 مسارًا · 54 عملية · مطابق |
+| مسح كل عائلات النقاط حيًّا (37 نداء) | PASS |
+| CORS allow-list · 401 · 429 | PASS |
+| فحص تسريب service_role | نظيف (لا وجود له في Flutter/PWA/OpenAPI/Git) |
+| flutter build apk | BLOCKED — لا Android SDK (dl.google.com محجوب) |
+| النشر | BLOCKED — لا DATABASE_URL |
+| PRODUCTION READY | NO |

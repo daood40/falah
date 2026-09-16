@@ -7,8 +7,8 @@
 
 | المصدر | النوع | الترخيص | الحالة |
 |---|---|---|---|
-| `quran-json@3.1.2` — نص عثماني (حفص عن عاصم) من The Noble Qur'an Encyclopedia (quranenc.com) | quran | CC BY-SA 4.0 (يتطلب النسبة والمشاركة بالمثل) | approved — مدمج offline + مستورد في منصة البيانات |
-| ترجمات `quran-json` العشر (Saheeh International, Hamidullah, Diyanet, Maududi, Kemenag, García, Kuliev, Bernström, Muhiuddin Khan, Ma Jian) — أغلبها من tanzil.net | translation | ضمن ترخيص الحزمة CC BY-SA 4.0 | approved |
+| `quran-json@3.1.2` — نص عثماني (حفص عن عاصم) من The Noble Qur'an Encyclopedia (quranenc.com) | quran | **متضارب**: `package.json` يقول CC BY 4.0 و`LICENSE.txt`/README يقولان CC BY-SA 4.0 | **restricted** — يُستعمل داخليًا فقط؛ إعادة التوزيع غير مؤكدة (`reports/LICENSE_AUDIT.txt`) |
+| ترجمات `quran-json` العشر (Saheeh International, Hamidullah, Diyanet, Maududi, Kemenag, García, Kuliev, Bernström, Muhiuddin Khan, Ma Jian) — أغلبها من tanzil.net | translation | ضمن ترخيص الحزمة المتضارب أعلاه + حقوق كل مترجم | **LICENSE_PENDING** — لا تُنشر للعامة |
 | `quran-meta@6.0.17` — بنية المصحف (جزء/حزب/ربع/صفحة/منزل/ركوع/سجدة + بيانات السور) لرواية حفص | structure | MIT | approved — مستورد في منصة البيانات |
 | الأربعون النووية (نص + ترجمة + راوٍ + مصدر) | hadith | بيانات موثقة مرفقة المصدر | approved — بذرة مدمجة |
 | تلاوات cdn.islamic.network (4 قرّاء) | recitation | استخدام عام عبر الـCDN | approved — بث فقط، لا إعادة توزيع |

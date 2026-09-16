@@ -40,12 +40,15 @@ Import (تشغيل حقيقي):              PASS   114 سورة · 6,236 آية
 Structure:                         PASS   30 جزءًا · 60 حزبًا · 240 ربعًا ·
                                           604 صفحات · 7 منازل · 15 سجدة
 Integrity report:                  PASS   30/30 فحصًا (إعادة حساب 6,236 بصمة)
-API tests (vitest + PostgreSQL):   PASS   68/68
+API tests (vitest + PostgreSQL):   PASS   72/72
 OpenAPI:                           PASS   48 مسارًا · 54 عملية · مطابق للراوتر
 Typecheck (strict):                PASS   0 أخطاء
-Flutter analyze/test:              PASS   0 مشاكل · 46/46 (17 جديدة)
-Audio:                             BLOCKED لا Dataset صوتي مرخّص + المنفذ محجوب
-Deployment:                        NOT DEPLOYED
+Flutter analyze/test:              PASS   0 مشاكل · 48/48 (19 جديدة)
+Integrity (نصّي نهائي):            PASS   41/41 فحصًا (QURAN_FINAL_INTEGRITY.txt)
+Licence audit:                     NOT_CONFIRMED — تضارب ترخيص في المصدر
+Audio/Reciters:                    BLOCKED لا Dataset مرخّص + المنفذ محجوب
+Deployment:                        BLOCKED — لا DATABASE_URL من المالك
+PRODUCTION READY:                  NO (انظر FINAL_PRODUCTION_AUDIT.txt)
 ```
 الأدلة: `quran_api/reports/import-report.json` · `integrity-report.json` ·
 `test-report.md`.
