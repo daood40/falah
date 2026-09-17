@@ -29,3 +29,16 @@ src/features/home/HomePage.tsx.
 الحل: مستودع واحد يُسخَّن في setUpAll ويُحقن، وحلقة settle محدودة تفحص
 المؤشرات غير المحددة · الملف: flutter_app/test/app_widget_test.dart.
 الوقاية: لا pumpAndSettle مع I/O حقيقي أو حركات لانهائية.
+
+## 2026-09-17 — عيوب كشفتها بوابة CI
+
+- الصورة لا تنسخ `migrations/`: الحاوية تقلع و/health يرد 200 لكن كل قراءة
+  محتوى 500 لأن المخطط لم يُنشأ. (`quran_api/Dockerfile`)
+- `loadEnv` كان يعود إلى قاعدة محلية عند غياب DATABASE_URL، ويقبل سرًّا من 5
+  أحرف. الآن يرفض الإقلاع في غير بيئة الاختبار. (`src/config/env.ts`)
+- الصورة بلا هوية بناء: `/api/v1/version` يرد commit=null. أُضيف
+  BUILD_COMMIT/BUILD_TIME كوسيطي بناء.
+- التطبيق يطلب `limit=300` والحد 100 → على جهاز حقيقي فشلت 114 سورة و30 جزءًا
+  بـVALIDATION_ERROR. (`quran_api_repository.dart`)
+- مستودع الصوت كان يقرأ الصفحة الأولى فقط؛ الآن يمشي على كل الصفحات.
+  (`audio_repository.dart`)

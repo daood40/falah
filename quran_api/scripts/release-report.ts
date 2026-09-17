@@ -198,6 +198,56 @@ RELEASE GATE = ${gate.allowed ? 'PASS' : 'FAIL'}
 NOTE ON THE TWO VERDICTS: the first says whether FALAH can integrate this API
 internally on the evidence above. The second says whether the content may be
 opened to the public — that is a licensing decision, not a testing one.
+
+8. DEFECTS THE GATE FOUND, AND THE FIX
+${'-'.repeat(78)}
+Every entry below was a real failure recorded by a gate case before it was a
+fix. None was found by reading the code.
+
+ 1. search with exact=true answered 500 — a bound parameter was never
+    referenced. Fixed in src/repositories/search.ts.
+ 2. a malformed percent-encoded path answered 500. Fixed in src/http/router.ts
+    (decoding failure is now VALIDATION_ERROR, 422).
+ 3. a NUL byte in a path or query answered 500. Rejected at the edge now
+    (src/app.ts) and in the router.
+ 4. an oversized request body reset the connection instead of answering.
+    src/http/middleware.ts drains the remainder and answers 400.
+ 5. import_runs and audit_logs had forced RLS and no policy, so service_role
+    could not write them. Fixed by migrations/007_ops_policies.sql.
+ 6. a statement timeout set on a pooled connection leaked into the next
+    request. src/db/pool.ts sets it per request with \`set local\`.
+ 7. the import verified the whole edition when only one surah was in scope.
+    Fixed in src/import/pipeline.ts.
+ 8. the Docker image shipped no migrations: the container started, answered
+    /health, and every content read answered 500 because the schema was never
+    created. Fixed in quran_api/Dockerfile.
+ 9. the API booted with no DATABASE_URL (silently falling back to a local
+    database) and with a 5-character JWT secret. Both now stop the process —
+    src/config/env.ts, checked by the docker refusal cases.
+10. the image carried no build identity, so /api/v1/version reported
+    commit=null. The build now stamps BUILD_COMMIT and BUILD_TIME.
+11. the Flutter app asked the API for 300 items per page; the API refuses
+    above 100, so on a real device every surah and every juz failed. The app
+    now pages at 100 (quran_api_repository.dart) and the audio repository
+    walks every page instead of reading only the first (audio_repository.dart).
+
+9. WHAT REMAINS BEFORE THE CONTENT MAY BE OPENED
+${'-'.repeat(78)}
+These are owner and legal steps. No test can close them, and no flag should be
+raised before they are all done:
+
+  - confirm the quran_text licence record (1 unconfirmed)
+  - confirm the translation licence records (10 unconfirmed)
+  - confirm the audio and reciter licence records (1 each)
+  - record an approved human verification for the dataset, then publish it
+    (the dataset stays at \`verified\` until a person approves it)
+  - only then set PRIVATE_MODE=false, PUBLIC_DATA_ENABLED, PUBLIC_API_ENABLED
+    and DATA_REDISTRIBUTION_ALLOWED, and re-run the public release gate
+
+Out of scope by owner decision, recorded in reports/GATE_SCOPE.md: iOS (no
+macOS runner) and a Hadith API (not built). Not covered by this gate because
+there is no infrastructure to test: deployment to a real host, a registry,
+TLS termination and image vulnerability scanning.
 `;
 
 writeFileSync(path.join(reports, 'RELEASE_REPORT.txt'), body);

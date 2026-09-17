@@ -207,3 +207,23 @@ targetSdk 36 (المطلوب ≥35) · أذونات: 1 (INTERNET فقط) · تو
 - الأدلة: `quran_api/reports/TEST_MASTER_REPORT.txt` و`TEST_QUALITY_AUDIT.txt`
   و`QUALITY_GATE_RELEASE_REPORT.txt` و`gate-evidence.jsonl.gz` (سجل لكل حالة).
 - القرار النهائي: **BLOCKED** — التراخيص والتحقق البشري لم تكتمل، ولا نشر.
+
+## البوابة على CI بلا BLOCKED (2026-09-17 — تشغيل 16)
+
+`.github/workflows/quality-gate.yml`: ست وظائف، كل فئة تعمل حيث توجد أدواتها.
+النتيجة المدمجة: **39,404 حالة · 39,404 PASS · 0 FAIL · 0 BLOCKED · 0 SKIPPED**
+(0 معرّف مكرر، و17 فئة كلها فوق حدها الأدنى).
+
+- المحجوب سابقًا نُفّذ فعليًا: Docker 268 حالة على daemon حقيقي (بناء الصورة،
+  المكدّس، الاستيراد داخل الحاوية، 114 سورة تُقدَّم من الحاوية، رفض الإعدادات
+  غير الآمنة)، وأندرويد 362 حالة (APK إصدار + تشغيل على محاكيين حقيقيين
+  API 29 وAPI 34)، وFlutter 580 حالة تشمل اختبارات Dart حالةً حالة.
+- خمسة عيوب حقيقية جديدة كشفها هذا النقل وأُصلحت: الصورة لا تحمل migrations
+  (كل قراءة 500)، الخادم يقلع بلا DATABASE_URL وبسر قصير، الصورة بلا هوية
+  بناء، والتطبيق يطلب 300 عنصر بينما الحد 100 (كل سورة وكل جزء كان يفشل على
+  الجهاز)، ومستودع الصوت يقرأ صفحة واحدة فقط.
+- الأدلة: أثر التشغيل 16 وملف `quran_api/reports/RELEASE_REPORT.txt` (نصّ
+  وظيفة الدمج حرفيًا) و`TEST_MASTER_REPORT.txt` و`TEST_QUALITY_AUDIT.txt`
+  و`gate-evidence.jsonl.gz` داخل أثر `quality-gate-release`.
+- الحكمان: **TECHNICALLY READY FOR FALAH INTEGRATION = YES** ·
+  **RELEASE GATE = FAIL** (التراخيص والتحقق البشري لم تكتمل — مقصود).
