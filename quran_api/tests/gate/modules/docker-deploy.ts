@@ -23,6 +23,8 @@ const NETWORK = 'falah-gate-net';
 const DB_CONTAINER = 'falah-gate-db';
 const API_CONTAINER = 'falah-gate-api';
 const DB_PASSWORD = 'gate-local-password';
+/** The container's port, published on the runner so the gate can call it directly. */
+const HOST_PORT = 18787;
 const JWT_SECRET = 'gate-secret-for-falah-quran-api-quality-gate';
 
 type Run = { ok: boolean; code: number | null; stdout: string; stderr: string };
@@ -50,28 +52,31 @@ async function wait(ms: number): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/** Calls the containerised API from inside the network via a throwaway curl container. */
-function apiCall(pathname: string, token?: string): Run {
-  const args = [
-    'run', '--rm', '--network', NETWORK, 'curlimages/curl:8.11.0',
-    '-s', '-o', '/dev/stdout', '-w', '\\n%{http_code}',
-    ...(token ? ['-H', `authorization: Bearer ${token}`] : []),
-    `http://${API_CONTAINER}:8787${pathname}`,
-  ];
-  return docker(args, 120_000);
+/**
+ * Calls the containerised API over its published port. The request leaves this
+ * process, crosses the container boundary and is answered by the server running
+ * inside the image — it is the container that is being tested, not a local copy.
+ */
+async function apiCall(pathname: string, token?: string): Promise<{ status: number; body: any }> {
+  try {
+    const response = await fetch(`http://127.0.0.1:${HOST_PORT}${pathname}`, {
+      headers: token ? { authorization: `Bearer ${token}` } : {},
+    });
+    const text = await response.text();
+    let body: unknown;
+    try {
+      body = JSON.parse(text);
+    } catch {
+      body = text;
+    }
+    return { status: response.status, body };
+  } catch (error) {
+    return { status: 0, body: `transport error: ${(error as Error).message}` };
+  }
 }
 
-function parseApi(run: Run): { status: number; body: any } {
-  const text = run.stdout.trim();
-  const index = text.lastIndexOf('\n');
-  const status = Number.parseInt(text.slice(index + 1), 10);
-  let body: unknown = null;
-  try {
-    body = JSON.parse(text.slice(0, index));
-  } catch {
-    body = text.slice(0, index);
-  }
-  return { status: Number.isNaN(status) ? 0 : status, body };
+function progress(message: string): void {
+  process.stdout.write(`[docker-gate] ${message}\n`);
 }
 
 export async function run(ctx: GateContext): Promise<void> {
@@ -120,6 +125,7 @@ export async function run(ctx: GateContext): Promise<void> {
   docker(['rm', '-f', API_CONTAINER, DB_CONTAINER], 60_000);
   docker(['network', 'rm', NETWORK], 60_000);
 
+  progress('building the image');
   const build = docker(['build', '-t', IMAGE, apiRoot], 900_000);
   gate.check(
     'DK-BUILD',
@@ -134,6 +140,7 @@ export async function run(ctx: GateContext): Promise<void> {
   );
   if (!build.ok) throw new Error(`docker build failed: ${build.stderr.slice(-600)}`);
 
+  progress('rebuilding to check the build repeats');
   const rebuild = docker(['build', '-t', `${IMAGE}-again`, apiRoot], 900_000);
   gate.check('DK-BUILD-REPEAT', CATEGORY, 'a second build of the same context succeeds (cached, reproducible inputs)', { command: 'docker build (second run)' }, rebuild.ok, 'exit 0', rebuild.ok ? 'exit 0' : `exit ${rebuild.code}`, 'MEDIUM', 1);
 
@@ -178,6 +185,7 @@ export async function run(ctx: GateContext): Promise<void> {
   }
 
   // -------------------------------------------------------------- runtime ---
+  progress('starting the stack');
   const network = docker(['network', 'create', NETWORK], 60_000);
   gate.check('DK-NETWORK', CATEGORY, 'a private container network is created for the stack', { network: NETWORK }, network.ok, 'created', network.ok ? 'created' : network.stderr.slice(0, 120), 'MEDIUM', 1);
 
@@ -202,9 +210,11 @@ export async function run(ctx: GateContext): Promise<void> {
   ];
 
   // Migrations and the real import, run by the image itself.
+  progress('applying migrations inside the container');
   const migrate = docker(['run', '--rm', '--network', NETWORK, ...baseEnv, '--entrypoint', 'node', IMAGE, 'scripts/apply-migrations.ts'], 600_000);
   gate.check('DK-STACK-MIGRATE', CATEGORY, 'the image applies its own migrations against the stack database', { command: 'node scripts/apply-migrations.ts' }, migrate.ok, 'exit 0', migrate.ok ? 'exit 0' : `exit ${migrate.code}: ${migrate.stderr.slice(-300)}`, 'CRITICAL', 1);
 
+  progress('running the import inside the container');
   const importRun = docker(['run', '--rm', '--network', NETWORK, ...baseEnv, '--entrypoint', 'node', IMAGE, 'src/import/cli.ts', '--version=docker-gate', '--translations=en', '--publish'], 900_000);
   gate.check('DK-STACK-IMPORT', CATEGORY, 'the image runs the real import pipeline inside the stack', { command: 'node src/import/cli.ts --version=docker-gate' }, importRun.ok, 'exit 0', importRun.ok ? 'exit 0' : `exit ${importRun.code}: ${importRun.stderr.slice(-300)}`, 'CRITICAL', 1);
 
@@ -235,7 +245,7 @@ export async function run(ctx: GateContext): Promise<void> {
 
   // The real container, serving.
   const api = docker([
-    'run', '-d', '--name', API_CONTAINER, '--network', NETWORK, ...baseEnv,
+    'run', '-d', '--name', API_CONTAINER, '--network', NETWORK, '-p', `${HOST_PORT}:8787`, ...baseEnv,
     '-e', 'HOST=0.0.0.0', '-e', 'PORT=8787',
     '-e', 'PRIVATE_MODE=false', '-e', 'PUBLIC_DATA_ENABLED=true',
     '-e', 'CONTENT_LICENSE_CONFIRMED=true', '-e', 'DATA_REDISTRIBUTION_ALLOWED=true',
@@ -247,21 +257,22 @@ export async function run(ctx: GateContext): Promise<void> {
   let health = { status: 0, body: null as any };
   for (let attempt = 0; attempt < 45 && health.status !== 200; attempt += 1) {
     await wait(1000);
-    health = parseApi(apiCall('/api/v1/health'));
+    health = await apiCall('/api/v1/health');
   }
   gate.check('DK-HEALTH', CATEGORY, 'the containerised API answers its health endpoint', { path: '/api/v1/health' }, health.status === 200, 200, health.status, 'CRITICAL', 1);
 
-  const version = parseApi(apiCall('/api/v1/version'));
+  const version = await apiCall('/api/v1/version');
   gate.check('DK-VERSION', CATEGORY, 'the containerised API reports its build and schema version', { path: '/api/v1/version' }, version.status === 200 && typeof version.body?.data?.build?.api_release === 'string', '200 with build info', `${version.status} ${JSON.stringify(version.body?.data?.build ?? null).slice(0, 120)}`, 'HIGH', 2);
   gate.check('DK-VERSION-SCHEMA', CATEGORY, 'the containerised API reports the schema version it was built against', { path: '/api/v1/version' }, version.body?.data?.schema?.migrations_applied === '007', '007', version.body?.data?.schema?.migrations_applied ?? null, 'MEDIUM', 1);
 
-  const stats = parseApi(apiCall('/api/v1/stats'));
+  const stats = await apiCall('/api/v1/stats');
   gate.check('DK-STATS', CATEGORY, 'the containerised API reports the imported dataset size', { path: '/api/v1/stats' }, stats.status === 200, 200, stats.status, 'HIGH', 1);
 
   // Full-dataset verification through the container: every surah, every juz and
   // every hizb served by the container is compared with the source dataset.
+  progress('serving every surah from the container');
   for (const surah of dataset.surahs) {
-    const response = parseApi(apiCall(`/api/v1/surahs/${surah.surah_number}`));
+    const response = await apiCall(`/api/v1/surahs/${surah.surah_number}`);
     const data = response.body?.data;
     const ok = response.status === 200 && data?.name_ar === surah.name_ar && data?.ayah_count === surah.ayah_count;
     gate.check(
@@ -277,7 +288,7 @@ export async function run(ctx: GateContext): Promise<void> {
     );
   }
   for (let juz = 1; juz <= 30; juz += 1) {
-    const response = parseApi(apiCall(`/api/v1/juzs/${juz}/ayahs?limit=100`));
+    const response = await apiCall(`/api/v1/juzs/${juz}/ayahs?limit=100`);
     const rows = response.body?.data ?? [];
     gate.check(
       `DK-SERVE-JUZ-${String(juz).padStart(2, '0')}`,
@@ -292,7 +303,7 @@ export async function run(ctx: GateContext): Promise<void> {
     );
   }
   for (let hizb = 1; hizb <= 60; hizb += 1) {
-    const response = parseApi(apiCall(`/api/v1/hizbs/${hizb}/ayahs?limit=100`));
+    const response = await apiCall(`/api/v1/hizbs/${hizb}/ayahs?limit=100`);
     const rows = response.body?.data ?? [];
     gate.check(
       `DK-SERVE-HIZB-${String(hizb).padStart(2, '0')}`,
@@ -307,7 +318,7 @@ export async function run(ctx: GateContext): Promise<void> {
     );
   }
   for (const key of ['1:1', '2:255', '18:10', '36:1', '55:13', '67:1', '112:1', '114:6']) {
-    const response = parseApi(apiCall(`/api/v1/ayahs/by-key/${key}`));
+    const response = await apiCall(`/api/v1/ayahs/by-key/${key}`);
     const source = dataset.ayahs.find((ayah) => `${ayah.surah_number}:${ayah.ayah_number}` === key)!;
     gate.check(
       `DK-SERVE-AYAH-${key.replace(':', '-')}`,
@@ -328,16 +339,17 @@ export async function run(ctx: GateContext): Promise<void> {
   gate.check('DK-LOG-NO-SECRET', CATEGORY, 'the container logs contain no secret or connection string', { container: API_CONTAINER }, !/(eyJhbGciOi|postgresql:\/\/|SERVICE_ROLE)/.test(logText), 'no secret material in the logs', 'scanned', 'CRITICAL', 3);
   gate.check('DK-LOG-JSON', CATEGORY, 'the container logs structured JSON lines', { container: API_CONTAINER }, logText.split('\n').some((line) => line.trim().startsWith('{') && line.includes('request_id')), 'a JSON log line with a request id', logText.split('\n').find((line) => line.trim().startsWith('{'))?.slice(0, 120) ?? 'none', 'MEDIUM', 1);
 
-  const notFound = parseApi(apiCall('/api/v1/surahs/999'));
+  const notFound = await apiCall('/api/v1/surahs/999');
   gate.check('DK-ERROR-404', CATEGORY, 'the containerised API returns a structured 404', { path: '/api/v1/surahs/999' }, notFound.status === 404 && typeof notFound.body?.error?.code === 'string', '404 with an error code', `${notFound.status} ${JSON.stringify(notFound.body?.error ?? null).slice(0, 80)}`, 'HIGH', 2);
 
-  const unauthorised = parseApi(apiCall('/api/v1/me/bookmarks'));
+  const unauthorised = await apiCall('/api/v1/me/bookmarks');
   gate.check('DK-AUTH-401', CATEGORY, 'the containerised API refuses an unauthenticated user endpoint', { path: '/api/v1/me/bookmarks' }, unauthorised.status === 401, 401, unauthorised.status, 'CRITICAL', 1);
 
   // Private mode inside the container: anonymous content reads answer 451.
+  progress('restarting the container in private mode');
   docker(['rm', '-f', API_CONTAINER], 60_000);
   const privateRun = docker([
-    'run', '-d', '--name', API_CONTAINER, '--network', NETWORK, ...baseEnv,
+    'run', '-d', '--name', API_CONTAINER, '--network', NETWORK, '-p', `${HOST_PORT}:8787`, ...baseEnv,
     '-e', 'HOST=0.0.0.0', '-e', 'PORT=8787', '-e', 'PRIVATE_MODE=true',
     IMAGE,
   ], 300_000);
@@ -345,11 +357,11 @@ export async function run(ctx: GateContext): Promise<void> {
   let privateHealth = { status: 0, body: null as any };
   for (let attempt = 0; attempt < 45 && privateHealth.status !== 200; attempt += 1) {
     await wait(1000);
-    privateHealth = parseApi(apiCall('/api/v1/health'));
+    privateHealth = await apiCall('/api/v1/health');
   }
   gate.check('DK-PRIVATE-HEALTH', CATEGORY, 'a private-mode container still answers health checks', { path: '/api/v1/health' }, privateHealth.status === 200, 200, privateHealth.status, 'HIGH', 1);
   for (const target of ['/api/v1/surahs', '/api/v1/surahs/1', '/api/v1/ayahs/by-key/1:1', '/api/v1/search?q=a', '/api/v1/juzs/1/ayahs']) {
-    const response = parseApi(apiCall(target));
+    const response = await apiCall(target);
     gate.check(
       `DK-PRIVATE-451${target.replace(/[^a-z0-9]/gi, '-')}`,
       CATEGORY,
@@ -371,12 +383,12 @@ export async function run(ctx: GateContext): Promise<void> {
   let restarted = { status: 0, body: null as any };
   for (let attempt = 0; attempt < 45 && restarted.status !== 200; attempt += 1) {
     await wait(1000);
-    restarted = parseApi(apiCall('/api/v1/health'));
+    restarted = await apiCall('/api/v1/health');
   }
   gate.check('DK-RESTART', CATEGORY, 'the container serves again after a restart, with its data intact', { command: 'docker start' }, restart.ok && restarted.status === 200, '200 after restart', `${restart.ok ? 'started' : 'start failed'}, health ${restarted.status}`, 'HIGH', 2);
 
   // Data survives the restart: the dataset is still complete.
-  const afterRestart = parseApi(apiCall('/api/v1/health'));
+  const afterRestart = await apiCall('/api/v1/health');
   gate.check('DK-DATA-SURVIVES', CATEGORY, 'the stack keeps its data across a container restart', { path: '/api/v1/health' }, afterRestart.status === 200, 200, afterRestart.status, 'HIGH', 1);
 
   // Cleanup.

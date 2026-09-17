@@ -26,6 +26,7 @@ jobs:
   gate-core:
     name: Gate · core (db · api · security · regression)
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     defaults:
       run: { working-directory: quran_api }
     services:
@@ -65,6 +66,7 @@ jobs:
   gate-web:
     name: Gate · web (PWA suite + static audit)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -89,6 +91,7 @@ jobs:
   gate-docker:
     name: Gate · docker (image · container · stack)
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -113,6 +116,7 @@ jobs:
   gate-flutter:
     name: Gate · flutter (analyze · dart tests · web build)
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -264,6 +268,7 @@ jobs:
   gate-merge:
     name: Gate · merge (release result)
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     needs: [gate-core, gate-web, gate-docker, gate-flutter, gate-android]
     steps:
       - uses: actions/checkout@v4
