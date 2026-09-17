@@ -244,6 +244,17 @@ export async function runDbChecks(audit: Auditor): Promise<void> {
     `select version, dataset_hash, status, record_count from corpus.dataset_versions order by version`,
   );
   for (const d of datasets) {
+    // A TEST-* dataset is a fixture the suite seeds and wipes; it is not a
+    // release, and its fingerprint says nothing about the corpus.
+    if (d.version.startsWith('TEST-')) {
+      audit.skipped(`db.dataset_hash:${d.version}`, 'db.dataset',
+        'the sealed dataset fingerprint still equals a freshly computed one',
+        'test fixture, not a release', 'corpus.dataset_versions', REPRO);
+      audit.skipped(`db.dataset_count:${d.version}`, 'db.dataset',
+        'the sealed record count still equals the rows in the corpus',
+        'test fixture, not a release', 'corpus.dataset_versions', REPRO);
+      continue;
+    }
     const live = await query<{ h: string; c: number }>(
       `select corpus.compute_dataset_hash($1) as h, count(*)::int as c from corpus.hadiths where dataset_version = $1`,
       [d.version],
@@ -288,7 +299,17 @@ export async function runDbChecks(audit: Auditor): Promise<void> {
     ['search_tsv', `select id from corpus.hadiths where search_tsv @@ plainto_tsquery('simple', $1)`, ['\u0627\u0644\u0635\u0644\u0627\u0629']],
     ['search_trgm', `select id from corpus.hadiths where raw_text_normalized like $1`, ['%\u0627\u0644\u0635\u0644\u0627\u0629%']],
   ];
+  // An empty database (a fresh checkout, CI) has nothing to plan: the planner
+  // answers with a trivial node, and asserting on that would be asserting on
+  // emptiness rather than on the indexes.
+  const corpusRows = (await query<{ c: number }>('select count(*)::int as c from corpus.hadiths'))[0]?.c ?? 0;
   for (const [name, sql, params] of plans) {
+    if (corpusRows === 0) {
+      audit.skipped(`db.plan:${name}`, 'db.performance',
+        'the hot query path is served by an index, not a sequential scan',
+        'no corpus in this database', 'corpus.hadiths indexes', REPRO);
+      continue;
+    }
     const rows = await query<{ 'QUERY PLAN': string }>(`explain (costs off) ${sql}`, params);
     const plan = rows.map((r) => r['QUERY PLAN']).join('\n');
     audit.check(`db.plan:${name}`, 'db.performance',

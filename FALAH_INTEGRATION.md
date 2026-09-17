@@ -10,6 +10,30 @@ Falah لا يحمل نسخة من قاعدة الأحاديث، ولا يعرف 
 
 ---
 
+
+## 0. من أين يأتي العميل
+
+الحزمة `falah_hadith_api` تعيش في `hadith_api/clients/dart` داخل هذا المستودع،
+وتُستهلك اليوم بمسار محلي:
+
+```yaml
+dependencies:
+  falah_hadith_api:
+    path: ../hadith_api/clients/dart
+```
+
+وبعد فصل الخدمة إلى مستودعها الخاص (`npm run repo:extract` داخل `hadith_api/`)
+يتحوّل السطر إلى اعتماد `git` بلا أي تغيير في كود التطبيق:
+
+```yaml
+dependencies:
+  falah_hadith_api:
+    git:
+      url: <عنوان المستودع المستقل>
+      path: clients/dart
+      ref: v1.2.0
+```
+
 ## 1. Base URL
 
 | البيئة | العنوان |

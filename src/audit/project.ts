@@ -185,14 +185,24 @@ export async function runProjectChecks(audit: Auditor): Promise<void> {
   }
 
   // ---- CI gates ----------------------------------------------------------
-  const ci = read('../.github/workflows/hadith_api.yml');
+  // the workflow sits at the monorepo root today, and at the repository root
+  // once the service is extracted into its own repository
+  const ciPaths = ['.github/workflows/ci.yml', '../.github/workflows/hadith_api.yml'];
+  const ciPath = ciPaths.find((f) => read(f).length > 0);
+  const ci = ciPath ? read(ciPath) : '';
   for (const gate of ['vitest run', 'tsc --noEmit', 'npm run verify', 'security:scan',
     'docker build', 'npm run audit', 'backup:test']) {
+    if (!ciPath) {
+      audit.blocked(`project.ci_gate:${gate}`, 'project.ci',
+        `continuous integration runs the ${gate} gate`,
+        'no workflow file found in this checkout', ciPaths.join(' or '), REPRO);
+      continue;
+    }
     audit.check(`project.ci_gate:${gate}`, 'project.ci',
       `continuous integration runs the ${gate} gate`,
       ci.includes(gate), {
         severity: 'HIGH', detail: `${gate} is not part of CI`,
-        where: '.github/workflows/hadith_api.yml', repro: REPRO });
+        where: ciPath, repro: REPRO });
   }
 
   // ---- container ---------------------------------------------------------
@@ -226,26 +236,41 @@ export async function runProjectChecks(audit: Auditor): Promise<void> {
   }
 
   // ---- exported dataset and backup path ---------------------------------
-  const manifest = JSON.parse(read(`exports/${DATASET}.manifest.json`)) as Record<string, unknown>;
-  const jsonl = readFileSync(`exports/${DATASET}.jsonl`);
-  audit.check('project.export_file_hash', 'project.dataset',
-    'the exported file still hashes to the value its manifest records',
-    createHash('sha256').update(jsonl).digest('hex') === manifest['file_sha256'], {
-      severity: 'CRITICAL', detail: `recomputed ${createHash('sha256').update(jsonl).digest('hex')}`,
-      where: 'exports/', repro: 'npm run export' });
-  audit.check('project.export_bytes', 'project.dataset',
-    'the exported file is exactly the size its manifest records',
-    jsonl.byteLength === manifest['file_bytes'], {
-      severity: 'HIGH', detail: `${jsonl.byteLength} vs ${manifest['file_bytes']}`,
-      where: 'exports/', repro: 'npm run export' });
-  const dbCount = (await query<{ c: number }>(
-    `select count(*)::int as c from corpus.hadiths where dataset_version = $1`,
-    [manifest['dataset_version']]))[0]?.c;
-  audit.check('project.export_count', 'project.dataset',
-    'the export holds exactly the number of records the corpus holds',
-    manifest['record_count'] === dbCount, {
-      severity: 'CRITICAL', detail: `${manifest['record_count']} vs ${dbCount}`,
-      where: 'exports/', repro: 'npm run export' });
+  // The export is produced from the owner's corpus, which is git-ignored: a
+  // standalone or CI checkout simply has none, and that is reported as such
+  // rather than crashing or pretending the file is intact.
+  const manifestPath = `exports/${DATASET}.manifest.json`;
+  const exportPath = `exports/${DATASET}.jsonl`;
+  if (!existsSync(manifestPath) || !existsSync(exportPath)) {
+    for (const id of ['export_file_hash', 'export_bytes', 'export_count']) {
+      audit.skipped(`project.${id}`, 'project.dataset',
+        'the exported dataset matches its manifest and the corpus',
+        'no exported dataset in this checkout (the corpus is not distributed)',
+        'exports/', 'npm run export');
+    }
+  } else {
+    const manifest = JSON.parse(read(manifestPath)) as Record<string, unknown>;
+    const jsonl = readFileSync(exportPath);
+    const recomputed = createHash('sha256').update(jsonl).digest('hex');
+    audit.check('project.export_file_hash', 'project.dataset',
+      'the exported file still hashes to the value its manifest records',
+      recomputed === manifest['file_sha256'], {
+        severity: 'CRITICAL', detail: `recomputed ${recomputed}`,
+        where: 'exports/', repro: 'npm run export' });
+    audit.check('project.export_bytes', 'project.dataset',
+      'the exported file is exactly the size its manifest records',
+      jsonl.byteLength === manifest['file_bytes'], {
+        severity: 'HIGH', detail: `${jsonl.byteLength} vs ${manifest['file_bytes']}`,
+        where: 'exports/', repro: 'npm run export' });
+    const dbCount = (await query<{ c: number }>(
+      `select count(*)::int as c from corpus.hadiths where dataset_version = $1`,
+      [manifest['dataset_version']]))[0]?.c;
+    audit.check('project.export_count', 'project.dataset',
+      'the export holds exactly the number of records the corpus holds',
+      manifest['record_count'] === dbCount, {
+        severity: 'CRITICAL', detail: `${manifest['record_count']} vs ${dbCount}`,
+        where: 'exports/', repro: 'npm run export' });
+  }
 
   // ---- reports: the evidence a reader is pointed at must exist ----------
   const REQUIRED_REPORTS = [
@@ -298,6 +323,69 @@ export async function runProjectChecks(audit: Auditor): Promise<void> {
       'the importer performs no network fetch while building the corpus',
       !/\bfetch\(|https?:\/\/[^\s'"]+\/(api|v1)/.test(body), {
         severity: 'CRITICAL', detail: 'a network call in the import path', where: file, repro: REPRO });
+  }
+
+  // ---- standalone readiness: the folder must be a repository on its own ---
+  for (const file of [
+    'package.json', 'package-lock.json', 'tsconfig.json', 'vitest.config.ts',
+    'Dockerfile', 'docker-compose.yml', 'openapi.yaml', 'LICENSE', 'README.md',
+    'CHANGELOG.md', 'SECURITY.md', '.env.example', '.gitignore',
+    '.github/workflows/ci.yml', 'scripts/extract-repo.sh',
+  ]) {
+    audit.check(`project.standalone_file:${file}`, 'project.standalone',
+      'the service carries everything a repository of its own needs',
+      existsSync(file), {
+        severity: 'HIGH', detail: `${file} is missing`, where: file, repro: REPRO });
+  }
+
+  // no source file may reach outside this folder for something it NEEDS: the
+  // consumer app and the monorepo workflow are optional, and the code says so
+  const REACHES_OUT = /(readFileSync|existsSync|readdirSync|import)\([`'"]\.\.\/\.\.\//;
+  for (const file of walk('src').concat(walk('scripts'))) {
+    const body = read(file);
+    audit.check(`project.no_parent_dependency:${file}`, 'project.standalone',
+      'no file depends on anything above this folder',
+      !REACHES_OUT.test(body), {
+        severity: 'HIGH', detail: 'reads outside the service folder',
+        where: file, repro: REPRO });
+  }
+
+  // the Dart package is a package, not a folder of files to copy
+  for (const file of [
+    'clients/dart/pubspec.yaml', 'clients/dart/README.md', 'clients/dart/CHANGELOG.md',
+    'clients/dart/LICENSE', 'clients/dart/example/main.dart',
+    'clients/dart/lib/falah_hadith_api.dart', 'clients/typescript/package.json',
+  ]) {
+    audit.check(`project.client_package_file:${file}`, 'project.standalone',
+      'the published client carries what a consumer needs to depend on it',
+      existsSync(file), {
+        severity: 'MEDIUM', detail: `${file} is missing`, where: file, repro: REPRO });
+  }
+
+  const pubspec = read('clients/dart/pubspec.yaml');
+  const dartVersion = /^version:\s*(\S+)/m.exec(pubspec)?.[1] ?? '';
+  audit.check('project.client_versioned', 'project.standalone',
+    'the Dart client carries a version a consumer can pin',
+    /^\d+\.\d+\.\d+$/.test(dartVersion), {
+      severity: 'MEDIUM', detail: `version "${dartVersion}"`,
+      where: 'clients/dart/pubspec.yaml', repro: REPRO });
+  audit.check('project.client_changelog_current', 'project.standalone',
+    'the client changelog documents the version the package declares',
+    read('clients/dart/CHANGELOG.md').includes(dartVersion), {
+      severity: 'MEDIUM', detail: `${dartVersion} not in the changelog`,
+      where: 'clients/dart/CHANGELOG.md', repro: REPRO });
+
+  const extract = read('scripts/extract-repo.sh');
+  for (const [name, needle] of [
+    ['keeps history', 'git subtree split'],
+    ['refuses the corpus text', 'data/'],
+    ['refuses a secret', 'SUPABASE_SERVICE_ROLE_KEY'],
+  ] as [string, string][]) {
+    audit.check(`project.extract_${name.replace(/\s+/g, '_')}`, 'project.standalone',
+      `the extraction script ${name}`,
+      extract.includes(needle), {
+        severity: 'HIGH', detail: `"${needle}" not found in the script`,
+        where: 'scripts/extract-repo.sh', repro: REPRO });
   }
 
   // ---- packaged size sanity ---------------------------------------------

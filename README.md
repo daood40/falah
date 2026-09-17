@@ -93,6 +93,36 @@ npm run staging:down
 الموجّه داخل العملية. آخر تشغيل: 274,881 فحصًا · 0 فشل · 2 محجوب
 (لا Docker daemon ولا Flutter SDK في بيئة الوكيل؛ كلاهما يعمل في CI).
 
+## خدمة مستقلة (التوزيع)
+
+هذا المجلد **مكتفٍ بذاته**: المخطط والهجرات والمستورد والـAPI والعملاء
+والاختبارات والتدقيق وDockerfile وCI كلها بداخله، ولا يحتاج شيئًا من خارجه
+ليُبنى أو يعمل.
+
+### فصله إلى مستودعه الخاص
+
+```bash
+npm run repo:extract                       # يبني فرعًا بتاريخ هذا المجلد وحده
+npm run repo:extract -- <git-remote-url>   # ويدفعه إلى مستودع جديد
+```
+
+`git subtree split` يُبقي التاريخ (لا سحق)، والسكربت **يرفض** الدفع إن حمل
+التاريخ نص الطبعة (`data/`, `exports/`) أو أي مفتاح حقيقي. بعد الفصل تصبح
+`.github/workflows/ci.yml` هي بوابة البناء (اليوم خاملة لأن GitHub يقرأ
+مسارات الجذر فقط).
+
+### استهلاكه من أي مشروع
+
+| الطريقة | كيف |
+|---|---|
+| HTTP مباشرة | `{BASE}/api/v1` · المواصفة `{BASE}/openapi.yaml` |
+| Dart / Flutter | حزمة `falah_hadith_api` (‏`clients/dart`) — اعتماد `git` أو `path` |
+| TypeScript / Node | `clients/typescript/falah-hadith.ts` — ملف واحد بلا تبعيات |
+| حاوية | `docker compose up` أو `docker build -t hadith-api .` |
+
+نسخة العميل الحالية: **1.2.0** — تغطي كل عملية في `openapi.yaml` (يفحص التدقيق
+هذه التغطية في الاتجاهين).
+
 ## SOURCE_LOCK
 
 * `content_hash` عمود مولَّد = `sha256(raw_text)` — لا يكتبه أحد يدويًا.

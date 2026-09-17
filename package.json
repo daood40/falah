@@ -2,7 +2,7 @@
   "name": "falah-hadith_api",
   "version": "1.0.0",
   "private": true,
-  "description": "Standalone REST API over a verified hadith corpus (PostgreSQL). Usable from any project.",
+  "description": "Standalone REST API over a verified hadith corpus (PostgreSQL). Usable from any project, and extractable into its own repository.",
   "type": "module",
   "engines": {
     "node": ">=20"
@@ -28,7 +28,8 @@
     "docker:check": "bash scripts/docker-check.sh",
     "audit": "node --experimental-strip-types --max-old-space-size=4096 src/scripts/full-audit.ts",
     "staging:up": "bash scripts/staging-up.sh",
-    "staging:down": "bash scripts/staging-down.sh"
+    "staging:down": "bash scripts/staging-down.sh",
+    "repo:extract": "bash scripts/extract-repo.sh"
   },
   "dependencies": {
     "pg": "^8.13.0"
@@ -39,5 +40,11 @@
     "typescript": "^5.6.0",
     "vitest": "^2.1.0",
     "yaml": "^2.9.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/daood40/falah.git",
+    "directory": "hadith_api"
+  },
+  "license": "MIT"
 }

@@ -7,7 +7,7 @@
  * seeded PRNG and each generated case is recorded once, with its own id, so a
  * run is reproducible and nothing is counted twice.
  */
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { query } from '../db.ts';
 import type { Auditor } from './core.ts';
 
@@ -346,8 +346,16 @@ export async function runSecurityChecks(audit: Auditor): Promise<void> {
     }
   }
 
-  // the Flutter side must never carry a server credential or a localhost URL
-  const flutterFiles = sourceFiles('../flutter_app/lib');
+  // The Flutter side must never carry a server credential or a localhost URL.
+  // It is a CONSUMER of this service: in a standalone checkout of the API it is
+  // simply not there, and the scan says so rather than inventing a pass.
+  if (!existsSync('../flutter_app/lib')) {
+    audit.skipped('security.client_scan', 'security.client',
+      'the mobile client carries no server-side credential',
+      'no consumer application in this checkout (the service is standalone here)',
+      '../flutter_app/lib', 'npm run audit -- --only=security');
+  }
+  const flutterFiles = existsSync('../flutter_app/lib') ? sourceFiles('../flutter_app/lib') : [];
   for (const file of flutterFiles) {
     let body = '';
     try { body = readFileSync(file, 'utf8'); } catch { continue; }
