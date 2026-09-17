@@ -3,8 +3,8 @@
   "mode": "import",
   "dataset_version": "2026.09.16-1",
   "source_file_hash": "d8a8adff387f60ce3ff7dbe3238dd9b27120bfe29d8fcb07ad2e89cad37cefd4",
-  "started_at": "2026-09-16T05:57:47.170Z",
-  "finished_at": "2026-09-16T05:58:04.348Z",
+  "started_at": "2026-09-17T04:24:24.062Z",
+  "finished_at": "2026-09-17T04:24:33.072Z",
   "totals": {
     "surahs": 114,
     "ayahs": 6236,
@@ -30,9 +30,7 @@
     "verified": 68596
   },
   "issues": [],
-  "errors": [
-    "HUMAN_VERIFICATION_REQUIRED: dataset stays at `verified` — record an approved human verification before publishing"
-  ],
+  "errors": [],
   "human_verified": false,
   "dataset_status": "verified",
   "status": "success"

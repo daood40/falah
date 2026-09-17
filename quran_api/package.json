@@ -21,7 +21,9 @@
     "verify:human": "node src/import/human-verification-cli.ts",
     "license:record": "node src/import/license-cli.ts",
     "license:list": "node src/import/license-cli.ts --list",
-    "release:gate": "node scripts/public-release-gate.ts"
+    "release:gate": "node scripts/public-release-gate.ts",
+    "verify:cross": "node scripts/cross-verify.ts",
+    "discover:sources": "node scripts/source-discovery.ts"
   },
   "dependencies": {
     "pg": "^8.13.1",
@@ -29,8 +31,11 @@
     "quran-meta": "6.0.17"
   },
   "devDependencies": {
+    "@ghoran/text": "^0.0.8",
     "@types/node": "^22.10.2",
     "@types/pg": "^8.11.10",
+    "quran-db": "^1.2.4",
+    "quran-qcf4": "^1.1.0",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8",
     "yaml": "^2.6.1"

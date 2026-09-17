@@ -244,6 +244,36 @@ export function licenseSeeds(): LicenseSeed[] {
     },
   ];
 
+  // Datasets used ONLY to verify our data (never imported into it).
+  const verificationSources: [string, string, string, string, string][] = [
+    ['@ghoran/text@0.0.8', 'MIT', 'ghoran', 'independent Hafs/Tanzil-simple/Imlaei text editions',
+     'node_modules/@ghoran/text/package.json "license":"MIT"'],
+    ['quran-db@1.2.4', 'ISC', 'aqeelshamz', 'independent surah metadata, juz, page and sajdah data',
+     'node_modules/quran-db/package.json "license":"ISC"'],
+    ['quran-qcf4@1.1.0', 'MIT (JSON data)', 'Mohamad Hajj Rabee',
+     'King Fahd Complex QCF v4 page layout and chapter metadata',
+     'node_modules/quran-qcf4/LICENSE.md — MIT for the JSON data (fonts are separate)'],
+  ];
+  for (const [subject, license, owner, purpose, evidence] of verificationSources) {
+    seeds.push({
+      dataset_kind: 'software',
+      subject,
+      source_id: null,
+      owner,
+      copyright_holder: owner,
+      license,
+      license_url: null,
+      redistribution: 'allowed',
+      commercial_use: 'unknown',
+      modification: 'forbidden_by_policy',
+      attribution_required: true,
+      attribution_text: `${subject} (${license})`,
+      evidence,
+      status: 'CONFIRMED',
+      notes: `Verification reference only — ${purpose}. Its content is never imported.`,
+    });
+  }
+
   for (const translation of TRANSLATIONS) {
     seeds.push({
       dataset_kind: 'translation',

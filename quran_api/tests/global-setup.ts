@@ -3,12 +3,12 @@ import path from 'node:path';
 import pg from 'pg';
 import { runImport } from '../src/import/pipeline.ts';
 
+/** This package's own migrations — nothing outside quran_api/ is needed. */
 const MIGRATIONS = [
-  '0001_init.sql',
-  '0002_v2.sql',
-  '0003_quran_platform.sql',
-  '0004_human_verification.sql',
-  '0005_license_center.sql',
+  '001_quran_platform.sql',
+  '002_human_verification.sql',
+  '003_license_center.sql',
+  '004_data_catalog.sql',
 ];
 const TEST_DB = process.env.TEST_DB_NAME ?? 'falah_quran_test';
 
@@ -30,7 +30,7 @@ export default async function setup(): Promise<() => Promise<void>> {
 
   const client = new pg.Client({ connectionString: testUrl });
   await client.connect();
-  const migrationsDir = path.join(import.meta.dirname, '..', '..', 'supabase', 'migrations');
+  const migrationsDir = path.join(import.meta.dirname, '..', 'migrations');
   for (const file of MIGRATIONS) {
     await client.query(readFileSync(path.join(migrationsDir, file), 'utf8'));
   }

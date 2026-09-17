@@ -16,6 +16,31 @@ afterAll(async () => {
   await api.close();
 });
 
+describe('data catalogue', () => {
+  it('is internal and lists every category with its licence state', async () => {
+    expect((await api.request('/api/v1/catalog')).status).toBe(401);
+
+    const { status, body } = await api.request('/api/v1/catalog', { token });
+    expect(status).toBe(200);
+    const byCategory = new Map(
+      body.data.map((row: { category: string }) => [row.category, row as Record<string, unknown>]),
+    );
+    expect(byCategory.get('quran_text')).toMatchObject({
+      records: 6236,
+      verified: 6236,
+      license_kind: 'quran_text',
+      license_status: 'RESTRICTED',
+      availability: 'private_pending_license',
+    });
+    expect(byCategory.get('pages')).toMatchObject({ records: 604, availability: 'ready' });
+    // Categories with no licensed dataset are empty, never filled with samples.
+    for (const category of ['reciters', 'audio_files', 'ayah_tafsirs', 'ayah_words']) {
+      expect(byCategory.get(category)).toMatchObject({ records: 0, availability: 'empty' });
+    }
+    expect(body.meta.categories).toBeGreaterThan(20);
+  });
+});
+
 describe('license center', () => {
   it('is internal: anonymous callers get 401', async () => {
     const { status, body } = await api.request('/api/v1/licenses');

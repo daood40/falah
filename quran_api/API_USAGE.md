@@ -144,7 +144,8 @@ The Flutter client does exactly this (`features/quran_api/offline/quran_cache.da
 ## 12. Endpoint map
 
 ```
-system   /health · /version · /openapi.yaml · /stats · /sources · /editions · /datasets
+system   /health · /version · /openapi.yaml · /stats · /sources · /editions ·
+         /datasets · /catalog (auth) · /licenses (auth)
 quran    /surahs · /surahs/{id} · /surahs/{id}/ayahs · /ayahs/{id} · /ayahs/by-key/{s}:{a}
 struct   /juzs · /juzs/{n}[/ayahs] · /hizbs · /hizbs/{n}[/ayahs] · /rubs/{n}/ayahs
          /pages/{p}[/ayahs] · /manzils · /manzils/{n}/ayahs · /sajdahs

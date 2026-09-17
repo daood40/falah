@@ -224,6 +224,31 @@ export const metaRoutes: Route[] = [
   },
   {
     method: 'GET',
+    path: '/api/v1/catalog',
+    // Internal while the project is private: it is an inventory of everything
+    // the platform holds, category by category.
+    auth: true,
+    handler: async ({ client }) => {
+      const { rows } = await client.query(
+        `select category, label, table_name, records, verified, license_kind,
+                license_status, license_records_confirmed, license_records_total, availability
+         from quran.data_catalog order by records desc, category`,
+      );
+      const totals = rows.reduce(
+        (accumulator, row) => {
+          accumulator.records += Number(row.records ?? 0);
+          accumulator.categories += 1;
+          if (row.availability === 'ready') accumulator.ready += 1;
+          if (row.availability === 'empty') accumulator.empty += 1;
+          return accumulator;
+        },
+        { categories: 0, records: 0, ready: 0, empty: 0 },
+      );
+      return { data: rows, meta: totals };
+    },
+  },
+  {
+    method: 'GET',
     path: '/api/v1/licenses',
     // Internal: the licence ledger is only visible to an authenticated caller.
     auth: true,

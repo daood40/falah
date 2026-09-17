@@ -118,6 +118,14 @@ jobs:
         run: npm run integrity
       - name: Final integrity report (full re-verification)
         run: npm run integrity:final -- --out=/tmp/QURAN_FINAL_INTEGRITY.txt
+      - name: Cross-source verification (independent datasets)
+        run: npm run verify:cross -- --out=/tmp/CROSS_SOURCE_VERIFICATION.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: quran-cross-source-verification
+          path: /tmp/CROSS_SOURCE_VERIFICATION.txt
+          retention-days: 14
       - name: Audio manifest gate (an incomplete manifest must be refused)
         run: |
           if npm run --silent import:audio -- schemas/audio-manifest.template.json --validate-only; then

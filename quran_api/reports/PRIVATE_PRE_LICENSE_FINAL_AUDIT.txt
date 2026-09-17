@@ -1,7 +1,7 @@
 ================================================================
 FALAH QURAN API — PRIVATE PRE-LICENSE FINAL AUDIT
 ================================================================
-generated_at : 2026-09-16
+generated_at : 2026-09-17 (updated: cross-source verification + standalone API)
 posture      : PRIVATE PRE-PRODUCTION. Nothing is public. Nothing was deployed.
                No public URL exists and none is claimed.
 environment  : PostgreSQL 16.13 · Node 22.22.2 · Flutter 3.35.4 / Dart 3.9.2
@@ -45,13 +45,28 @@ CATEGORY | STATUS | EVIDENCE
 Private Mode        | PASS    | forced in loadEnv + app + server + tests (6 cases)
 Build               | PASS    | tsc strict 0 errors · flutter analyze clean ·
                     |         | npm run build 388.12 kB (gzip 129.59 kB)
-Database            | PASS    | schema `quran`: 34 tables · RLS forced on all ·
-                    |         | 31 policies · 84 indexes
+Database            | PASS    | schema `quran`: 33 tables + 2 views · RLS forced
+                    |         | on every table · 31 policies · 84 indexes
 Migrations          | PASS    | 0001→0005 applied from an empty database
 Quran Data          | PASS    | 114 surahs · 6,236 ayahs · 0 failed/invalid/
                     |         | missing/duplicate · 68,596 records verified
 Integrity           | PASS    | QURAN_FINAL_INTEGRITY.txt 41/41, 0 discrepancy ·
                     |         | integrity-report.json 30/30
+Cross-source        | PASS    | CROSS_SOURCE_VERIFICATION.txt — 6,236/6,236 ayahs
+  verification      |         | identical at letter level to an INDEPENDENT Hafs
+                    |         | edition (@ghoran/text, MIT); 114/114 surahs agree
+                    |         | with two references on counts, names, revelation
+                    |         | place and order; 604/604 page boundaries agree;
+                    |         | 6,180/6,236 ayah pages match the QCF v4 layout.
+                    |         | 4 differences found, all adjudicated, none fixed
+                    |         | automatically (see §3 of the report)
+Standalone API      | PASS    | migrations moved into quran_api/migrations; a
+                    |         | fresh database was created, migrated, imported
+                    |         | and served without any file from the rest of the
+                    |         | repository
+Data catalogue      | PASS    | view quran.data_catalog + GET /api/v1/catalog +
+                    |         | DATA_CATALOG.md — every category with counts,
+                    |         | licence state and availability
 Search              | PASS    | FTS + GIN + pg_trgm + skeleton index; raw text
                     |         | never normalised
 Translations (data) | PASS    | 10 × 6,236 = 62,360 · 0 duplicates · hashes match
@@ -89,9 +104,10 @@ REAL COUNTS
 Surahs 114 · Ayahs 6,236 · Juz 30 · Hizb 60 (rub 240) · Pages 604 · Sajdah 15
 Manzil 7 · Languages 10 · Translations 62,360 rows · Qiraat 1 · Riwayat 1
 Reciters 0 · Recitations 0 · Audio files 0
-Tables 34 · Migrations 5 · API operations 57 · OpenAPI paths 51
-License records 22 (4 CONFIRMED, 1 RESTRICTED, 11 PENDING, 6 UNKNOWN)
-Tests 217 — API 90 · PWA 75 · Flutter 52 · Passed 217 · Failed 0
+Tables 33 (+2 views) · Migrations 4 in quran_api/migrations (+2 app migrations
+in supabase/migrations) · API operations 58 · OpenAPI paths 52
+License records 25 (7 CONFIRMED, 1 RESTRICTED, 11 PENDING, 6 UNKNOWN)
+Tests 225 — API 98 · PWA 75 · Flutter 52 · Passed 225 · Failed 0
 Blocked 5 (reciters, audio, deployment, android, ios)
 Pending 3 (human verification, content licence, translation licences)
 Dataset version 2026.09.16-1 · status `verified` (never `published`)
@@ -151,6 +167,7 @@ reports/import-report.json             real import counters
 reports/LICENSE_AUDIT.txt              five licences audited separately
 reports/TRANSLATION_LICENSE_AUDIT.txt  per-language rights record
 reports/SOURCE_DISCOVERY.txt           candidate sources + their real status
+reports/CROSS_SOURCE_VERIFICATION.txt  independent cross-check of text+structure
 reports/API_PRODUCTION_AUDIT.txt       API-as-a-service audit
 reports/release-gate.json              the release gate's own output (BLOCKED)
 reports/test-report.md                 test runs + QA break attempts

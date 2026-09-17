@@ -34,7 +34,7 @@ which reads the database. Nothing is fetched from a source at request time.
 
 | Layer | Path |
 |---|---|
-| Migrations | `supabase/migrations/0003_quran_platform.sql` |
+| Migrations | `migrations/001..003` (this package owns the `quran` schema) |
 | Config / licence flags | `src/config/env.ts` |
 | HTTP (router, CORS, headers, rate limit, auth) | `src/http/`, `src/app.ts` |
 | Routes | `src/routes/` |
@@ -42,11 +42,15 @@ which reads the database. Nothing is fetched from a source at request time.
 | Import pipeline | `src/import/` |
 | OpenAPI | `openapi/openapi.yaml` |
 | Tests | `tests/` |
+| Cross-source verification | `src/verify/`, `scripts/cross-verify.ts` |
+| Data catalogue | `DATA_CATALOG.md`, `GET /api/v1/catalog` |
 | Flutter integration | `../flutter_app/lib/features/quran_api/` |
 
 ## 2. Database
 
-Schema `quran` (isolated from the legacy v1/v2 tables in `public`), 31 tables:
+Schema `quran` (isolated from the FALAH app's own tables in `public`), 33 tables + 2 views.
+The migrations live in `migrations/` **inside this package**, so the service can
+be copied into any project on its own:
 
 - **Registry / versions**: `sources`, `quran_editions`, `quran_dataset_versions`
 - **Qira'at**: `qiraat`, `riwayat`, `reciter_riwayat`
@@ -244,7 +248,7 @@ until then the dataset stays at `verified`.
 cd quran_api
 cp .env.example .env            # fill DATABASE_URL (+ SUPABASE_JWT_SECRET)
 npm ci
-npm run db:apply                # applies supabase/migrations/*.sql in order
+npm run db:apply                # applies quran_api/migrations/*.sql in order
 npm run import -- --version=$(date +%Y.%m.%d)-1 --translations=en --publish
 npm run serve                   # http://localhost:8787/api/v1/health
 ```
@@ -269,10 +273,10 @@ Requires Node 22.6+ (TypeScript is executed directly) and PostgreSQL 16 with
 
 **Supabase**
 
-1. `supabase db push` (or `npm run db:apply` with `DATABASE_URL` pointing at the
-   project) applies `0001` → `0003`. Roles `anon`, `authenticated`,
-   `service_role` and `auth.uid()` already exist there; the migration is
-   idempotent about them.
+1. `npm run db:apply` with `DATABASE_URL` pointing at the project applies
+   `migrations/001..003`. Roles `anon`, `authenticated`, `service_role` and
+   `auth.uid()` already exist on Supabase; the migration is idempotent about
+   them, so the same SQL also works on plain PostgreSQL.
 2. Set the flags and secrets in the API host environment (never in the client).
 3. Run the import from a trusted machine/CI with `DATABASE_URL` = the Supabase
    connection string.
@@ -283,6 +287,30 @@ Requires Node 22.6+ (TypeScript is executed directly) and PostgreSQL 16 with
 
 **Staging**: keep `PUBLIC_DATA_ENABLED=false`; internal testers authenticate with
 Supabase and read content, anonymous callers get `451`.
+
+## 8-bis. Independent cross-verification
+
+Hashes prove that what we stored is what the source shipped. They cannot prove
+the source itself is right. So the data is also compared against datasets that
+were **not** used to build it:
+
+| Reference | Licence | Used for |
+|---|---|---|
+| `@ghoran/text` | MIT | Hafs Uthmani, Tanzil simple and Imlaei text editions |
+| `quran-db` | ISC | surah metadata, juz, page boundaries, sajdah list |
+| `quran-qcf4` | MIT (JSON) | King Fahd Complex QCF v4 page of every ayah, chapter metadata |
+
+```bash
+npm run verify:cross          # writes reports/CROSS_SOURCE_VERIFICATION.txt
+```
+
+Latest run: **6,236/6,236 ayahs identical at letter level** to an independent
+Hafs edition, **114/114** surahs agreeing with two references on ayah counts,
+names, revelation place and order, and **604/604** page boundaries. Remaining
+differences (orthography, juz 11 in one reference, the 14-vs-15 sajdah
+convention, 56 ayahs on a different page in the QCF v4 typesetting) are listed
+and adjudicated in the report. **Nothing is ever auto-corrected** — a difference
+is reported for a human to judge.
 
 ## 9. Testing
 

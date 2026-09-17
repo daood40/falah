@@ -332,6 +332,23 @@ components:
     Stats:
       type: object
       additionalProperties: { type: integer }
+    CatalogEntry:
+      type: object
+      properties:
+        category: { type: string, examples: ['quran_text'] }
+        label: { type: string, description: Arabic label }
+        table_name: { type: string }
+        records: { type: integer }
+        verified: { type: [integer, 'null'] }
+        license_kind: { type: string }
+        license_status:
+          type: string
+          enum: [UNKNOWN, PENDING, RESTRICTED, CONFIRMED, REJECTED]
+        license_records_confirmed: { type: integer }
+        license_records_total: { type: integer }
+        availability:
+          type: string
+          enum: [ready, private_pending_license, empty]
     LicenseRecord:
       type: object
       properties:
@@ -531,6 +548,30 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Success' }
+  /api/v1/catalog:
+    get:
+      tags: [system]
+      summary: Data catalogue — every category, its counts and licence state
+      description: >-
+        One row per data category (Quran text, structure, translations, audio,
+        tafsir, word-by-word …) with how many records exist, how many are
+        verified, which licence kind governs it and whether it may be served.
+        Internal while the project is private.
+      security: [{ supabaseJwt: [] }]
+      responses:
+        '200':
+          description: Catalogue
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/CatalogEntry' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /api/v1/licenses:
     get:
       tags: [system]
