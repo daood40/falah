@@ -15,6 +15,7 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
+import { signSupabaseJwt } from '../../../src/auth/jwt.ts';
 import type { GateContext } from '../context.ts';
 
 const CATEGORY = 'docker-deploy';
@@ -229,26 +230,41 @@ export async function run(ctx: GateContext): Promise<void> {
     { id: 'SHORT-SECRET', description: 'the container refuses a too-short JWT secret', env: ['-e', `DATABASE_URL=${dbUrl}`, '-e', 'SUPABASE_JWT_SECRET=short'] },
   ];
   for (const refusal of refusals) {
-    const result = docker(['run', '--rm', '--network', NETWORK, ...refusal.env, IMAGE], 120_000);
+    const name = `falah-gate-refuse-${refusal.id.toLowerCase()}`;
+    docker(['rm', '-f', name], 60_000);
+    const started = docker(['run', '-d', '--name', name, '--network', NETWORK, ...refusal.env, IMAGE], 120_000);
+    // A container that refuses its configuration exits on its own; one that
+    // accepts it is still running a few seconds later.
+    await wait(8000);
+    const state = docker(['inspect', name, '--format', '{{.State.Running}} {{.State.ExitCode}}']).stdout.trim();
+    const [running, exitCode] = state.split(' ');
+    const logs = docker(['logs', name], 60_000);
+    docker(['rm', '-f', name], 60_000);
     gate.check(
       `DK-REFUSE-${refusal.id}`,
       CATEGORY,
       refusal.description,
       { env: refusal.env.filter((value) => value !== '-e').map((value) => value.split('=')[0]) },
-      !result.ok,
-      'the process exits non-zero instead of serving',
-      result.ok ? 'the container started and served' : `exit ${result.code}`,
+      started.ok && running === 'false' && exitCode !== '0',
+      'the container exits non-zero instead of serving',
+      running === 'true' ? 'still serving after 8s' : `exited ${exitCode}: ${(logs.stdout + logs.stderr).slice(-200)}`,
       'CRITICAL',
-      1,
+      2,
     );
   }
 
   // The real container, serving.
+  // The container runs exactly as it would in production: private mode on,
+  // every public flag off. Content is read by an authenticated internal caller,
+  // which is the only way this data may be read today.
+  const internalToken = signSupabaseJwt(
+    { sub: '00000000-0000-0000-0000-000000000001', role: 'authenticated' },
+    JWT_SECRET,
+  );
   const api = docker([
     'run', '-d', '--name', API_CONTAINER, '--network', NETWORK, '-p', `${HOST_PORT}:8787`, ...baseEnv,
     '-e', 'HOST=0.0.0.0', '-e', 'PORT=8787',
-    '-e', 'PRIVATE_MODE=false', '-e', 'PUBLIC_DATA_ENABLED=true',
-    '-e', 'CONTENT_LICENSE_CONFIRMED=true', '-e', 'DATA_REDISTRIBUTION_ALLOWED=true',
+    '-e', 'PRIVATE_MODE=true',
     '-e', 'RATE_LIMIT_MAX=1000000',
     IMAGE,
   ], 300_000);
@@ -259,20 +275,25 @@ export async function run(ctx: GateContext): Promise<void> {
     await wait(1000);
     health = await apiCall('/api/v1/health');
   }
+  if (health.status !== 200) {
+    const logs = docker(['logs', API_CONTAINER], 60_000);
+    const state = docker(['inspect', API_CONTAINER, '--format', '{{.State.Running}} {{.State.ExitCode}}']).stdout.trim();
+    progress(`the container never answered health (state: ${state}). Container output:\n${(logs.stdout + logs.stderr).slice(-3000)}`);
+  }
   gate.check('DK-HEALTH', CATEGORY, 'the containerised API answers its health endpoint', { path: '/api/v1/health' }, health.status === 200, 200, health.status, 'CRITICAL', 1);
 
   const version = await apiCall('/api/v1/version');
   gate.check('DK-VERSION', CATEGORY, 'the containerised API reports its build and schema version', { path: '/api/v1/version' }, version.status === 200 && typeof version.body?.data?.build?.api_release === 'string', '200 with build info', `${version.status} ${JSON.stringify(version.body?.data?.build ?? null).slice(0, 120)}`, 'HIGH', 2);
   gate.check('DK-VERSION-SCHEMA', CATEGORY, 'the containerised API reports the schema version it was built against', { path: '/api/v1/version' }, version.body?.data?.schema?.migrations_applied === '007', '007', version.body?.data?.schema?.migrations_applied ?? null, 'MEDIUM', 1);
 
-  const stats = await apiCall('/api/v1/stats');
+  const stats = await apiCall('/api/v1/stats', internalToken);
   gate.check('DK-STATS', CATEGORY, 'the containerised API reports the imported dataset size', { path: '/api/v1/stats' }, stats.status === 200, 200, stats.status, 'HIGH', 1);
 
   // Full-dataset verification through the container: every surah, every juz and
   // every hizb served by the container is compared with the source dataset.
   progress('serving every surah from the container');
   for (const surah of dataset.surahs) {
-    const response = await apiCall(`/api/v1/surahs/${surah.surah_number}`);
+    const response = await apiCall(`/api/v1/surahs/${surah.surah_number}`, internalToken);
     const data = response.body?.data;
     const ok = response.status === 200 && data?.name_ar === surah.name_ar && data?.ayah_count === surah.ayah_count;
     gate.check(
@@ -288,7 +309,7 @@ export async function run(ctx: GateContext): Promise<void> {
     );
   }
   for (let juz = 1; juz <= 30; juz += 1) {
-    const response = await apiCall(`/api/v1/juzs/${juz}/ayahs?limit=100`);
+    const response = await apiCall(`/api/v1/juzs/${juz}/ayahs?limit=100`, internalToken);
     const rows = response.body?.data ?? [];
     gate.check(
       `DK-SERVE-JUZ-${String(juz).padStart(2, '0')}`,
@@ -303,7 +324,7 @@ export async function run(ctx: GateContext): Promise<void> {
     );
   }
   for (let hizb = 1; hizb <= 60; hizb += 1) {
-    const response = await apiCall(`/api/v1/hizbs/${hizb}/ayahs?limit=100`);
+    const response = await apiCall(`/api/v1/hizbs/${hizb}/ayahs?limit=100`, internalToken);
     const rows = response.body?.data ?? [];
     gate.check(
       `DK-SERVE-HIZB-${String(hizb).padStart(2, '0')}`,
@@ -318,7 +339,7 @@ export async function run(ctx: GateContext): Promise<void> {
     );
   }
   for (const key of ['1:1', '2:255', '18:10', '36:1', '55:13', '67:1', '112:1', '114:6']) {
-    const response = await apiCall(`/api/v1/ayahs/by-key/${key}`);
+    const response = await apiCall(`/api/v1/ayahs/by-key/${key}`, internalToken);
     const source = dataset.ayahs.find((ayah) => `${ayah.surah_number}:${ayah.ayah_number}` === key)!;
     gate.check(
       `DK-SERVE-AYAH-${key.replace(':', '-')}`,
@@ -339,27 +360,14 @@ export async function run(ctx: GateContext): Promise<void> {
   gate.check('DK-LOG-NO-SECRET', CATEGORY, 'the container logs contain no secret or connection string', { container: API_CONTAINER }, !/(eyJhbGciOi|postgresql:\/\/|SERVICE_ROLE)/.test(logText), 'no secret material in the logs', 'scanned', 'CRITICAL', 3);
   gate.check('DK-LOG-JSON', CATEGORY, 'the container logs structured JSON lines', { container: API_CONTAINER }, logText.split('\n').some((line) => line.trim().startsWith('{') && line.includes('request_id')), 'a JSON log line with a request id', logText.split('\n').find((line) => line.trim().startsWith('{'))?.slice(0, 120) ?? 'none', 'MEDIUM', 1);
 
-  const notFound = await apiCall('/api/v1/surahs/999');
+  const notFound = await apiCall('/api/v1/surahs/999', internalToken);
   gate.check('DK-ERROR-404', CATEGORY, 'the containerised API returns a structured 404', { path: '/api/v1/surahs/999' }, notFound.status === 404 && typeof notFound.body?.error?.code === 'string', '404 with an error code', `${notFound.status} ${JSON.stringify(notFound.body?.error ?? null).slice(0, 80)}`, 'HIGH', 2);
 
   const unauthorised = await apiCall('/api/v1/me/bookmarks');
   gate.check('DK-AUTH-401', CATEGORY, 'the containerised API refuses an unauthenticated user endpoint', { path: '/api/v1/me/bookmarks' }, unauthorised.status === 401, 401, unauthorised.status, 'CRITICAL', 1);
 
-  // Private mode inside the container: anonymous content reads answer 451.
-  progress('restarting the container in private mode');
-  docker(['rm', '-f', API_CONTAINER], 60_000);
-  const privateRun = docker([
-    'run', '-d', '--name', API_CONTAINER, '--network', NETWORK, '-p', `${HOST_PORT}:8787`, ...baseEnv,
-    '-e', 'HOST=0.0.0.0', '-e', 'PORT=8787', '-e', 'PRIVATE_MODE=true',
-    IMAGE,
-  ], 300_000);
-  gate.check('DK-PRIVATE-START', CATEGORY, 'the container starts in private mode', { env: 'PRIVATE_MODE=true' }, privateRun.ok, 'running', privateRun.ok ? 'running' : privateRun.stderr.slice(0, 160), 'CRITICAL', 1);
-  let privateHealth = { status: 0, body: null as any };
-  for (let attempt = 0; attempt < 45 && privateHealth.status !== 200; attempt += 1) {
-    await wait(1000);
-    privateHealth = await apiCall('/api/v1/health');
-  }
-  gate.check('DK-PRIVATE-HEALTH', CATEGORY, 'a private-mode container still answers health checks', { path: '/api/v1/health' }, privateHealth.status === 200, 200, privateHealth.status, 'HIGH', 1);
+  // Private mode is already the posture of the running container: an anonymous
+  // caller must be refused on every content route.
   for (const target of ['/api/v1/surahs', '/api/v1/surahs/1', '/api/v1/ayahs/by-key/1:1', '/api/v1/search?q=a', '/api/v1/juzs/1/ayahs']) {
     const response = await apiCall(target);
     gate.check(

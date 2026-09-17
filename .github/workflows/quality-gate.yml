@@ -60,7 +60,7 @@ jobs:
       - run: npm run gate:core
       - name: Why it failed (every non-PASS case)
         if: failure()
-        run: node -e "const fs=require('fs');const f='reports/gate-evidence-core.jsonl';if(!fs.existsSync(f))return console.log('no evidence file');for(const l of fs.readFileSync(f,'utf8').split('\n'))if(l.trim()){const r=JSON.parse(l);if(r.status!=='PASS')console.log(r.status,r.test_id,'|',r.description,'| expected',JSON.stringify(r.expected),'| actual',JSON.stringify(r.actual))}"
+        run: node -e "const fs=require('fs');const f='reports/gate-evidence-core.jsonl';if(!fs.existsSync(f)){console.log('no evidence file')}else{for(const l of fs.readFileSync(f,'utf8').split('\n'))if(l.trim()){const r=JSON.parse(l);if(r.status!=='PASS')console.log(r.status,r.test_id,'|',r.description,'| expected',JSON.stringify(r.expected),'| actual',JSON.stringify(r.actual))}}"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -114,7 +114,7 @@ jobs:
       - name: Why it failed (every non-PASS case)
         if: failure()
         working-directory: quran_api
-        run: node -e "const fs=require('fs');const f='reports/gate-evidence-docker.jsonl';if(!fs.existsSync(f))return console.log('no evidence file');for(const l of fs.readFileSync(f,'utf8').split('\n'))if(l.trim()){const r=JSON.parse(l);if(r.status!=='PASS')console.log(r.status,r.test_id,'|',r.description,'| expected',JSON.stringify(r.expected),'| actual',JSON.stringify(r.actual))}"
+        run: node -e "const fs=require('fs');const f='reports/gate-evidence-docker.jsonl';if(!fs.existsSync(f)){console.log('no evidence file')}else{for(const l of fs.readFileSync(f,'utf8').split('\n'))if(l.trim()){const r=JSON.parse(l);if(r.status!=='PASS')console.log(r.status,r.test_id,'|',r.description,'| expected',JSON.stringify(r.expected),'| actual',JSON.stringify(r.actual))}}"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -149,7 +149,7 @@ jobs:
       - name: Why it failed (every non-PASS case)
         if: failure()
         working-directory: quran_api
-        run: node -e "const fs=require('fs');const f='reports/gate-evidence-flutter.jsonl';if(!fs.existsSync(f))return console.log('no evidence file');for(const l of fs.readFileSync(f,'utf8').split('\n'))if(l.trim()){const r=JSON.parse(l);if(r.status!=='PASS')console.log(r.status,r.test_id,'|',r.description,'| expected',JSON.stringify(r.expected),'| actual',JSON.stringify(r.actual))}"
+        run: node -e "const fs=require('fs');const f='reports/gate-evidence-flutter.jsonl';if(!fs.existsSync(f)){console.log('no evidence file')}else{for(const l of fs.readFileSync(f,'utf8').split('\n'))if(l.trim()){const r=JSON.parse(l);if(r.status!=='PASS')console.log(r.status,r.test_id,'|',r.description,'| expected',JSON.stringify(r.expected),'| actual',JSON.stringify(r.actual))}}"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
