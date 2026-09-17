@@ -332,6 +332,27 @@ components:
     Stats:
       type: object
       additionalProperties: { type: integer }
+    DataScheme:
+      type: object
+      properties:
+        scheme_kind: { type: string, enum: [sajdah, page, juz, hizb, ayah_numbering] }
+        scheme_code: { type: string, examples: ['tanzil-hafs-15'] }
+        scheme_version: { type: string }
+        dataset_version: { type: [string, 'null'] }
+        source_id: { type: [string, 'null'] }
+        description: { type: [string, 'null'] }
+        observed_summary:
+          type: object
+          description: Counted from the stored data, not asserted.
+          additionalProperties: true
+        alternatives:
+          type: array
+          description: Conventions used by independent references.
+          items: { type: object, additionalProperties: true }
+        decision_status: { type: string, enum: [PENDING, CONFIRMED, SUPERSEDED] }
+        decided_by: { type: [string, 'null'] }
+        decided_at: { type: [string, 'null'], format: date-time }
+        notes: { type: [string, 'null'] }
     CatalogEntry:
       type: object
       properties:
@@ -340,6 +361,14 @@ components:
         table_name: { type: string }
         records: { type: integer }
         verified: { type: [integer, 'null'] }
+        source: { type: [string, 'null'] }
+        source_version: { type: [string, 'null'] }
+        dataset_version: { type: [string, 'null'] }
+        checksum_status: { type: string, enum: [complete, partial, not_applicable] }
+        verification_status:
+          type: string
+          enum: [automated_verified, partial, unverified, empty, not_applicable]
+        notes: { type: [string, 'null'] }
         license_kind: { type: string }
         license_status:
           type: string
@@ -381,6 +410,35 @@ components:
         api_version: { type: string, examples: ['v1'] }
         api_release: { type: string, examples: ['1.1.0'] }
         environment: { type: string }
+        build:
+          type: object
+          properties:
+            commit: { type: [string, 'null'] }
+            built_at: { type: [string, 'null'] }
+        schema:
+          type: object
+          properties:
+            tables: { type: integer }
+            views: { type: integer }
+            migrations_applied: { type: string }
+        data_status: { type: string }
+        integrity_status:
+          type: string
+          enum: [automated_verified, incomplete, no_data]
+        integrity:
+          type: object
+          properties:
+            ayahs: { type: integer }
+            unverified: { type: integer }
+        declared_schemes:
+          type: array
+          items:
+            type: object
+            properties:
+              scheme_kind: { type: string }
+              scheme_code: { type: string }
+              scheme_version: { type: string }
+              decision_status: { type: string }
         dataset:
           type: [object, 'null']
           properties:
@@ -548,6 +606,27 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Success' }
+  /api/v1/schemes:
+    get:
+      tags: [system]
+      summary: Declared data schemes (sajdah, page) and their decision status
+      description: >-
+        Which convention the stored data follows, where that convention comes
+        from, what alternatives independent references use, and whether the
+        owner has confirmed it. PENDING means undecided — the data is unaffected.
+      responses:
+        '200':
+          description: Declared schemes
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/DataScheme' }
   /api/v1/catalog:
     get:
       tags: [system]

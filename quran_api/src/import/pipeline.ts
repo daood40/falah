@@ -7,6 +7,7 @@ import { parseDataset, type ParsedDataset } from './parse.ts';
 import { hasErrors, validateDataset, type ValidationIssue } from './validate.ts';
 import { QIRAAT, QURAN_EDITION, RIWAYAT, SOURCES, TRANSLATIONS } from './registry.ts';
 import { seedLicenseCenter } from './license-center.ts';
+import { recordDataSchemes } from './schemes.ts';
 
 export const PIPELINE_VERSION = '1.0.0';
 
@@ -355,6 +356,11 @@ export async function runImport(
       counters.imported += tuples.length;
     }
   }
+
+  // ---------- DECLARED SCHEMES ----------
+  // Records which sajdah/page convention the imported data follows, with the
+  // alternatives, so the owner's decision has somewhere to live.
+  await recordDataSchemes(client, { editionId, datasetVersion: options.version });
 
   // ---------- VERIFY ----------
   const verification = await verifyEdition(client, editionId, dataset);

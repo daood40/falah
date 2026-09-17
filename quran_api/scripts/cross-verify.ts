@@ -34,6 +34,27 @@ const lines: string[] = [];
 const say = (text = ''): number => lines.push(text);
 const failures: string[] = [];
 
+/**
+ * One structured record per comparison, in the format the audit requires.
+ * `classification` distinguishes a real text mismatch from a rendering,
+ * metadata, layout or methodology difference — they are not the same thing.
+ */
+type ComparisonRecord = {
+  source: string;
+  source_version: string;
+  local_dataset_version: string;
+  entity: string;
+  local_count: number;
+  remote_count: number;
+  match_count: number;
+  difference_count: number;
+  comparison_mode: string;
+  classification: 'A_TEXT_MISMATCH' | 'B_SCRIPT_RENDERING' | 'C_METADATA' | 'D_PAGE_LAYOUT' | 'E_METHODOLOGY' | 'NONE';
+  result: 'MATCH' | 'DIFFERENCE_DOCUMENTED' | 'FAIL';
+  explanation: string;
+};
+const records: ComparisonRecord[] = [];
+
 // ---------- our data ----------
 const { rows } = await client.query<{
   surah: number; ayah: number; global: number; text: string;
@@ -42,6 +63,11 @@ const { rows } = await client.query<{
     from quran.ayahs a join quran.surahs s on s.id = a.surah_id
     order by a.global_ayah_number`);
 const ours: AyahRecord[] = rows;
+
+const { rows: datasetRows } = await client.query<{ version: string }>(
+  'select version from quran.quran_dataset_versions order by import_date desc limit 1',
+);
+const localDatasetVersion = datasetRows[0]?.version ?? 'unknown';
 
 const { rows: surahRows } = await client.query<{
   surah_number: number; name_ar: string; ayah_count: number;
@@ -117,6 +143,32 @@ for (const { file, edition, sameOrthography } of editions) {
   } else {
     say('    letter agreement  : COMPLETE');
   }
+  records.push({
+    source: '@ghoran/text',
+    source_version: '0.0.8',
+    local_dataset_version: localDatasetVersion,
+    entity: `ayah text — ${edition}`,
+    local_count: comparison.compared,
+    remote_count: reference.length,
+    match_count: comparison.letters,
+    difference_count: comparison.compared - comparison.letters,
+    comparison_mode: 'consonant letters (diacritics, hamza carriers and alef folded)',
+    classification:
+      comparison.letters === comparison.compared
+        ? 'NONE'
+        : sameOrthography
+          ? 'A_TEXT_MISMATCH'
+          : 'B_SCRIPT_RENDERING',
+    result:
+      comparison.letters === comparison.compared
+        ? 'MATCH'
+        : sameOrthography
+          ? 'FAIL'
+          : 'DIFFERENCE_DOCUMENTED',
+    explanation: sameOrthography
+      ? `Same orthography (Hafs Uthmani): ${comparison.exact} of ${comparison.compared} also match character for character; the rest differ only in how the marks are encoded.`
+      : 'Different orthography: the same words are written with different long-vowel and hamza conventions.',
+  });
   if (sameOrthography && comparison.exact !== comparison.compared) {
     say(`    note: ${comparison.compared - comparison.exact} ayah(s) differ only in marks/encoding`);
     say('          (same letters, different Unicode representation of the marks)');
@@ -283,8 +335,43 @@ const ADJUDICATED = new Set([
   'mushaf page of every single ayah (6,236 comparisons)',
 ]);
 
+const CLASSIFICATION: Record<string, ComparisonRecord['classification']> = {
+  'surah metadata: ayah count, name, revelation place and order': 'C_METADATA',
+  'juz start/end boundaries': 'E_METHODOLOGY',
+  'mushaf page of every single ayah (6,236 comparisons)': 'D_PAGE_LAYOUT',
+  'page start/end boundaries (604 pages)': 'D_PAGE_LAYOUT',
+  'sajdah positions': 'E_METHODOLOGY',
+};
+const EXPLANATION: Record<string, string> = {
+  'surah metadata: ayah count, name, revelation place and order':
+    'Two independent references agree with every surah on ayah count, name, revelation place and revelation order.',
+  'juz start/end boundaries':
+    'One reference starts juz 11 at 9:92; the customary start (and ours) is 9:93. All other 29 boundaries agree.',
+  'mushaf page of every single ayah (6,236 comparisons)':
+    'The QCF v4 typesetting places 56 ayahs that straddle a page break on the adjacent page. Page numbering belongs to a printed edition.',
+  'page start/end boundaries (604 pages)':
+    'All 604 page boundaries agree with the independent reference.',
+  'sajdah positions':
+    'Two documented conventions: 15 positions (ours, marking the ayah at whose end the prostration falls, including Al-Hajj 22:77) vs 14.',
+};
+
 say('[2] STRUCTURE — against independent structural datasets');
 for (const comparison of structure) {
+  records.push({
+    source: comparison.reference.split('@')[0] ?? comparison.reference,
+    source_version: comparison.reference.match(/@([\d.]+)/)?.[1] ?? 'n/a',
+    local_dataset_version: localDatasetVersion,
+    entity: comparison.check,
+    local_count: comparison.compared,
+    remote_count: comparison.compared,
+    match_count: comparison.agreed,
+    difference_count: comparison.differences.length,
+    comparison_mode: 'exact structural equality',
+    classification:
+      comparison.differences.length === 0 ? 'NONE' : CLASSIFICATION[comparison.check] ?? 'C_METADATA',
+    result: comparison.differences.length === 0 ? 'MATCH' : 'DIFFERENCE_DOCUMENTED',
+    explanation: EXPLANATION[comparison.check] ?? '',
+  });
   say(`  ${comparison.check}`);
   say(`    reference: ${comparison.reference}`);
   say(`    compared: ${comparison.compared}   agreed: ${comparison.agreed}`);
@@ -330,6 +417,31 @@ say('     typesetting places 56 ayahs on the adjacent page. Page numbering is a'
 say('     property of a printed edition, so this needs an owner decision about');
 say('     WHICH printed mushaf the app must match — it is not a data error.');
 say();
+
+say('[4] STRUCTURED COMPARISON RECORDS');
+say('  classification: A=text mismatch · B=script/rendering · C=metadata ·');
+say('                  D=page layout · E=methodology · NONE=identical');
+say();
+for (const record of records) {
+  say(`  ENTITY                : ${record.entity}`);
+  say(`  SOURCE                : ${record.source}`);
+  say(`  SOURCE VERSION        : ${record.source_version}`);
+  say(`  LOCAL DATASET VERSION : ${record.local_dataset_version}`);
+  say(`  LOCAL COUNT           : ${record.local_count}`);
+  say(`  REMOTE COUNT          : ${record.remote_count}`);
+  say(`  MATCH COUNT           : ${record.match_count}`);
+  say(`  DIFFERENCE COUNT      : ${record.difference_count}`);
+  say(`  COMPARISON MODE       : ${record.comparison_mode}`);
+  say(`  CLASSIFICATION        : ${record.classification}`);
+  say(`  RESULT                : ${record.result}`);
+  say(`  EXPLANATION           : ${record.explanation}`);
+  say();
+}
+
+writeFileSync(
+  out.replace(/\.txt$/, '.json'),
+  `${JSON.stringify({ generated_at: new Date().toISOString(), local_dataset_version: localDatasetVersion, records }, null, 2)}\n`,
+);
 
 say('================================================================');
 if (failures.length === 0) {

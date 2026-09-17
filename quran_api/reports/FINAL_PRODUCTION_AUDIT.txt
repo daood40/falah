@@ -1,174 +1,331 @@
-----------------------------------
-FALAH QURAN API
-FINAL PRODUCTION AUDIT
-----------------------------------
-SUPERSEDED BY: reports/PRIVATE_PRE_LICENSE_FINAL_AUDIT.txt (2026-09-16)
-CURRENT STATE: PRIVATE PRE-PRODUCTION — private mode is ON, nothing is public.
-This file remains as the record of the production-readiness pass that preceded
-the private-mode decision; its verdict (PRODUCTION READY: NO) still holds.
-----------------------------------
-generated_at : 2026-09-16 (second pass — public API readiness)
+================================================================
+FALAH QURAN API — FINAL PRODUCTION AUDIT
+================================================================
+generated_at : 2026-09-17
+posture      : PRIVATE PRE-PRODUCTION. Nothing public. Nothing deployed.
 environment  : PostgreSQL 16.13 · Node 22.22.2 · Flutter 3.35.4 / Dart 3.9.2
 rule         : every status below was produced by running the thing it
-               describes. Nothing is asserted from reading code alone.
+               describes, in this environment, on this date.
 
-CATEGORY            | STATUS  | EVIDENCE
---------------------|---------|--------------------------------------------------
-Build               | PASS    | tsc --noEmit strict 0 errors · flutter analyze
-                    |         | "No issues found" · npm run build 388.12 kB
-                    |         | (gzip 129.59 kB) in 2.27s
-Database            | PASS    | schema `quran`: 32 tables · RLS forced on all ·
-                    |         | 30 policies · 81 indexes
-Migrations          | PASS    | 0001+0002+0003+0004 applied from empty DB
-Quran Data          | PASS    | import run: 68,596 records · 0 failed/invalid/
-                    |         | missing/duplicate · 68,596 verified
-Integrity           | PASS    | reports/QURAN_FINAL_INTEGRITY.txt 41/41, 0
-                    |         | discrepancy · reports/integrity-report.json 30/30
-                    |         | (6,236 SHA-256 recomputed and matched to source)
-Search              | PASS    | FTS + GIN + pg_trgm + alef-less skeleton; Uthmani
-                    |         | and plain spellings return identical hit counts;
-                    |         | injection attempts return 0 rows
-Translations        | PASS    | data: 10 × 6,236 = 62,360 rows, 0 duplicates,
-                    | PENDING | 0 empty, all hashes verified
-                    | (rights)| rights: reports/TRANSLATION_LICENSE_AUDIT.txt —
-                    |         | 10/10 LICENSE_PENDING, not served publicly
-Reciters            | BLOCKED | 0 records; no licensed dataset supplied. Import
-                    |         | contract ready (schemas/audio-manifest.schema.json)
-Audio               | BLOCKED | 0 recitations / 0 files; no licensed dataset and
-                    |         | the recitation CDNs are rejected by this
-                    |         | environment's egress policy. No bypass attempted.
-API                 | PASS    | 56 operations; 37-call live sweep across every
-                    |         | family returned the expected data
-OpenAPI             | PASS    | 50 paths / 56 operations; router↔spec checked in
-                    |         | both directions (CI + test); served at
-                    |         | GET /api/v1/openapi.yaml
-Security            | PASS    | reports/API_PRODUCTION_AUDIT.txt §6 — headers,
-                    |         | CORS allow-list, 429, JWT rejections, 4xx mapping,
-                    |         | secret scan PASS (and proven to catch a planted key)
-RLS                 | PASS    | enforced in the database; cross-user read = 0 rows;
-                    |         | anon/authenticated cannot write the catalogue
-SOURCE_LOCK         | PASS    | trigger refuses any raw_text change; no API path
-                    |         | writes Quran tables (code scan + test)
-Flutter             | PASS    | analyze clean · 49/49 tests · build configs for
-                    |         | development/staging/production, no URL in code
-Android             | BLOCKED | no Android SDK here (dl.google.com and Google
-                    |         | Maven rejected by egress policy). CI workflow
-                    |         | .github/workflows/android.yml builds APK/AAB.
-                    |         | No artifact produced in this environment ⇒ not PASS
-iOS                 | BLOCKED | no macOS/Xcode available
-Deployment          | BLOCKED | no DATABASE_URL / Supabase credentials / host.
-                    |         | Dockerfile + .env.example + db:apply ready.
-License             | NOT_CONFIRMED | reports/LICENSE_AUDIT.txt — quran-json ships
-                    |         | conflicting licences (package.json CC-BY-4.0 vs
-                    |         | LICENSE.txt CC-BY-SA-4.0) and no upstream grant
-Human Verification  | PENDING | migration 0004 + trigger + CLI + 5 tests; no
-                    |         | approved verification exists, so the dataset
-                    |         | stays at `verified`, never `published`
-CI/CD               | PASS    | ci.yml fails on: secret detected, checksum/
-                    |         | integrity mismatch, OpenAPI drift, RLS failure,
-                    |         | source-lock failure, invalid audio manifest,
-                    |         | licence-flag inconsistency, any failing test
+QURAN TEXT CHANGED DURING THIS TASK: NO
+  6,236 / 6,236 SHA-256 recomputed from the stored text and matched, before and
+  after the changes. The only writes to quran.ayahs were re-imports of the same
+  source producing the same hashes; raw_text remains protected by a trigger.
 
-PRODUCTION READY: NO
+----------------------------------------------------------------
+A. EXECUTIVE SUMMARY
+----------------------------------------------------------------
+The Quran data platform is complete and verified as an internal service. Its
+text agrees, ayah for ayah, with an independent edition; its structure agrees
+with two further independent references; every record carries a source, a
+dataset version and a hash; and the database itself refuses to publish, to edit
+scripture, or to call a licence confirmed without evidence.
 
-----------------------------------
-REAL COUNTS
-----------------------------------
-Surahs:            114
-Ayahs:             6,236
-Juz:               30
-Hizb:              60   (rub al-hizb: 240)
-Pages:             604
-Sajdah:            15
-Manzil:            7
-Languages:         10
-Translations:      10 editions / 62,360 ayah translations
-Qiraat:            1
-Riwayat:           1
-Reciters:          0
-Recitations:       0
-Audio files:       0
-Tables:            32 (schema `quran`)
-Migrations:        4  (0001, 0002, 0003, 0004)
-API endpoints:     56 operations
-OpenAPI paths:     50
-Tests:             203   (API 79 · PWA 75 · Flutter 49)
-Passed:            203
-Failed:            0
-Blocked:           5   (reciters, audio, deployment, android, ios)
-Pending:           2   (human verification, licence confirmation)
-Dataset version:   2026.09.16-1
-Dataset SHA-256:   d8a8adff387f60ce3ff7dbe3238dd9b27120bfe29d8fcb07ad2e89cad37cefd4
+What is NOT done is not engineering: redistribution licences, a scholar's
+sign-off, two convention decisions, and hosting credentials. The release gate
+reports BLOCKED, which is the correct state.
 
-----------------------------------
-FINAL API INFORMATION
-----------------------------------
+----------------------------------------------------------------
+B. ARCHITECTURE
+----------------------------------------------------------------
+quran_api/ is self-contained: migrations/, src/, openapi/, schemas/, examples/,
+scripts/, tests/, Dockerfile. It needs DATABASE_URL and nothing from the rest of
+the repository — proven by `npm run bootstrap:check`, which creates an empty
+database, migrates, imports, validates, starts the API, calls health/version,
+queries data and re-checks integrity (10/10 steps PASS).
+
+Flutter and the PWA are clients. Neither holds a second authoritative dataset;
+the Flutter cache re-verifies every ayah's hash and is dropped when the dataset
+version changes.
+
+----------------------------------------------------------------
+C. DATASET
+----------------------------------------------------------------
+version            : 2026.09.16-1        status: verified (never `published`)
+source             : quran-json@3.1.2 (text from quranenc.com) — RESTRICTED
+structure source   : quran-meta@6.0.17 (MIT) — CONFIRMED
+source file SHA-256: d8a8adff387f60ce3ff7dbe3238dd9b27120bfe29d8fcb07ad2e89cad37cefd4
+immutability       : raw_text trigger + new-version-per-change policy
+declared schemes   : sajdah = tanzil-hafs-15 (PENDING), page = madani-604-tanzil
+                     (PENDING) — recorded in quran.data_schemes with the
+                     alternatives, exposed at GET /api/v1/schemes
+
+----------------------------------------------------------------
+D. CROSS-SOURCE VERIFICATION
+----------------------------------------------------------------
+reports/CROSS_SOURCE_VERIFICATION.txt (+ .json with structured records)
+
+  ayah text vs @ghoran/text Hafs Uthmani : 6,236 / 6,236 letters — MATCH
+    (5,128 also identical character for character; the rest differ only in how
+     the marks are encoded)
+  ayah text vs Tanzil simple             : orthographic differences (class B)
+  ayah text vs Imlaei                    : orthographic differences (class B)
+  surah metadata vs quran-db + quran-qcf4: 114 / 114 — MATCH
+  juz boundaries vs quran-db             : 29 / 30 — class E (methodology)
+  page boundaries vs quran-db            : 604 / 604 — MATCH
+  ayah→page vs quran-qcf4 (KFC QCF v4)   : 6,180 / 6,236 — class D (layout)
+  sajdah positions vs quran-db           : 10 / 15 — class E (methodology)
+
+Every record carries SOURCE, SOURCE VERSION, LOCAL DATASET VERSION, ENTITY,
+LOCAL/REMOTE/MATCH/DIFFERENCE counts, COMPARISON MODE, CLASSIFICATION (A text
+mismatch · B script/rendering · C metadata · D page layout · E methodology),
+RESULT and EXPLANATION. No difference was "fixed": not one character changed.
+
+----------------------------------------------------------------
+E. INTEGRITY
+----------------------------------------------------------------
+reports/QURAN_FINAL_INTEGRITY.txt   41 / 41 checks, 0 discrepancy
+reports/integrity-report.json       30 / 30 checks
+  · 6,236 hashes recomputed from stored text and matched to the source
+  · numbering contiguous, no duplicate, no gap, counts per surah exact
+  · juz/hizb/rub/page/manzil mappings consistent with their boundaries
+  · derived search columns match their documented normalisation
+  · SOURCE_LOCK trigger verified live (UPDATE of raw_text rejected)
+
+----------------------------------------------------------------
+F. DATABASE
+----------------------------------------------------------------
+schema `quran`: 34 base tables + 2 views · 32 policies · 87 indexes
+RLS enabled AND forced on every table. Migrations 001–006 in quran_api/migrations.
+Triggers that enforce policy rather than document it:
+  ayahs_source_lock            — raw_text is immutable
+  dataset_versions_human_ver…  — no `published` without an approved human record
+  license_records_evidence     — no CONFIRMED licence without evidence
+  data_schemes_decision        — no CONFIRMED scheme without a named decider
+
+----------------------------------------------------------------
+G. API
+----------------------------------------------------------------
+59 operations under /api/v1, read-only for all Quran data. Response envelope
+{ success, data, meta } / { success, error:{ code, message } }. Errors map
+PostgreSQL SQLSTATEs to 4xx; no SQL, stack trace, secret or path ever reaches a
+body. Pagination on every collection (page/limit, max enforced, 422 beyond it).
+CORS allow-list verified live. Rate limiting verified live (429). Every response
+carries x-request-id; a 500 also carries x-error-id.
+
+----------------------------------------------------------------
+H. OPENAPI
+----------------------------------------------------------------
+53 paths / 59 operations. Bidirectional check (router→spec and spec→router) runs
+as a test and in CI; served live at GET /api/v1/openapi.yaml.
+
+----------------------------------------------------------------
+I. SECURITY
+----------------------------------------------------------------
+JWT HS256 (forged signature, alg:none, wrong secret, expiry all rejected) ·
+security headers · CORS allow-list · rate limiting · parameterised SQL ·
+hostile paths and injection attempts return 4xx with clean bodies ·
+secret scan over the working tree AND git history: PASS (and proven to catch a
+planted service-role JWT) · no service_role reference in Flutter, PWA, OpenAPI
+or the container · structured logs carry no token, header, query string or
+content.
+
+----------------------------------------------------------------
+J. RLS (behavioural evidence, not source reading)
+----------------------------------------------------------------
+Executed against the live database as the real roles:
+  · cross-user read of user data returns 0 rows
+  · insert of a row owned by another user is refused by WITH CHECK
+  · anon and authenticated cannot UPDATE/DELETE the public catalogue
+  · anon sees no licence ledger (401 through the API, no policy in the database)
+  · service_role is the only writer
+
+----------------------------------------------------------------
+K. SEARCH
+----------------------------------------------------------------
+PostgreSQL FTS (GIN tsvector) + pg_trgm + an alef-less skeleton index, so the
+Uthmani spelling and the plain spelling return the same hits. Stored text is
+never normalised — only derived columns are. Exact phrase, partial, filtered,
+empty and no-result searches are all covered by tests; injection attempts return
+0 rows and leave the dataset unchanged.
+
+----------------------------------------------------------------
+L. OFFLINE CACHE
+----------------------------------------------------------------
+Manifest carries dataset_version, checksum, record count and size. The client
+re-verifies every cached ayah against its content_hash, reports an integrity
+failure instead of failing silently, refuses a downloaded dataset whose checksum
+does not match (keeping the previous cache), and drops entries from a superseded
+dataset version.
+
+----------------------------------------------------------------
+M. CATALOG
+----------------------------------------------------------------
+24 categories in quran.data_catalog (a view, so it cannot drift), each with
+records, verified, source, source_version, dataset_version, license_status,
+checksum_status, verification_status, availability and notes. Exposed at
+GET /api/v1/catalog (authenticated). `ready` requires existence + validation +
+integrity + known source + a licence permitting the intended exposure — today
+only the MIT-licensed structure categories qualify.
+
+----------------------------------------------------------------
+N. LICENSES
+----------------------------------------------------------------
+reports/LICENSE_AUDIT.txt — five licence kinds audited separately (software,
+Quran text, metadata, translations, audio/reciter). 25 records in the License
+Center; CONFIRMED is impossible without evidence and an explicit redistribution
+answer (database trigger, two tests).
+  software/metadata/qiraat/riwayat (quran-meta, MIT) : CONFIRMED
+  Quran text (quran-json)                            : RESTRICTED
+  translations ×10                                   : PENDING
+  audio · reciter · tafsir · word_by_word · …        : UNKNOWN (no dataset)
+
+----------------------------------------------------------------
+O. TRANSLATIONS
+----------------------------------------------------------------
+reports/TRANSLATION_LICENSE_AUDIT.txt — 10 languages, 62,360 rows, 0 duplicates,
+0 empty, every hash verified. Each language is audited on its own (translator,
+origin, claimed licence, redistribution, commercial, evidence). All 10 remain
+LICENSE_PENDING and are never served publicly.
+
+----------------------------------------------------------------
+P. AUDIO
+----------------------------------------------------------------
+0 reciters, 0 recitations, 0 audio files — empty on purpose. No fake record, no
+unlicensed file, no CDN or access control bypassed. The manifest contract
+(schemas/audio-manifest.schema.json) is enforced in code and rejects an
+incomplete manifest before any network call or database write; verification
+checks status, content type, declared size and SHA-256 before marking a file
+verified.
+
+----------------------------------------------------------------
+Q. FLUTTER
+----------------------------------------------------------------
+analyze clean · 52/52 tests. Base URL comes from
+config/{development,staging,production}.json via --dart-define-from-file;
+staging and production ship EMPTY on purpose and a test guards that, so no build
+can point at a public or developer host by accident.
+
+----------------------------------------------------------------
+R. PWA / WEB
+----------------------------------------------------------------
+75/75 tests, production build succeeds. noindex/nofollow/noarchive plus a
+Disallow-all robots.txt while the project is private. It consumes the same API;
+there is no second authoritative dataset.
+
+----------------------------------------------------------------
+S. DOCKER
+----------------------------------------------------------------
+Dockerfile present: node:22-alpine, non-root user, HEALTHCHECK on /api/v1/health,
+no secret baked in, no dataset copied in.
+STATUS: BLOCKED in this environment — no Docker daemon is available
+(`docker build` → "failed to connect to the docker API at
+unix:///var/run/docker.sock"). A CI job now builds the image, asserts it carries
+no secret material and that its defaults are private; that job will produce the
+first real build evidence.
+
+----------------------------------------------------------------
+T. CI/CD
+----------------------------------------------------------------
+Jobs: secret scan · web quality · app database validation · Docker build +
+image secret check · Quran API (typecheck, OpenAPI contract, migrations,
+validate-only import, real import, integrity ×2, clean-database bootstrap,
+cross-source verification, audio manifest gate, licence gate, private-posture
+check, release gate must stay BLOCKED, full test suite) · Flutter.
+CI fails on: committed secret, checksum/integrity mismatch, missing or duplicate
+ayah, OpenAPI drift, RLS failure, SOURCE_LOCK failure, invalid audio manifest,
+licence-flag inconsistency, non-private defaults, a release gate that reports
+ALLOWED without licences, or any failing test.
+
+----------------------------------------------------------------
+U. DEPLOYMENT
+----------------------------------------------------------------
+BLOCKED — owner credentials required. .env.example documents every variable
+(database, Supabase, private mode, the eight licence flags, host/port, CORS,
+limits) with no real secret. No deployment was performed and no URL is claimed.
+
+----------------------------------------------------------------
+V. HUMAN VERIFICATION
+----------------------------------------------------------------
+PENDING. quran.human_verifications records verifier, role, date, dataset
+version, scope, sample count, result, notes and evidence URL; a trigger refuses
+to set a dataset to `published` without an approved row (tested: refused without,
+allowed with, and a `rejected` row does not unlock it). No such row exists, so
+the dataset stays `verified`. AUTOMATED_VERIFIED and HUMAN_VERIFIED are reported
+as separate fields by GET /api/v1/version.
+
+----------------------------------------------------------------
+W. RELEASE GATE
+----------------------------------------------------------------
+`npm run release:gate` → BLOCKED (reports/release-gate.json). It checks the
+posture flags, the License Center per content kind, the human verification, the
+dataset status and integrity. It was not weakened; CI fails if it ever reports
+ALLOWED while licences are missing.
+
+----------------------------------------------------------------
+X. REMAINING OWNER ACTIONS
+----------------------------------------------------------------
+ 1. Choose the sajdah scheme (15 stored vs 14 documented alternative):
+    npm run scheme:decide -- --kind=sajdah --code=tanzil-hafs-15 --decided-by="…"
+ 2. Choose the page scheme (Tanzil/Madani 604 stored vs QCF v4 alternative):
+    npm run scheme:decide -- --kind=page --code=madani-604-tanzil --decided-by="…"
+ 3. Obtain redistribution permission for the Quran text (the current package
+    ships two conflicting licence statements and no grant from the text holder).
+ 4. Obtain per-translator permission for the 10 translations, or name the
+    languages to drop.
+ 5. Provide hosting + DATABASE_URL + Supabase keys + SUPABASE_JWT_SECRET.
+ 6. Provide the domain/DNS and TLS when deploying.
+ 7. Complete the scholarly human verification and record it.
+ 8. (Optional) Provide a licensed reciter dataset and audio manifest.
+
+================================================================
+FINAL STATUS TABLE
+================================================================
+CATEGORY                  | STATUS  | EVIDENCE
+--------------------------|---------|-----------------------------------------
+Quran Text                | PASS    | 6,236/6,236 hash + independent edition
+Ayah Count                | PASS    | 6,236 (source-derived, not hardcoded)
+Surah Count               | PASS    | 114, agreeing with two references
+Page Count                | PASS    | 604, boundaries 604/604 vs reference
+Juz                       | PASS    | 30; 29/30 vs reference, difference explained
+Hizb                      | PASS    | 60 (derived from 240 quarters)
+Quarter                   | PASS    | 240
+Sajdah                    | PENDING | 15 stored; scheme decision open
+Manzil                    | PASS    | 7
+Surah Metadata            | PASS    | 114/114 across two independent references
+Cross-Source Verification | PASS    | CROSS_SOURCE_VERIFICATION.txt (+ .json)
+SHA-256                   | PASS    | 6,236/6,236 recomputed
+Database                  | PASS    | 34 tables + 2 views, 32 policies, 87 indexes
+Migrations                | PASS    | 001–006 applied to an empty database
+RLS                       | PASS    | behavioural tests as anon/authenticated
+SOURCE_LOCK               | PASS    | trigger rejects raw_text UPDATE (live)
+API                       | PASS    | 59 operations, live sweep of every family
+OpenAPI                   | PASS    | 53 paths, bidirectional contract check
+Catalog                   | PASS    | 24 categories, computed view
+Search                    | PASS    | FTS + trgm + skeleton, tested
+Pagination                | PASS    | enforced max, 422 beyond it
+CORS                      | PASS    | allow-list verified live
+Rate Limiting             | PASS    | 429 verified live
+Security                  | PASS    | API_PRODUCTION_AUDIT.txt §6
+Secret Scan               | PASS    | working tree + git history
+Offline Cache             | PASS    | checksum + version + rollback tested
+Flutter                   | PASS    | analyze clean, 52/52
+PWA                       | PASS    | 75/75, build OK, noindex
+Docker                    | BLOCKED | no Docker daemon here; CI job added
+CI/CD                     | PASS    | gates listed in §T
+Translations              | PENDING | data PASS, rights PENDING (10/10)
+Audio                     | BLOCKED | no licensed dataset
+Licensing                 | PENDING | text RESTRICTED, translations PENDING
+Human Verification        | PENDING | gate ON, no approved record
+Deployment                | BLOCKED | owner credentials required
+Release Gate              | BLOCKED | correct while the above are unresolved
+
+================================================================
+FINAL NUMBERS (measured)
+================================================================
+Ayahs 6,236 · Surahs 114 · Pages 604 · Juz 30 · Hizb 60 · Quarters 240
+Sajdah 15 · Manazil 7 · Translations 62,360 rows in 10 languages
+Data categories 24 · API operations 59 · OpenAPI paths 53
+Tables 34 (+2 views) · Migrations 6 · Licence records 25 · Indexes 87
+Tests 231 — API 104 · PWA 75 · Flutter 52
+PASS 231 · FAIL 0 · BLOCKED 4 (audio, reciters, Docker build, deployment)
+PENDING 4 (sajdah scheme, page scheme, translation licences, human verification)
+Dataset version 2026.09.16-1
+Dataset SHA-256 d8a8adff387f60ce3ff7dbe3238dd9b27120bfe29d8fcb07ad2e89cad37cefd4
+
 PUBLIC API BASE URL : NOT DEPLOYED
-API VERSION         : v1 (api_release 1.1.0)
-OPENAPI URL         : <BASE>/api/v1/openapi.yaml   (file: quran_api/openapi/openapi.yaml)
-HEALTH URL          : <BASE>/api/v1/health
-VERSION URL         : <BASE>/api/v1/version
-SOURCES URL         : <BASE>/api/v1/sources
-STATS URL           : <BASE>/api/v1/stats
+PRIVATE INTERNAL URL: http://127.0.0.1:8787 (loopback, development only)
 
-DATASET VERSION     : 2026.09.16-1
-DATASET SHA-256     : d8a8adff387f60ce3ff7dbe3238dd9b27120bfe29d8fcb07ad2e89cad37cefd4
-
-DEPLOYMENT STATUS   : BLOCKED — owner credentials required
-LICENSE STATUS      : NOT_CONFIRMED
-TRANSLATION STATUS  : LICENSE_PENDING (10/10)
-AUDIO STATUS        : BLOCKED — no licensed dataset
-ANDROID STATUS      : BLOCKED — no SDK here; build via GitHub Actions
-IOS STATUS          : BLOCKED — no macOS
-
-TOTAL TESTS         : 203
-PASS                : 203
-FAIL                : 0
-BLOCKED             : 5
-
-PRODUCTION READY    : NO
-
-----------------------------------
-BLOCKERS
-----------------------------------
-B1 DEPLOYMENT — no DATABASE_URL, Supabase credentials or hosting target. Nothing
-   was deployed; no public URL is claimed.
-B2 QURAN LICENSE — conflicting licence statements inside quran-json@3.1.2 and no
-   grant from the upstream text holder.
-B3 TRANSLATION LICENSES — 10 authored works, no per-translator permission.
-B4 RECITERS — no licensed dataset; none invented.
-B5 AUDIO — no licensed dataset; recitation CDNs unreachable under this
-   environment's egress policy; no circumvention attempted.
-B6 ANDROID/IOS ARTIFACTS — no Android SDK here, no macOS. CI builds the APK/AAB.
-B7 HUMAN VERIFICATION — no person has signed off the dataset yet; the gate keeps
-   it at `verified`.
-
-----------------------------------
-REQUIRED OWNER ACTIONS
-----------------------------------
-1. DATABASE_URL + SUPABASE_URL + SUPABASE_ANON_KEY + SUPABASE_SERVICE_ROLE_KEY
-   (server only) + SUPABASE_JWT_SECRET, set in the host environment / GitHub
-   secrets — never in chat, never in git.
-2. A hosting target (any Node 22 host or container runtime) and the public
-   HTTPS base URL, e.g. https://api.falah.app.
-3. One unambiguous Quran text licence with redistribution permission, then
-   CONTENT_LICENSE_CONFIRMED=true and PUBLIC_DATA_ENABLED=true.
-4. Translation permissions per language, or the list of languages to drop.
-5. A licensed reciter dataset and an audio manifest validating against
-   schemas/audio-manifest.schema.json.
-6. A human verification of the dataset:
-   npm run verify:human -- --version=2026.09.16-1 --verifier="<name>" \
-     --role="<role>" --scope="<what was reviewed>" --sample=<n> --result=approved
-7. Run the Android Release workflow in GitHub Actions to produce APK/AAB.
-
-----------------------------------
-EVIDENCE FILES
-----------------------------------
-reports/QURAN_FINAL_INTEGRITY.txt      41/41 checks, 0 discrepancy
-reports/integrity-report.json          30/30 machine-readable checks
-reports/import-report.json             the actual import counters
-reports/LICENSE_AUDIT.txt              five licences audited separately
-reports/TRANSLATION_LICENSE_AUDIT.txt  per-language rights record
-reports/API_PRODUCTION_AUDIT.txt       API-as-a-service audit
-reports/test-report.md                 test runs + QA break attempts
-----------------------------------
+FINAL STATE: PRIVATE PRE-PRODUCTION
+PRODUCTION READY: NO
+================================================================

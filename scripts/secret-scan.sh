@@ -41,7 +41,17 @@ $db_urls"
 client_hits="$(git grep -nil 'service_role' -- flutter_app src public index.html quran_api/openapi || true)"
 [ -n "$client_hits" ] && fail "service_role referenced in client code: $client_hits"
 
+# 6. Git history: a secret that was committed once stays in the objects.
+if [ "${SCAN_HISTORY:-1}" = "1" ] && [ -d .git ]; then
+  history_hits="$(git log -p --all --no-color -- . 2>/dev/null \
+    | grep -E '^\+' \
+    | grep -aE '\beyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.' \
+    | grep -viE "$ALLOWED" | head -5 || true)"
+  [ -n "$history_hits" ] && fail "JWT-looking literal in git history:
+$history_hits"
+fi
+
 if [ "$status" -eq 0 ]; then
-  echo "SECRET SCAN PASS — no tracked secret found"
+  echo "SECRET SCAN PASS — no tracked secret found (working tree + git history)"
 fi
 exit "$status"

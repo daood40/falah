@@ -1,7 +1,7 @@
 ================================================================
 FALAH QURAN API — CROSS-SOURCE VERIFICATION
 ================================================================
-generated_at : 2026-09-17T04:25:26.077Z
+generated_at : 2026-09-17T13:43:41.900Z
 ayahs stored : 6236
 rule         : independent datasets are compared against ours. Nothing is
                modified. Orthographies differ by design, so text agreement
@@ -162,6 +162,114 @@ rule         : independent datasets are compared against ours. Nothing is
      typesetting places 56 ayahs on the adjacent page. Page numbering is a
      property of a printed edition, so this needs an owner decision about
      WHICH printed mushaf the app must match — it is not a data error.
+
+[4] STRUCTURED COMPARISON RECORDS
+  classification: A=text mismatch · B=script/rendering · C=metadata ·
+                  D=page layout · E=methodology · NONE=identical
+
+  ENTITY                : ayah text — Hafs Uthmani (@ghoran/text)
+  SOURCE                : @ghoran/text
+  SOURCE VERSION        : 0.0.8
+  LOCAL DATASET VERSION : 2026.09.16-1
+  LOCAL COUNT           : 6236
+  REMOTE COUNT          : 6236
+  MATCH COUNT           : 6236
+  DIFFERENCE COUNT      : 0
+  COMPARISON MODE       : consonant letters (diacritics, hamza carriers and alef folded)
+  CLASSIFICATION        : NONE
+  RESULT                : MATCH
+  EXPLANATION           : Same orthography (Hafs Uthmani): 5128 of 6236 also match character for character; the rest differ only in how the marks are encoded.
+
+  ENTITY                : ayah text — Tanzil simple (@ghoran/text)
+  SOURCE                : @ghoran/text
+  SOURCE VERSION        : 0.0.8
+  LOCAL DATASET VERSION : 2026.09.16-1
+  LOCAL COUNT           : 6236
+  REMOTE COUNT          : 6236
+  MATCH COUNT           : 5351
+  DIFFERENCE COUNT      : 885
+  COMPARISON MODE       : consonant letters (diacritics, hamza carriers and alef folded)
+  CLASSIFICATION        : B_SCRIPT_RENDERING
+  RESULT                : DIFFERENCE_DOCUMENTED
+  EXPLANATION           : Different orthography: the same words are written with different long-vowel and hamza conventions.
+
+  ENTITY                : ayah text — Imlaei (@ghoran/text)
+  SOURCE                : @ghoran/text
+  SOURCE VERSION        : 0.0.8
+  LOCAL DATASET VERSION : 2026.09.16-1
+  LOCAL COUNT           : 6236
+  REMOTE COUNT          : 6236
+  MATCH COUNT           : 5736
+  DIFFERENCE COUNT      : 500
+  COMPARISON MODE       : consonant letters (diacritics, hamza carriers and alef folded)
+  CLASSIFICATION        : B_SCRIPT_RENDERING
+  RESULT                : DIFFERENCE_DOCUMENTED
+  EXPLANATION           : Different orthography: the same words are written with different long-vowel and hamza conventions.
+
+  ENTITY                : surah metadata: ayah count, name, revelation place and order
+  SOURCE                : quran-db
+  SOURCE VERSION        : 1.2.4
+  LOCAL DATASET VERSION : 2026.09.16-1
+  LOCAL COUNT           : 114
+  REMOTE COUNT          : 114
+  MATCH COUNT           : 114
+  DIFFERENCE COUNT      : 0
+  COMPARISON MODE       : exact structural equality
+  CLASSIFICATION        : NONE
+  RESULT                : MATCH
+  EXPLANATION           : Two independent references agree with every surah on ayah count, name, revelation place and revelation order.
+
+  ENTITY                : juz start/end boundaries
+  SOURCE                : quran-db
+  SOURCE VERSION        : 1.2.4
+  LOCAL DATASET VERSION : 2026.09.16-1
+  LOCAL COUNT           : 30
+  REMOTE COUNT          : 30
+  MATCH COUNT           : 29
+  DIFFERENCE COUNT      : 1
+  COMPARISON MODE       : exact structural equality
+  CLASSIFICATION        : E_METHODOLOGY
+  RESULT                : DIFFERENCE_DOCUMENTED
+  EXPLANATION           : One reference starts juz 11 at 9:92; the customary start (and ours) is 9:93. All other 29 boundaries agree.
+
+  ENTITY                : mushaf page of every single ayah (6,236 comparisons)
+  SOURCE                : quran-qcf4
+  SOURCE VERSION        : 1.1.0
+  LOCAL DATASET VERSION : 2026.09.16-1
+  LOCAL COUNT           : 6236
+  REMOTE COUNT          : 6236
+  MATCH COUNT           : 6180
+  DIFFERENCE COUNT      : 30
+  COMPARISON MODE       : exact structural equality
+  CLASSIFICATION        : D_PAGE_LAYOUT
+  RESULT                : DIFFERENCE_DOCUMENTED
+  EXPLANATION           : The QCF v4 typesetting places 56 ayahs that straddle a page break on the adjacent page. Page numbering belongs to a printed edition.
+
+  ENTITY                : page start/end boundaries (604 pages)
+  SOURCE                : quran-db
+  SOURCE VERSION        : 1.2.4
+  LOCAL DATASET VERSION : 2026.09.16-1
+  LOCAL COUNT           : 604
+  REMOTE COUNT          : 604
+  MATCH COUNT           : 604
+  DIFFERENCE COUNT      : 0
+  COMPARISON MODE       : exact structural equality
+  CLASSIFICATION        : NONE
+  RESULT                : MATCH
+  EXPLANATION           : All 604 page boundaries agree with the independent reference.
+
+  ENTITY                : sajdah positions
+  SOURCE                : quran-db
+  SOURCE VERSION        : 1.2.4
+  LOCAL DATASET VERSION : 2026.09.16-1
+  LOCAL COUNT           : 15
+  REMOTE COUNT          : 15
+  MATCH COUNT           : 10
+  DIFFERENCE COUNT      : 9
+  COMPARISON MODE       : exact structural equality
+  CLASSIFICATION        : E_METHODOLOGY
+  RESULT                : DIFFERENCE_DOCUMENTED
+  EXPLANATION           : Two documented conventions: 15 positions (ours, marking the ayah at whose end the prostration falls, including Al-Hajj 22:77) vs 14.
 
 ================================================================
 RESULT: PASS — every letter-level and structural check agrees with the

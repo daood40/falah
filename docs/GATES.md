@@ -40,7 +40,7 @@ Import (تشغيل حقيقي):              PASS   114 سورة · 6,236 آية
 Structure:                         PASS   30 جزءًا · 60 حزبًا · 240 ربعًا ·
                                           604 صفحات · 7 منازل · 15 سجدة
 Integrity report:                  PASS   30/30 فحصًا (إعادة حساب 6,236 بصمة)
-API tests (vitest + PostgreSQL):   PASS   98/98
+API tests (vitest + PostgreSQL):   PASS   104/104
 OpenAPI:                           PASS   48 مسارًا · 54 عملية · مطابق للراوتر
 Typecheck (strict):                PASS   0 أخطاء
 Flutter analyze/test:              PASS   0 مشاكل · 52/52 (23 جديدة)
@@ -48,6 +48,9 @@ PRIVATE MODE:                      ON — لا API عام ولا بيانات ع
 License Center:                    PASS   25 سجلًا · CONFIRMED يستحيل بلا دليل
 Cross-source verification:         PASS   6,236/6,236 حرفيًا مع إصدار حفص مستقل
                                           114/114 سورة · 604/604 حدود صفحات
+Clean bootstrap (قاعدة فارغة):     PASS   10/10 خطوات
+الأنظمة المعلنة (سجدة/صفحات):      PENDING قرار المالك
+Docker:                            BLOCKED لا خدمة Docker هنا · وظيفة CI أُضيفت
 Public Release Gate:               BLOCKED 13 شرطًا غير محقق
 Human verification gate:           PENDING — لا اعتماد بشري بعد (هجرة 0004)
 Public API (مستقل):                PASS   56 عملية · 50 مسار OpenAPI · 7 أمثلة عميل

@@ -76,6 +76,31 @@ jobs:
       - name: RLS behavioral tests
         run: psql -v ON_ERROR_STOP=1 -At -f scripts/rls-tests.sql
 
+  docker:
+    name: Quran API container builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the image
+        run: docker build -t falah-quran-api:ci ./quran_api
+      - name: The image must carry no secrets
+        run: |
+          docker run --rm --entrypoint sh falah-quran-api:ci -c '
+            set -e
+            if [ -f .env ]; then echo "FAIL: .env inside the image"; exit 1; fi
+            if grep -rIl --exclude-dir=node_modules -E "SERVICE_ROLE_KEY=.|JWT_SECRET=." . 2>/dev/null | grep -q .; then
+              echo "FAIL: secret-looking assignment inside the image"; exit 1
+            fi
+            echo "OK: no secret material in the image"'
+      - name: It starts and fails closed without a database
+        run: |
+          docker run --rm -e DATABASE_URL=postgresql://invalid:5432/none \
+            -e PRIVATE_MODE=true falah-quran-api:ci \
+            node -e "const {loadEnv}=await import('./src/config/env.ts');
+                     const e=loadEnv();
+                     if(!e.privateMode||e.flags.publicDataEnabled){process.exit(1)}
+                     console.log('OK: container defaults are private')" --input-type=module
+
   quran-api:
     name: Quran API · typecheck · OpenAPI · import · tests
     runs-on: ubuntu-latest
@@ -118,6 +143,8 @@ jobs:
         run: npm run integrity
       - name: Final integrity report (full re-verification)
         run: npm run integrity:final -- --out=/tmp/QURAN_FINAL_INTEGRITY.txt
+      - name: Clean-database bootstrap (empty DB → migrate → import → serve → verify)
+        run: npm run bootstrap:check
       - name: Cross-source verification (independent datasets)
         run: npm run verify:cross -- --out=/tmp/CROSS_SOURCE_VERIFICATION.txt
       - uses: actions/upload-artifact@v4

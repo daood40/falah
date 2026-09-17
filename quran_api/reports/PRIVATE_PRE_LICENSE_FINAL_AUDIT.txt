@@ -1,7 +1,8 @@
 ================================================================
 FALAH QURAN API — PRIVATE PRE-LICENSE FINAL AUDIT
 ================================================================
-generated_at : 2026-09-17 (updated: cross-source verification + standalone API)
+generated_at : 2026-09-17 (superseded in part by FINAL_PRODUCTION_AUDIT.txt of
+               the same date, which carries the current numbers)
 posture      : PRIVATE PRE-PRODUCTION. Nothing is public. Nothing was deployed.
                No public URL exists and none is claimed.
 environment  : PostgreSQL 16.13 · Node 22.22.2 · Flutter 3.35.4 / Dart 3.9.2

@@ -105,10 +105,41 @@ Filters: `surah, ayah, juz, hizb, page_number, riwayah, qiraah, language,
 edition, exact` plus `page`/`limit`. `exact=true` matches the normalised text as
 a phrase.
 
+## 8-bis. Declared schemes
+
+Two conventions have more than one legitimate answer, so the API states which
+one the data follows instead of implying it:
+
+```
+GET /api/v1/schemes
+```
+
+Each entry carries `scheme_kind` (sajdah, page), `scheme_code`, `scheme_version`,
+what was **observed in the data**, the `alternatives` used by independent
+references, and `decision_status` (`PENDING` until the owner confirms).
+`GET /api/v1/version` repeats the summary. Changing a scheme is not an edit: it
+requires importing a new dataset version from a source that uses it.
+
+## 8-ter. Data catalogue
+
+```
+GET /api/v1/catalog        (authenticated)
+```
+
+One row per data category: `records`, `verified`, `source`, `source_version`,
+`dataset_version`, `license_status`, `checksum_status`, `verification_status`,
+`availability` (`ready` / `private_pending_license` / `empty`) and `notes`.
+`ready` means it exists, is validated, is integrity-checked, has a known source
+**and** a licence that permits the intended exposure.
+
 ## 9. Dataset versions and sources
 
-- `GET /api/v1/version` — API release, dataset version, dataset status, source
-  file SHA-256, and whether a human has approved that dataset.
+- `GET /api/v1/version` — API release and build, schema version, dataset version
+  and status, source file SHA-256, integrity status counted from the data,
+  declared schemes, and whether a human has approved that dataset.
+  `integrity_status: automated_verified` means every stored hash was recomputed
+  and matched; it is **not** a claim of human verification, which is reported
+  separately under `human_verification`.
 - `GET /api/v1/datasets` — every imported version with its hash and status.
 - `GET /api/v1/sources` — the source registry: licence, licence URL, attribution
   text and status for each dataset. **Display the attribution text** wherever you
@@ -130,6 +161,14 @@ unconfirmed). Clients should:
 4. refuse any downloaded dataset whose checksum does not match the manifest.
 
 The Flutter client does exactly this (`features/quran_api/offline/quran_cache.dart`).
+
+## 10-bis. Request tracing
+
+Every response carries `x-request-id` (echo it back with your own value in the
+request header to correlate). A `500` also carries `x-error-id`: quote it in a
+bug report — the body never contains internals. Logs are structured JSON with
+method, path, status, duration and the request id, and contain no query string,
+token, header or content.
 
 ## 11. Security notes for integrators
 

@@ -1,7 +1,7 @@
 ================================================================
 FALAH QURAN API — FINAL DATA INTEGRITY VERIFICATION
 ================================================================
-generated_at : 2026-09-17T04:25:27.844Z
+generated_at : 2026-09-17T13:45:43.791Z
 sources      : quran-json@3.1.2 (text + translations)
                quran-meta@6.0.17 (Hafs mushaf structure)
 database     : postgresql://***@localhost:55432/postgres?host=/tmp
@@ -14,7 +14,7 @@ rule         : nothing is repaired automatically; differences are listed
   source_id    : quran-json   version: 2026.09.16-1
   dataset      : 2026.09.16-1  status=verified  records=6236
   source hash  : d8a8adff387f60ce3ff7dbe3238dd9b27120bfe29d8fcb07ad2e89cad37cefd4
-  imported at  : 2026-09-17T04:24:24.061Z
+  imported at  : 2026-09-17T13:39:28.252Z
   PASS  source file hash matches the package on disk expected=d8a8adff387f60ce3ff7dbe3238dd9b27120bfe29d8fcb07ad2e89cad37cefd4 actual=d8a8adff387f60ce3ff7dbe3238dd9b27120bfe29d8fcb07ad2e89cad37cefd4
 
 [2] STRUCTURAL COUNTS (expected = parsed from the source packages)

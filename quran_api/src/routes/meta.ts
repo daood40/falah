@@ -11,7 +11,16 @@ const openapiDocument = (): string => {
 };
 
 /** Build identifier of the API itself (independent of the dataset version). */
-export const API_RELEASE = '1.1.0';
+export const API_RELEASE = '1.2.0';
+
+/** Migration series this build expects; checked against the database at runtime. */
+export const SCHEMA_VERSION = '006';
+
+/** Set by the build (e.g. a commit SHA); unknown when not provided. */
+export const BUILD_INFO = {
+  commit: process.env.BUILD_COMMIT ?? null,
+  built_at: process.env.BUILD_TIME ?? null,
+};
 
 /** /health, /version, /openapi.yaml, /stats, /sources, /editions, /qiraat, /riwayat, /translations */
 export const metaRoutes: Route[] = [
@@ -76,10 +85,41 @@ export const metaRoutes: Route[] = [
          order by dv.import_date desc limit 1`,
       );
       const dataset = rows[0] ?? null;
+
+      // Schema version = the highest migration applied, read from the database
+      // itself rather than asserted by the code.
+      const { rows: schemaRows } = await client.query<{ tables: string; views: string }>(
+        `select (select count(*)::text from information_schema.tables
+                 where table_schema = 'quran' and table_type = 'BASE TABLE') as tables,
+                (select count(*)::text from information_schema.views
+                 where table_schema = 'quran') as views`,
+      );
+
+      // Integrity status is derived from the data, never asserted.
+      const { rows: integrityRows } = await client.query<{ ayahs: string; unverified: string }>(
+        `select (select count(*)::text from quran.ayahs) as ayahs,
+                (select count(*)::text from quran.ayahs where not verified) as unverified`,
+      );
+      const ayahs = Number(integrityRows[0]?.ayahs ?? 0);
+      const unverified = Number(integrityRows[0]?.unverified ?? 0);
+
+      const { rows: schemeRows } = await client.query<{
+        scheme_kind: string; scheme_code: string; scheme_version: string; decision_status: string;
+      }>(
+        `select scheme_kind, scheme_code, scheme_version, decision_status
+         from quran.data_schemes order by scheme_kind`,
+      );
+
       return {
         data: {
           api_version: 'v1',
           api_release: API_RELEASE,
+          build: BUILD_INFO,
+          schema: {
+            tables: Number(schemaRows[0]?.tables ?? 0),
+            views: Number(schemaRows[0]?.views ?? 0),
+            migrations_applied: SCHEMA_VERSION,
+          },
           environment: env.environment,
           private_mode: env.privateMode,
           dataset: dataset && {
@@ -90,11 +130,21 @@ export const metaRoutes: Route[] = [
             source_file_hash: dataset.source_file_hash,
             imported_at: dataset.import_date,
           },
+          data_status: dataset
+            ? dataset.status === 'published'
+              ? 'published'
+              : dataset.status
+            : 'no_dataset',
+          integrity_status:
+            ayahs === 0 ? 'no_data' : unverified === 0 ? 'automated_verified' : 'incomplete',
+          integrity: { ayahs, unverified },
+          // Automated verification and human verification are separate facts.
           human_verification: {
             verified: dataset?.human_verified ?? false,
             verified_at: dataset?.verified_at ?? null,
             verifier: dataset?.verifier_name ?? null,
           },
+          declared_schemes: schemeRows,
           license_flags: env.flags,
           openapi_url: '/api/v1/openapi.yaml',
         },
@@ -224,14 +274,37 @@ export const metaRoutes: Route[] = [
   },
   {
     method: 'GET',
+    path: '/api/v1/schemes',
+    handler: async ({ client }) => {
+      const { rows } = await client.query(
+        `select scheme_kind, scheme_code, scheme_version, dataset_version, source_id,
+                description, observed_summary, alternatives, decision_status,
+                decided_by, decided_at, notes, updated_at
+         from quran.data_schemes order by scheme_kind`,
+      );
+      return {
+        data: rows,
+        meta: {
+          total: rows.length,
+          pending: rows.filter((row) => row.decision_status === 'PENDING').length,
+          note:
+            'A scheme describes which convention the stored data follows. PENDING means the ' +
+            'owner has not yet confirmed it; the data itself is unaffected either way.',
+        },
+      };
+    },
+  },
+  {
+    method: 'GET',
     path: '/api/v1/catalog',
     // Internal while the project is private: it is an inventory of everything
     // the platform holds, category by category.
     auth: true,
     handler: async ({ client }) => {
       const { rows } = await client.query(
-        `select category, label, table_name, records, verified, license_kind,
-                license_status, license_records_confirmed, license_records_total, availability
+        `select category, label, table_name, records, verified, source, source_version,
+                dataset_version, license_kind, license_status, license_records_confirmed,
+                license_records_total, checksum_status, verification_status, availability, notes
          from quran.data_catalog order by records desc, category`,
       );
       const totals = rows.reduce(

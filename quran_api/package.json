@@ -23,7 +23,10 @@
     "license:list": "node src/import/license-cli.ts --list",
     "release:gate": "node scripts/public-release-gate.ts",
     "verify:cross": "node scripts/cross-verify.ts",
-    "discover:sources": "node scripts/source-discovery.ts"
+    "discover:sources": "node scripts/source-discovery.ts",
+    "scheme:list": "node src/import/scheme-cli.ts --list",
+    "scheme:decide": "node src/import/scheme-cli.ts",
+    "bootstrap:check": "node scripts/clean-bootstrap.ts"
   },
   "dependencies": {
     "pg": "^8.13.1",

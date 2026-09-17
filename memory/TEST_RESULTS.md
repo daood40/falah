@@ -97,3 +97,20 @@
 | API مستقل | قاعدة جديدة → migrations → استيراد → تشغيل، بلا أي ملف خارج quran_api |
 | /api/v1/catalog | 24 فئة مصنَّفة بحالة الترخيص والإتاحة |
 | release:gate | BLOCKED (كما يجب) · secret-scan PASS |
+
+## 2026-09-17 (التدقيق الهندسي النهائي)
+
+| ما شُغّل | النتيجة |
+|---|---|
+| vitest (quran_api) | 104/104 PASS |
+| vitest (PWA) + build | 75/75 PASS · بناء ناجح |
+| flutter analyze/test | نظيف · 52/52 PASS |
+| bootstrap:check (قاعدة فارغة → API) | PASS 10/10 خطوات |
+| verify:cross | PASS · 6,236/6,236 · سجلات مقارنة مبنيّة (A–E) |
+| integrity:final / integrity | PASS 41/41 · 30/30 |
+| OpenAPI | 53 مسارًا · 59 عملية · مطابق في الاتجاهين |
+| أمثلة العملاء الستة | شُغّلت حيًّا · كلها PASS |
+| secret-scan (شجرة + تاريخ git) | PASS |
+| release:gate | BLOCKED (صحيح) |
+| docker build | BLOCKED — لا خدمة Docker في البيئة (وظيفة CI أُضيفت) |
+| النص القرآني تغيّر؟ | لا — 6,236/6,236 بصمة قبل وبعد |
