@@ -80,6 +80,15 @@ export async function run(ctx: GateContext): Promise<void> {
   }
 
   // ------------------------------------------------------- release build ----
+  // The build needs its dependencies and generated localisations first; without
+  // them gradle fails on missing imports rather than on anything this gate is
+  // trying to measure.
+  const pubGet = run_('flutter', ['pub', 'get'], { cwd: root, timeout: 900_000 });
+  gate.check('MB-PUB-GET', CATEGORY, 'flutter pub get resolves the client dependencies', { command: 'flutter pub get' }, pubGet.ok, 'exit 0', pubGet.ok ? 'exit 0' : `exit ${pubGet.code}: ${pubGet.stderr.slice(-300)}`, 'CRITICAL', 1);
+
+  const genL10n = run_('flutter', ['gen-l10n'], { cwd: root, timeout: 600_000 });
+  gate.check('MB-GEN-L10N', CATEGORY, 'the localisation bundle generates before the build', { command: 'flutter gen-l10n' }, genL10n.ok, 'exit 0', genL10n.ok ? 'exit 0' : `exit ${genL10n.code}: ${genL10n.stderr.slice(-300)}`, 'HIGH', 1);
+
   const build = run_('flutter', ['build', 'apk', '--release'], { cwd: root, timeout: 2_400_000 });
   gate.check(
     'MB-BUILD-APK',
@@ -94,7 +103,11 @@ export async function run(ctx: GateContext): Promise<void> {
   );
   const apk = path.join(root, 'build', 'app', 'outputs', 'flutter-apk', 'app-release.apk');
   gate.check('MB-APK-EXISTS', CATEGORY, 'the release APK exists on disk', { file: 'build/app/outputs/flutter-apk/app-release.apk' }, existsSync(apk), 'present', existsSync(apk) ? 'present' : 'MISSING', 'CRITICAL', 1);
-  if (!existsSync(apk)) throw new Error('the release APK was not produced; the mobile category cannot continue');
+  if (!existsSync(apk)) {
+    throw new Error(
+      `the release APK was not produced; the mobile category cannot continue. flutter build apk --release exited ${build.code}: ${build.stdout.slice(-1500)}${build.stderr.slice(-1500)}`,
+    );
+  }
 
   const apkSize = statSync(apk).size;
   gate.check('MB-APK-SIZE', CATEGORY, 'the release APK stays under 100 MB', { file: 'app-release.apk' }, apkSize < 100 * 1024 * 1024, '< 100 MB', `${Math.round(apkSize / 1024 / 1024)} MB`, 'MEDIUM', 1);

@@ -58,6 +58,9 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm run gate:core
+      - name: Why it failed (every non-PASS case)
+        if: failure()
+        run: node -e "const fs=require('fs');const f='reports/gate-evidence-core.jsonl';if(!fs.existsSync(f))return console.log('no evidence file');for(const l of fs.readFileSync(f,'utf8').split('\n'))if(l.trim()){const r=JSON.parse(l);if(r.status!=='PASS')console.log(r.status,r.test_id,'|',r.description,'| expected',JSON.stringify(r.expected),'| actual',JSON.stringify(r.actual))}"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -108,6 +111,10 @@ jobs:
       - name: Run the docker category
         run: node tests/gate/run.ts docker-deploy --label=docker
         working-directory: quran_api
+      - name: Why it failed (every non-PASS case)
+        if: failure()
+        working-directory: quran_api
+        run: node -e "const fs=require('fs');const f='reports/gate-evidence-docker.jsonl';if(!fs.existsSync(f))return console.log('no evidence file');for(const l of fs.readFileSync(f,'utf8').split('\n'))if(l.trim()){const r=JSON.parse(l);if(r.status!=='PASS')console.log(r.status,r.test_id,'|',r.description,'| expected',JSON.stringify(r.expected),'| actual',JSON.stringify(r.actual))}"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -139,6 +146,10 @@ jobs:
       - name: Run the flutter category
         run: node tests/gate/run.ts flutter --label=flutter
         working-directory: quran_api
+      - name: Why it failed (every non-PASS case)
+        if: failure()
+        working-directory: quran_api
+        run: node -e "const fs=require('fs');const f='reports/gate-evidence-flutter.jsonl';if(!fs.existsSync(f))return console.log('no evidence file');for(const l of fs.readFileSync(f,'utf8').split('\n'))if(l.trim()){const r=JSON.parse(l);if(r.status!=='PASS')console.log(r.status,r.test_id,'|',r.description,'| expected',JSON.stringify(r.expected),'| actual',JSON.stringify(r.actual))}"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -257,6 +268,15 @@ jobs:
           echo "device cases recorded: $count"
           test "$count" -gt 0
 
+      - name: Why it failed (every non-PASS case)
+        if: failure()
+        working-directory: quran_api
+        run: |
+          for f in reports/gate-evidence-android-apk.jsonl reports/gate-evidence-android-${{ matrix.api-level }}.jsonl; do
+            test -f "$f" || continue
+            echo "--- $f"
+            node -e "const fs=require('fs');for(const l of fs.readFileSync(process.argv[1],'utf8').split('\n'))if(l.trim()){const r=JSON.parse(l);if(r.status!=='PASS')console.log(r.status,r.test_id,'|',r.description,'| expected',JSON.stringify(r.expected),'| actual',JSON.stringify(r.actual))}" "$f"
+          done
       - uses: actions/upload-artifact@v4
         if: always()
         with:
