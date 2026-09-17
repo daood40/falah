@@ -15,9 +15,11 @@ on:
     branches: ['main', 'claude/**']
   workflow_dispatch:
 
+# A queued run must not kill a run that is already executing: the android and
+# docker jobs take tens of minutes, and losing them means losing the evidence.
 concurrency:
   group: quality-gate-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 env:
   QURAN_DATASET_VERSION: ci
