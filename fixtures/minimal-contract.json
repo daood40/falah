@@ -1,0 +1,7 @@
+{
+  "_comment": "TEST FIXTURE ONLY — proves the contract minimum: a record carrying nothing but `text`. Every other column must end up NULL, never filled in.",
+  "records": [
+    { "text": "TEST DATA — سجلّ بالحد الأدنى من العقد: نصّ فقط، بلا رقم ولا مجلد ولا باب" },
+    { "text": "TEST DATA — سجلّ ثانٍ بالحد الأدنى، لإثبات أن غياب الرقم لا يمنع الاستيراد" }
+  ]
+}

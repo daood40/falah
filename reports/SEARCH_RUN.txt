@@ -1,0 +1,36 @@
+============ SEARCH RUN (real corpus) — 2026-09-16T06:10:53Z ============
+dataset: JAMI-KAMIL-1437-V1 — 15,961 hadiths · 5,338 chapters · 1,643 narrators
+results carry text_available=false: search works while the text stays withheld.
+
+hash of all stored text BEFORE searching:
+56e7c4f330fd6d585d1c119be23a73c3
+
+exact phrase        "إنما الأعمال بالنيات"    -> 0.022048s  total=2
+without diacritics  "انما الاعمال بالنيات"    -> 0.010969s  total=2
+partial word        "الاعمال"                  -> 0.025108s  total=70
+common word         "الصلاة"                   -> 0.198978s  total=2129
+hamza/ta variant    "الصلاه"                   -> 0.200658s  total=2129
+narrator in text    "أبي هريرة"                -> 0.249139s  total=2507
+type=narrators      "أبي هريرة"                -> 0.014136s  total=23
+type=chapters       "الوضوء"                   -> 0.003353s  total=27
+type=books          "الطهارة"                  -> 0.002905s  total=1
+grading filter      "الصلاة" grading=صحيح      -> 0.173947s  total=912
+takhrij collection  "الصلاة" source=البخاري    -> 0.336654s  total=722
+volume filter       "الصلاة" volume=2          -> 0.193807s  total=556
+page filter         "الصلاة" page_number=25    -> 0.178511s  total=4
+pagination          "الصلاة" page=3&limit=5    -> 0.180229s  total=2129
+no match            "زقنطوريا"                 -> 0.008830s  total=0
+
+hash of all stored text AFTER searching (must be identical):
+56e7c4f330fd6d585d1c119be23a73c3
+
+rejected inputs:
+  q=""        -> 422
+  q="ا"       -> 422
+  limit=99999 -> 422
+  q=' or 1=1--> 200
+
+performance: the OR-chain was replaced by an indexed UNION
+  before 2.1–2.4 s per search (sequential scan, text re-normalized per row)
+  after  0.206741s for "الصلاة"
+===========================================================

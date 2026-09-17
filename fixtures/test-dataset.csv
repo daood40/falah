@@ -1,0 +1,3 @@
+hadith_number,volume,page,text,book,chapter,narrator,grading
+10,1,101,"TEST DATA — سجلّ CSV اختباريّ أوّل","قسم CSV اختباري","باب CSV اختباري","راوٍ اختباريّ CSV","TEST GRADE"
+11,1,102,"TEST DATA — سجلّ CSV اختباريّ ثانٍ، فيه ""اقتباس"" وفاصلة، ونهاية",,,,

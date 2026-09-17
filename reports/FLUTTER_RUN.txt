@@ -1,0 +1,19 @@
+============ FLUTTER RUN — 2026-09-16T06:07:18Z ============
+Flutter 3.35.4 • channel stable • https://github.com/flutter/flutter.git
+Tools • Dart 3.9.2 • DevTools 2.48.0
+
+$ flutter analyze
+No issues found! (ran in 6.2s)
+
+$ flutter test   (whole suite)
+00:13 +36 ~1: All tests passed!                                                                                                                                                                        
+
+$ flutter test test/hadith_api_live_test.dart --dart-define=FALAH_LIVE_API=http://127.0.0.1:8787
+   (Dart models parsing the REAL 15,961-hadith corpus over HTTP, not mocks)
+00:01 +8: All tests passed!                                                                                                                                                                            
+
+$ flutter build apk
+   BLOCKED — no Android SDK in this environment (built by .github/workflows/android.yml)
+$ flutter build ios
+   BLOCKED — needs macOS + an Apple developer account. IOS_BUILD=BLOCKED.
+===========================================================

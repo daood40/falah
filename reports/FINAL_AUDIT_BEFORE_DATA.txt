@@ -1,0 +1,77 @@
+================================================================
+FINAL AUDIT BEFORE DATA — 2026-09-16T02:02:29Z
+branch: claude/falah-hadith_api-backend-md1ak3   commit: e878a7a
+Every line below was produced by running the thing, not by reading
+the previous report.
+================================================================
+
+1. ENVIRONMENT
+   node                      v22.22.2
+   postgres                  PostgreSQL 16.13 (Ubuntu 16.13-0ubuntu0.
+   flutter SDK               ABSENT  (`which flutter` → not found)
+   docker daemon             client present, daemon unavailable
+   ketabonline.com           BLOCKED (proxy answers 403 to CONNECT — policy denial)
+   user-supplied data file   ABSENT (hadith_api/data/ does not exist)
+
+2. FILE INVENTORY (verified present)
+   backend/README.md                         backend/openapi.yaml
+   backend/.env.example                      backend/Dockerfile
+   backend/docker-compose.yml                backend/package.json
+   backend/contracts/DATA_CONTRACT.md        backend/contracts/jami-kamil-v1.schema.json
+   backend/src/  (config, db, http/, routes/, domain/, importer/, scripts/)
+   backend/tests/ (7 files)                  backend/fixtures/ (json, csv, html)
+   backend/reports/ (API_RUN, TEST_RUN, DATA_INTEGRITY, IMPORT_RUN)
+   supabase/migrations/0003_hadith_corpus.sql
+   supabase/migrations/0004_hadith_corpus_search.sql
+   supabase/migrations/0005_hadith_corpus_rls.sql
+   .github/workflows/backend.yml
+   flutter_app/lib/features/hadith/{domain,data,presentation}
+   flutter_app/test/hadith_api_test.dart
+   NOTE: the task text refers to backend/docs/HADITH_API.md; the file actually
+   lives at docs/HADITH_API.md (repo-level docs/ directory). Same content.
+
+3. DATABASE (applied 0001–0005 to a scratch database, then measured)
+   corpus base tables        15
+   corpus views              2   (hadiths_public, stats_view)
+   corpus triggers           9   (source-lock update, locked delete, 7 × updated_at)
+   corpus indexes            55
+   RLS-enabled tables        15  (15 of 15)
+   RLS policies              15
+   repo-wide schema check    npm run db:validate → "schema valid (local postgres)",
+                             RLS behavioral tests → pass
+
+4. API SURFACE (enumerated from the running router, not from docs)
+   endpoints                 26   (18 public read-only, 8 admin)
+   OpenAPI paths             26   — parity asserted by tests/openapi.test.ts
+                                    (both directions: no undocumented route,
+                                     no documented route that is not served)
+
+5. TESTS ACTUALLY RUN NOW
+   backend  npx vitest run        7 files, 103 passed, 0 failed
+   backend  npx tsc --noEmit      OK
+   PWA      npm test              16 files, 75 passed, 0 failed
+   PWA      npm run typecheck     OK
+   flutter  flutter test          NOT RUN — no Flutter SDK in this environment
+                                  (7 tests written in flutter_app/test/hadith_api_test.dart)
+
+6. REAL CORPUS CONTENT
+   hadiths in JAMI-KAMIL-1437-V1     0
+   books / chapters / narrators      0 / 0 / 0
+   The only rows that ever exist in test runs come from
+   backend/fixtures/test-dataset.json, which is synthetic TEST DATA,
+   marked as such, and deleted by the test teardown.
+
+7. VERDICT ON THE PREVIOUS REPORT
+   Accurate. Every PASS claimed there reproduces here. The two BLOCKED items
+   (deployment, content licence) are still blocked, and Flutter tests are still
+   unexecuted for the same reason (no SDK).
+
+8. GAPS FOUND IN THIS AUDIT (fixed in the same commit as this report)
+   a) Phase 7 asked for 12 integrity rules; the script covered 9 of them.
+      Missing: grading traceability, narrator-to-source linkage, volume/page
+      provenance, and "every hadith came from a recorded import".
+   b) Phase 8 asked for a sample-level human verification workflow
+      (sample size, sample IDs, verifier, exact matches, discrepancies).
+      Only per-hadith verification existed.
+   c) No fixture proved the contract minimum (a record carrying only `text`).
+================================================================

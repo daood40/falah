@@ -1,0 +1,40 @@
+================================================================
+API PRODUCTION AUDIT — 2026-09-17T14:02:50Z
+================================================================
+
+SURFACE
+  endpoints        50  (39 public, 11 admin)
+  write verbs on public routes: 0   ← the public API cannot change anything
+  openapi paths    49 / 50 operations
+
+OPENAPI ↔ ROUTER PARITY (both directions)
+ ✓ tests/openapi.test.ts (6 tests) 6ms
+      Tests  6 passed (6)
+
+LIVE SMOKE — every route taken from the router
+-------------------------------------------
+endpoints served: 50 · checks: 59 · failed: 0 · probe rows cleaned up: 2
+RESULT: PASS
+
+SECURITY
+
+1. secret values in the tree                               PASS — none
+2. .env committed                                          PASS — only .env.example
+3. private keys                                            PASS — none
+4. server secrets in client code                           PASS — none
+5. corpus text committed                                   PASS — data/ is git-ignored
+6. build artifacts                                         PASS — scanned, clean
+
+SECURITY SCAN: PASS
+
+CONTAINER
+docker daemon                                          UNAVAILABLE — static checks only
+DOCKER CHECK: PASS
+  a real build+run runs in CI (.github/workflows/hadith_api.yml, job: docker)
+
+RESPONSE CONTRACT
+  success  { success:true, data, meta }
+  error    { success:false, error:{ code, message } }
+  {"success":false,"error":{"code":"VALIDATION_ERROR","message":"\"id\" must be a UUID"},"meta":{"request_id":"ef529e1c-a59b-4d45-8a1b-b95c7bba950c"}}
+  no SQL, no stack trace, no internal path, no secret in any error body.
+================================================================

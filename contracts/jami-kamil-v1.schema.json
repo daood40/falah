@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://falah.app/contracts/jami-kamil-v1.schema.json",
+  "title": "FALAH hadith import contract v1",
+  "description": "The shape the importer accepts. Any field not listed here is reported as unmapped and is NOT imported. No field is ever inferred or generated.",
+  "type": "object",
+  "required": ["records"],
+  "properties": {
+    "edition": {
+      "type": "object",
+      "description": "Optional metadata hint; the target edition is chosen by --edition slug.",
+      "properties": {
+        "slug": { "type": "string" },
+        "title": { "type": "string" },
+        "dataset_version": { "type": "string" }
+      }
+    },
+    "records": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/record" }
+    }
+  },
+  "$defs": {
+    "record": {
+      "type": "object",
+      "required": ["text"],
+      "properties": {
+        "hadith_number": {
+          "type": ["string", "number", "null"],
+          "description": "Verbatim number from the source; kept as text ('12', '12م', '12/2')."
+        },
+        "volume": { "type": ["integer", "string", "null"], "minimum": 1 },
+        "page": { "type": ["integer", "string", "null"], "minimum": 1 },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "description": "raw_text — the hadith exactly as it appears in the source. Required."
+        },
+        "matn": {
+          "type": ["string", "null"],
+          "description": "ONLY if the source itself separates the matn. Otherwise omit; it is never derived."
+        },
+        "isnad": {
+          "type": ["string", "null"],
+          "description": "ONLY if the source itself separates the isnad. Otherwise omit."
+        },
+        "takhrij": { "type": ["string", "null"] },
+        "grading": { "type": ["string", "null"], "description": "Verbatim grading text; never inferred." },
+        "original_reference": { "type": ["string", "null"] },
+        "original_hadith_number": { "type": ["string", "null"] },
+        "book": {
+          "oneOf": [
+            { "type": "string" },
+            {
+              "type": "object",
+              "required": ["name"],
+              "properties": {
+                "key": { "type": "string" },
+                "name": { "type": "string" },
+                "order": { "type": ["integer", "null"] }
+              }
+            },
+            { "type": "null" }
+          ]
+        },
+        "chapter": {
+          "oneOf": [
+            { "type": "string" },
+            {
+              "type": "object",
+              "required": ["name"],
+              "properties": {
+                "key": { "type": "string" },
+                "name": { "type": "string" },
+                "number": { "type": ["string", "number", "null"] },
+                "order": { "type": ["integer", "null"] },
+                "parent_key": { "type": ["string", "null"] }
+              }
+            },
+            { "type": "null" }
+          ]
+        },
+        "narrator": {
+          "oneOf": [
+            { "type": "string" },
+            {
+              "type": "object",
+              "required": ["name"],
+              "properties": {
+                "name": { "type": "string" },
+                "kunya": { "type": ["string", "null"] },
+                "laqab": { "type": ["string", "null"] },
+                "biography": {
+                  "type": ["string", "null"],
+                  "description": "Only if present in the source. Never fetched from elsewhere."
+                }
+              }
+            },
+            { "type": "null" }
+          ]
+        },
+        "narrators": {
+          "type": "array",
+          "description": "Ordered isnad chain when the source provides one.",
+          "items": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "position": { "type": ["integer", "null"] },
+                  "role": { "type": ["string", "null"] }
+                }
+              }
+            ]
+          }
+        },
+        "sources": {
+          "type": "array",
+          "description": "Takhrij targets exactly as written in the source (البخاري، مسلم، …).",
+          "items": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "object",
+                "required": ["source_name"],
+                "properties": {
+                  "source_name": { "type": "string" },
+                  "reference": { "type": ["string", "null"] },
+                  "reference_number": { "type": ["string", "null"] }
+                }
+              }
+            ]
+          }
+        },
+        "gradings": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "object",
+                "required": ["grading"],
+                "properties": {
+                  "grading": { "type": "string" },
+                  "grader": { "type": ["string", "null"] },
+                  "source_reference": { "type": ["string", "null"] },
+                  "notes": { "type": ["string", "null"] }
+                }
+              }
+            ]
+          }
+        },
+        "references": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["reference_text"],
+            "properties": {
+              "reference_type": { "enum": ["quran", "hadith", "book", "page", "other"] },
+              "reference_text": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

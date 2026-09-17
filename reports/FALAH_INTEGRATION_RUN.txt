@@ -1,0 +1,30 @@
+============ FALAH INTEGRATION RUN — 2026-09-17T13:49:50Z ============
+path under test: Falah → HadithRepository → HadithApiClient → HTTP →
+                 Hadith API → PostgreSQL → response. No mocks.
+command: flutter test test/hadith_api_live_test.dart \
+           --dart-define=FALAH_LIVE_API=http://127.0.0.1:8787
+
++0: loading /home/user/falah/flutter_app/test/hadith_api_live_test.dart
++0: 1. health — API, database and dataset are live
++1: 2. version — dataset identity a client can cache against
++2: 3. stats — real counts, no secrets
++3: 4. getHadiths — paginated slim list
++4: 5. getHadith — the standard detail response
++5: 6. include — heavy blocks only when asked for
++6: 7. search — Arabic, diacritic-insensitive, paginated
++7: 8. random — an existing record, never generated
++8: 9. daily — deterministic for a given day
++9: 10. books and catalogue
++10: 11. chapters of a book, and one chapter
++11: 12. narrators, references, takhrij, gradings, verification
++12: 13. sources — where the text came from and its licence
++13: 14. filters combine
++14: 15. pagination is stable across pages
++15: 16. a missing record surfaces as NOT_FOUND, not a crash
++16: All tests passed!
+
+--- Dart client unit tests (mocked payloads) ---
+00:02 +9: All tests passed!                                                                                                                                                                            
+--- whole Flutter suite ---
+00:12 +38 ~1: All tests passed!                                                                                                                                                                        
+===========================================================
