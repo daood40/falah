@@ -122,10 +122,15 @@ void main() {
     expect(find.text('تصفح المصحف'), findsOneWidget);
     expect(find.text('الجزء 1'), findsOneWidget);
 
+    // The tab strip scrolls (seven tabs, RTL): bring a tab on screen first.
+    await tester.ensureVisible(find.text('السجدات'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('السجدات'));
     await _settle(tester);
     expect(find.textContaining('الأعراف'), findsWidgets);
 
+    await tester.ensureVisible(find.text('الأجزاء'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('الأجزاء'));
     await _settle(tester);
     await tester.tap(find.text('الجزء 1'));
