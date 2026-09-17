@@ -38,6 +38,11 @@ export async function withRls<T>(
   const client = await db.connect();
   try {
     await client.query('begin');
+    // A pooled connection can carry session state left behind by whatever ran
+    // on it last (a stray `set statement_timeout`, for instance). Every request
+    // therefore pins its own limits for the duration of its transaction.
+    await client.query("set local statement_timeout = '10s'");
+    await client.query("set local idle_in_transaction_session_timeout = '15s'");
     if (userId) {
       await client.query('select set_config($1, $2, true)', [
         'request.jwt.claims',

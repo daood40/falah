@@ -64,6 +64,12 @@ export function createApp(env: Env, db: Db): App {
         'unknown';
       rateLimiter.check(clientKey);
 
+      // A NUL byte cannot appear in Postgres text; reject it at the edge so it
+      // surfaces as caller error rather than a database failure.
+      if (url.pathname.includes('\u0000') || [...url.searchParams.values()].some((value) => value.includes('\u0000'))) {
+        throw new ApiError('VALIDATION_ERROR', 'Input contains a NUL byte');
+      }
+
       // HEAD is answered like GET with an empty body (health checks use it).
       const method = req.method === 'HEAD' ? 'GET' : (req.method ?? 'GET');
       const { route, params } = router.match(method, url.pathname);

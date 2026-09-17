@@ -78,12 +78,23 @@ export function authenticate(req: IncomingMessage, env: Env): string | null {
 export async function readJsonBody(req: IncomingMessage, limitBytes = 16 * 1024): Promise<unknown> {
   const chunks: Buffer[] = [];
   let size = 0;
+  let tooLarge = false;
+  // Once the limit is passed the rest of the body is drained and discarded
+  // instead of aborting mid-stream: a client that is still sending must still
+  // receive the error response rather than a connection reset.
+  const hardCap = limitBytes * 256;
   for await (const chunk of req) {
     const buf = chunk as Buffer;
     size += buf.length;
-    if (size > limitBytes) throw new ApiError('BAD_REQUEST', 'Request body too large');
+    if (size > limitBytes) {
+      tooLarge = true;
+      chunks.length = 0;
+      if (size > hardCap) break;
+      continue;
+    }
     chunks.push(buf);
   }
+  if (tooLarge) throw new ApiError('BAD_REQUEST', 'Request body too large');
   if (size === 0) return {};
   try {
     return JSON.parse(Buffer.concat(chunks).toString('utf8'));

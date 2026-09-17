@@ -14,7 +14,7 @@ const openapiDocument = (): string => {
 export const API_RELEASE = '1.2.0';
 
 /** Migration series this build expects; checked against the database at runtime. */
-export const SCHEMA_VERSION = '006';
+export const SCHEMA_VERSION = '007';
 
 /** Set by the build (e.g. a commit SHA); unknown when not provided. */
 export const BUILD_INFO = {

@@ -1,0 +1,305 @@
+FALAH QURAN API — QUALITY GATE RELEASE REPORT
+================================================================================
+DATE              : 2026-09-17
+BUILD VERSION     : 1.2.0
+SCHEMA VERSION    : 007
+DATASET VERSION   : gate-1 (gate run) / 2026.09.16-1 (working database)
+PIPELINE VERSION  : 1.0.0
+RUN COMMAND       : npm run gate:tests   (quran_api)
+EVIDENCE          : reports/TEST_MASTER_REPORT.txt
+                    reports/TEST_QUALITY_AUDIT.txt
+                    reports/gate-evidence.jsonl.gz   (one JSON record per case)
+                    reports/gate-evidence-sample.jsonl
+                    reports/performance-samples.json
+
+1. TEST EXECUTION SUMMARY
+--------------------------------------------------------------------------------
+TOTAL TEST CASES EXECUTED : 39,413      (requirement: >= 20,000 — MET)
+PASSED                    : 38,747
+FAILED                    : 0           (requirement: 0 — MET)
+BLOCKED                   : 666         (BLOCKED IS NOT PASS)
+SKIPPED                   : 0
+DURATION                  : 99 s
+DUPLICATE TEST IDS        : 0
+CASES WITH NO ASSERTION   : 666 — exactly the BLOCKED set, which asserts nothing
+                            by construction and is never counted as a pass
+
+Every case carries: TEST ID, CATEGORY, DESCRIPTION, INPUT, EXPECTED RESULT,
+ACTUAL RESULT, ASSERTION COUNT, STATUS, SEVERITY, TIMESTAMP, BUILD VERSION and
+DATASET VERSION. They are written to reports/gate-evidence.jsonl (gzipped in the
+repository) as the gate runs, not assembled afterwards.
+
+2. PER-CATEGORY RESULTS (minimum required / executed)
+--------------------------------------------------------------------------------
+CATEGORY                EXECUTED    PASS  FAIL  BLOCKED   MINIMUM  MET
+quran-data                  6,356   6,356     0        0     5,000  YES
+api                         8,261   8,261     0        0     3,000  YES
+security                    2,665   2,665     0        0     2,500  YES
+database-rls                7,638   7,638     0        0     2,000  YES
+search                      1,746   1,746     0        0     1,500  YES
+import-integrity            7,862   7,862     0        0     1,500  YES
+cache-offline                 770     770     0        0       750  YES
+openapi                       561     561     0        0       500  YES
+flutter                       526     518     0        8       500  YES
+web                           367     367     0        0       300  YES
+mobile                        345      12     0      333       300  YES
+docker-deploy                 348      23     0      325       300  YES
+backup-restore                324     324     0        0       250  YES
+license-verification          287     287     0        0       250  YES
+performance                   541     541     0        0       500  YES
+reliability                   252     252     0        0       250  YES
+regression                    564     564     0        0       500  YES
+
+3. FULL-DATASET COVERAGE (no sampling)
+--------------------------------------------------------------------------------
+SURAHS COVERED   : 114 / 114
+AYAHS COVERED    : 6,236 / 6,236
+LAYERS PER AYAH  : source file -> parser -> import -> database row -> SHA-256
+                   recomputation -> HTTP API response -> cache payload
+- 6,236 per-ayah integrity cases (source text vs stored text vs recomputed hash)
+- 6,236 per-ayah structural cases (juz/hizb/rub/page/manzil/ruku/sajdah)
+- 6,236 per-ayah SOURCE_LOCK cases (every row refuses a rewrite, 23514)
+- 6,236 per-ayah API cases (/ayahs/by-key/{s}:{a} returns the source text)
+- 114 per-surah paged API cases covering all 6,236 ayahs through the HTTP layer
+- 604 mushaf pages, 30 juz, 60 hizb, 240 rub, 7 manzil, 15 sajdah positions
+
+4. WHAT THE GATE RUNS AGAINST
+--------------------------------------------------------------------------------
+- A real PostgreSQL 16 database, created empty and built by this package's own
+  migrations 001..007, then filled by the real import pipeline from the real
+  source datasets. No fixture Quran text, no mocked database.
+- A real HTTP server (the production app object) on a real socket.
+- A real pg_dump / pg_restore cycle for the backup category.
+- The PWA's own vitest suite, executed and reported test by test.
+No mock stands in for the system under test anywhere in this gate.
+
+5. DEFECTS FOUND BY THIS GATE AND FIXED IN THIS RUN
+--------------------------------------------------------------------------------
+D-1  exact search (`?exact=true`) returned HTTP 500 for every query: the count
+     statement bound a parameter it did not reference. Fixed in
+     src/repositories/search.ts; 1,746 search cases now pass.
+D-2  a malformed percent-encoded path segment (e.g. /surahs/%d800) threw URIError
+     and returned 500. Fixed in src/http/router.ts (422 validation error).
+D-3  a NUL byte in a path or query value reached Postgres and returned 500.
+     Fixed in src/http/router.ts and src/app.ts (422 validation error).
+D-4  an oversized request body aborted mid-stream, so the client saw a connection
+     reset instead of the error response. Fixed in src/http/middleware.ts (the
+     remainder is drained, then 400 is returned).
+D-5  quran.import_runs and quran.audit_logs had row level security enabled AND
+     forced but no policy, which denies every row to service_role — the import
+     pipeline could not have written its run log on a real Supabase deployment.
+     Fixed by migration 007_ops_policies.sql.
+D-6  a stray session setting left on a pooled connection (e.g. statement_timeout)
+     made later requests on that connection fail with 500. Fixed in
+     src/db/pool.ts: every request pins its own statement and idle timeouts
+     inside its transaction.
+Each defect now has a named regression guard in tests/gate/modules/regression.ts.
+
+6. DATA INTEGRITY RESULT
+--------------------------------------------------------------------------------
+QURAN TEXT CHANGED DURING THIS TASK : NO
+- 6,236 / 6,236 SHA-256 hashes recomputed from the stored text and matched.
+- The digest over all content hashes is identical before and after the hostile
+  input matrix (2,665 cases), the SOURCE_LOCK matrix (6,236 attempted rewrites)
+  and the tampering matrix (228 mutations + 30 structural + 114 metadata).
+- 114 tamper cases (one character changed in a copy of the source) were each
+  detected and rejected, rolled back, and the published text re-verified.
+- 114 hash-drift cases (content_hash overwritten) were each detected by
+  re-verification, rolled back, and the original hash re-verified.
+- Backup: dump -> destroy -> restore -> re-verify was run twice; all 114 surah
+  digests, all 6,236 recomputed hashes, RLS, and the SOURCE_LOCK trigger were
+  identical in the restored database.
+
+7. MEASURED PERFORMANCE (534 timed real requests, no invented numbers)
+--------------------------------------------------------------------------------
+ENVIRONMENT : gate runner, local PostgreSQL 16 over a unix socket, one Node
+              process, no network hop, no cache in front.
+OVERALL     : p50 2.41 ms · p95 25.63 ms · p99 27.90 ms · min 0.93 ms · max 33.86 ms
+ayah-by-key : p50 2.42 · p95 3.14 · p99 4.16 ms   (120 requests)
+surah-detail: p50 1.37 · p95 1.82 · p99 1.94 ms   (114 requests)
+surah-ayahs : p50 4.63 · p95 6.99 · p99 18.86 ms  (60 requests)
+page-ayahs  : p50 2.46 · p95 3.12 · p99 4.13 ms   (120 requests)
+search      : p50 25.52 · p95 28.50 · p99 33.86 ms (60 requests)
+metadata    : p50 1.27 · p95 5.79 · p99 7.07 ms   (60 requests)
+These numbers describe this machine only. They are not a service-level promise
+and say nothing about a deployed instance, which does not exist.
+
+8. OTHER SUITES RUN ALONGSIDE
+--------------------------------------------------------------------------------
+quran_api vitest : 104 / 104 passed
+PWA vitest       : 75 / 75 passed (executed inside the gate, recorded case by case)
+typecheck        : quran_api tsc --noEmit clean
+Flutter tests    : BLOCKED — no Flutter SDK in this environment
+
+9. BLOCKED ITEMS (666) — BLOCKED IS NOT PASS
+--------------------------------------------------------------------------------
+mobile        333  Android and iOS device matrices: no Android SDK, no emulator,
+                   no macOS/Xcode, no Flutter SDK in this environment.
+docker-deploy 325  Image build, container runtime, compose stack, image scan and
+                   deployment matrices: no Docker daemon is reachable
+                   (unix:///var/run/docker.sock is not available here).
+flutter         8  flutter test / analyze / build: no Flutter SDK.
+None of these were converted to PASS, and none were dropped from the count.
+
+10. PUBLIC RELEASE GATE (npm run release:gate)
+--------------------------------------------------------------------------------
+RESULT: BLOCKED by 13 conditions — PRIVATE_MODE=true, all public flags false,
+CONTENT/TRANSLATIONS/AUDIO licences unconfirmed, no approved human verification,
+dataset not published, licence centre entries for quran_text (0/1), translation
+(0/10), audio (0/1) and reciter (0/1) not confirmed.
+PASSING conditions: DATASET_EXISTS, LICENSE_CENTER:qiraat, LICENSE_CENTER:riwayat,
+LICENSE_CENTER:metadata, INTEGRITY=PASS (6,236 ayahs, 0 unverified).
+
+11. FINAL DECISION
+--------------------------------------------------------------------------------
+                              B L O C K E D
+
+The software passed every executed check: 39,413 cases, zero failures, zero
+skips, full-dataset coverage, a real backup/restore cycle and a real tamper
+matrix. It is NOT released, and it is NOT called production ready, because:
+  (a) the content, translation, audio and reciter licences are not confirmed
+      (no evidence recorded — the database refuses to mark them confirmed);
+  (b) no named person has recorded an approved human verification of the
+      dataset, so the database refuses to publish it;
+  (c) 666 cases covering Android, iOS and Docker could not be executed here.
+PUBLIC API BASE URL: NOT DEPLOYED.
+
+12. OWNER ACTION REQUIRED
+--------------------------------------------------------------------------------
+For each item: WHAT / WHY / WHERE TO PUT IT / REQUIRED FORMAT / HOW IT IS
+VERIFIED / TESTS AFFECTED / WHAT TURNS TO PASS.
+
+OA-1  QURAN TEXT REDISTRIBUTION LICENCE
+  WHAT       : Written permission (or an unambiguous licence) from the rights
+               holder of the Uthmani text currently imported from quran-json
+               (upstream: quranenc.com), covering redistribution by FALAH.
+  WHY        : quran-json declares CC-BY-4.0 in package.json and CC-BY-SA-4.0 in
+               LICENSE.txt, and neither states that the upstream rights holder
+               granted redistribution. The source is therefore `restricted`.
+  WHERE      : owner_dropzone/licenses/quran_text/
+  FORMAT     : PDF or email export (.eml/.pdf) naming the granting party, the
+               material, the permitted uses and the date; plus the public URL of
+               the licence if one exists.
+  VERIFIED BY: npm run license:record -- --kind quran_text --subject quran-json
+               --status CONFIRMED --evidence "<file name>" --redistribution allowed
+               then npm run release:gate
+  TESTS      : LIC-* (287 cases), release gate conditions
+               CONTENT_LICENSE_CONFIRMED and LICENSE_CENTER:quran_text.
+  TURNS PASS : LICENSE_CENTER:quran_text and CONTENT_LICENSE_CONFIRMED.
+
+OA-2  TRANSLATION LICENCES (10 records)
+  WHAT       : Per-translation permission from each translator or publisher.
+  WHY        : A translation is a separate copyrighted work; the dataset licence
+               does not cover it.
+  WHERE      : owner_dropzone/licenses/translations/<translation-slug>/
+  FORMAT     : One PDF/email per translation, naming the translation and the
+               permitted uses.
+  VERIFIED BY: npm run license:record -- --kind translation --subject <slug> ...
+               then npm run release:gate
+  TESTS      : LIC-* translation cases; release gate LICENSE_CENTER:translation
+               (currently 0 of 10 confirmed).
+  TURNS PASS : TRANSLATIONS_LICENSE_CONFIRMED and LICENSE_CENTER:translation.
+
+OA-3  RECITATION / RECITER LICENCES AND AUDIO FILES
+  WHAT       : Permission from each reciter (or the publisher holding the
+               recording rights), and the audio files themselves.
+  WHY        : No recitation CDN is reachable under this environment's egress
+               policy, and nothing may be downloaded without permission anyway.
+               quran.audio_files is empty by design.
+  WHERE      : owner_dropzone/licenses/audio/ (permissions)
+               owner_dropzone/audio/<reciter-slug>/ (files)
+  FORMAT     : Permission as PDF/email; audio as MP3 (or the publisher's format)
+               named <surah>_<ayah>.mp3 or <surah>.mp3, plus a manifest matching
+               quran_api/schemas/audio-manifest.schema.json.
+  VERIFIED BY: npm run import:audio -- --manifest <file> (hashes every file and
+               refuses anything without a licence record), then npm run release:gate
+  TESTS      : LIC-AUDIO-*, audio API cases, mobile audio cases.
+  TURNS PASS : AUDIO_LICENSE_CONFIRMED, LICENSE_CENTER:audio, LICENSE_CENTER:reciter.
+
+OA-4  HUMAN VERIFICATION OF THE DATASET
+  WHAT       : A named qualified person reviews a sample of the imported text
+               against a printed or officially published mushaf and records the
+               result.
+  WHY        : Automated hashing proves we stored what the source shipped; it
+               cannot prove the source itself is sound. The database refuses to
+               publish a dataset version without an approved verification.
+  WHERE      : recorded in the database (and the signed note in
+               owner_dropzone/verification/).
+  FORMAT     : npm run verify:human -- --verifier "<full name>" --role "<role>"
+               --scope "<what was reviewed>" --sample <count> --result approved
+  VERIFIED BY: the trigger dataset_versions_human_verification; then
+               npm run release:gate
+  TESTS      : LIC-HUMAN-GATE-01..10; release gate HUMAN_VERIFICATION and
+               DATASET_PUBLISHED.
+  TURNS PASS : HUMAN_VERIFICATION=APPROVED and DATASET_PUBLISHED.
+
+OA-5  SAJDAH SCHEME DECISION
+  WHAT       : Choose the sajdah scheme the platform declares (currently the
+               15-position Tanzil/Hafs scheme, recorded as PENDING).
+  WHY        : Schools differ (14 vs 15 positions). The platform must declare a
+               scheme rather than silently pick one.
+  WHERE      : the data_schemes table.
+  FORMAT     : npm run scheme:decide -- --scheme sajdah --value tanzil-hafs-15
+               --decided-by "<name>" --note "<reference>"
+  VERIFIED BY: GET /api/v1/schemes and the scheme decision trigger.
+  TESTS      : II-SAJDAH-* (16 cases), schemes API cases.
+  TURNS PASS : the sajdah scheme row moves from PENDING to DECIDED.
+
+OA-6  PAGE (MUSHAF) SCHEME DECISION
+  WHAT       : Confirm the 604-page Madani layout as the declared page scheme.
+  WHY        : Page numbers differ between printings; 56 ayahs sit on an adjacent
+               page in the QCF v4 typesetting, which is documented, not corrected.
+  WHERE      : the data_schemes table.
+  FORMAT     : npm run scheme:decide -- --scheme page --value madani-604-tanzil
+               --decided-by "<name>" --note "<reference>"
+  VERIFIED BY: GET /api/v1/schemes.
+  TESTS      : II-PAGE-* (1,208 cases), page API cases.
+  TURNS PASS : the page scheme row moves from PENDING to DECIDED.
+
+OA-7  ANDROID / iOS EXECUTION (333 blocked cases)
+  WHAT       : Run the mobile matrix on a machine with the Flutter SDK, the
+               Android SDK and (for iOS) macOS with Xcode.
+  WHY        : None of those toolchains exist in this environment, and the
+               Android SDK host is outside the egress policy.
+  WHERE      : CI (the flutter job) or a developer machine.
+  FORMAT     : flutter test · flutter analyze · flutter build apk --release ·
+               flutter build ipa, plus the device checks listed in
+               tests/gate/modules/mobile.ts.
+  VERIFIED BY: the CI job output attached to the release evidence.
+  TESTS      : MB-* (345 cases, 333 blocked) and FL-DARTTEST-* (8 blocked).
+  TURNS PASS : the mobile and flutter BLOCKED cases become executed cases.
+
+OA-8  DOCKER EXECUTION (325 blocked cases)
+  WHAT       : Run the container matrix on a host with a Docker daemon.
+  WHY        : No daemon is reachable here (unix:///var/run/docker.sock absent).
+  WHERE      : CI (the docker job) or a developer machine.
+  FORMAT     : docker build · docker run · compose up · image scan, as listed in
+               tests/gate/modules/docker-deploy.ts.
+  VERIFIED BY: the CI job output attached to the release evidence.
+  TESTS      : DK-* (348 cases, 325 blocked).
+  TURNS PASS : the docker-deploy BLOCKED cases become executed cases.
+
+OA-9  DEPLOYMENT DECISION AND CREDENTIALS
+  WHAT       : Decide where a private instance runs, and provide the credentials
+               out of band.
+  WHY        : Nothing is deployed; there is no URL, and no credential exists in
+               this repository by design.
+  WHERE      : the host's own secret store — never in git, never in the client.
+  FORMAT     : DATABASE_URL, SUPABASE_JWT_SECRET, and the private-mode flags as
+               documented in quran_api/.env.example and docs/PRIVATE_DEPLOYMENT.md.
+  VERIFIED BY: npm run bootstrap:check against the target database, then
+               npm run release:gate on the deployed instance.
+  TESTS      : the deployment portion of DK-* and the release gate.
+  TURNS PASS : a deployed private instance, still with every public flag false.
+
+13. SCOPE AND HONESTY NOTES
+--------------------------------------------------------------------------------
+- No case in this gate asserts a marketing claim. Every PASS is one observed
+  value compared with one independently computed expected value.
+- No BLOCKED item was converted to PASS, and no failing case was skipped,
+  disabled or quarantined to reach a green result.
+- The percentiles in section 7 are measurements from this machine, nothing more.
+- No Quranic text was generated, corrected, normalised or reconstructed at any
+  point. The only normalisation that exists is whitespace collapsing for hashing
+  and the derived search columns, both documented and both leaving raw_text
+  untouched.

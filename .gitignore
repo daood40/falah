@@ -24,3 +24,6 @@ owner_dropzone/**
 !owner_dropzone/README.md
 !owner_dropzone/*/
 !owner_dropzone/*/README.md
+
+# Raw quality-gate evidence (the gzipped copy is committed instead)
+quran_api/reports/gate-evidence.jsonl

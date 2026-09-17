@@ -11,6 +11,7 @@ const MIGRATIONS = [
   '004_data_catalog.sql',
   '005_data_schemes.sql',
   '006_data_catalog_v2.sql',
+  '007_ops_policies.sql',
 ];
 const TEST_DB = process.env.TEST_DB_NAME ?? 'falah_quran_test';
 

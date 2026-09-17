@@ -32,7 +32,10 @@ export async function searchAyahs(
 ): Promise<{ rows: SearchHit[]; total: number }> {
   const normalized = normalizeForSearch(filters.q);
   const skeleton = searchSkeleton(filters.q);
-  const values: unknown[] = [filters.editionId, normalized, skeleton];
+  // The skeleton parameter is only bound when it is actually referenced:
+  // Postgres rejects a statement that is handed a parameter it never uses.
+  const values: unknown[] = [filters.editionId, normalized];
+  const skeletonIdx = filters.exact ? 2 : values.push(skeleton);
   const conditions: string[] = ['a.edition_id = $1'];
 
   const add = (sql: string, value: unknown): void => {
@@ -56,9 +59,9 @@ export async function searchAyahs(
   const textMatch = filters.exact
     ? `a.search_text like '%' || $2 || '%'`
     : `(a.search_vector @@ plainto_tsquery('simple', $2)
-        or a.search_skeleton_vector @@ plainto_tsquery('simple', $3)
+        or a.search_skeleton_vector @@ plainto_tsquery('simple', $${skeletonIdx})
         or a.search_text like '%' || $2 || '%'
-        or a.search_skeleton like '%' || $3 || '%')`;
+        or a.search_skeleton like '%' || $${skeletonIdx} || '%')`;
   const translationMatch = filters.language
     ? ` or (t.id is not null and at.text ilike '%' || $2 || '%')`
     : '';
@@ -82,7 +85,7 @@ export async function searchAyahs(
     `select distinct ${AYAH_SELECT},
        greatest(
          ts_rank(a.search_vector, plainto_tsquery('simple', $2)),
-         ts_rank(a.search_skeleton_vector, plainto_tsquery('simple', $3))
+         ts_rank(a.search_skeleton_vector, plainto_tsquery('simple', $${skeletonIdx}))
        ) as rank,
        'text'::text as match_type
      ${from} where ${where}

@@ -1,0 +1,95 @@
+FALAH QURAN API — TEST MASTER REPORT
+==============================================================================
+GENERATED     : 2026-09-17T14:48:36.300Z
+STARTED       : 2026-09-17T14:46:59.731Z
+DURATION      : 97s
+BUILD VERSION : 1.2.0
+RUN SCOPE     : FULL
+
+TOTALS
+------------------------------------------------------------------------------
+TOTAL TEST CASES : 39413
+PASSED           : 38747
+FAILED           : 0
+BLOCKED          : 666
+SKIPPED          : 0
+REQUIRED TOTAL   : 20000  → MET
+REQUIRED FAILURES: 0      → MET
+
+FAILURES BY SEVERITY
+------------------------------------------------------------------------------
+CRITICAL: 0   HIGH: 0   MEDIUM: 0   LOW: 0
+
+PER-CATEGORY BREAKDOWN
+------------------------------------------------------------------------------
+CATEGORY                     TOTAL     PASS     FAIL  BLOCKED  SKIPPED  MINIMUM  MET
+------------------------------------------------------------------------------------
+api                          8261    8261       0       0       0    3000  YES
+backup-restore                324     324       0       0       0     250  YES
+cache-offline                 770     770       0       0       0     750  YES
+database-rls                 7638    7638       0       0       0    2000  YES
+docker-deploy                 348      23       0     325       0     300  YES
+flutter                       526     518       0       8       0     500  YES
+import-integrity             7862    7862       0       0       0    1500  YES
+license-verification          287     287       0       0       0     250  YES
+mobile                        345      12       0     333       0     300  YES
+openapi                       561     561       0       0       0     500  YES
+performance                   541     541       0       0       0     500  YES
+quran-data                   6356    6356       0       0       0    5000  YES
+regression                    564     564       0       0       0     500  YES
+reliability                   252     252       0       0       0     250  YES
+search                       1746    1746       0       0       0    1500  YES
+security                     2665    2665       0       0       0    2500  YES
+web                           367     367       0       0       0     300  YES
+
+MODULE EXECUTION
+------------------------------------------------------------------------------
+quran-data                    6356 cases       346 ms
+import-integrity              7862 cases       227 ms
+api                           8261 cases     26587 ms
+search                        1746 cases     30423 ms
+security                      2665 cases      7123 ms
+database-rls                  7638 cases      2609 ms
+openapi                        561 cases       127 ms
+cache-offline                  770 cases      5602 ms
+performance                    541 cases      2839 ms
+reliability                    252 cases      2968 ms
+backup-restore                 324 cases      2151 ms
+license-verification           287 cases       154 ms
+flutter                        526 cases        31 ms
+web                            367 cases      5939 ms
+mobile                         345 cases        17 ms
+docker-deploy                  348 cases        66 ms
+regression                     564 cases      7137 ms
+
+BLOCKED ITEMS (BLOCKED IS NOT PASS)
+------------------------------------------------------------------------------
+flutter (8 blocked)
+  FL-DARTTEST-test-app-widget-test-dart: No Flutter SDK in this environment (flutter/dart are not installed and the SDK download host is outside the egress policy). Run on a machine with Flutter, or in CI where the SDK is provisioned.
+  FL-DARTTEST-test-audio-player-service-test-dart: No Flutter SDK in this environment (flutter/dart are not installed and the SDK download host is outside the egress policy). Run on a machine with Flutter, or in CI where the SDK is provisioned.
+  FL-DARTTEST-test-quran-api-test-dart: No Flutter SDK in this environment (flutter/dart are not installed and the SDK download host is outside the egress policy). Run on a machine with Flutter, or in CI where the SDK is provisioned.
+  FL-DARTTEST-test-quran-repository-test-dart: No Flutter SDK in this environment (flutter/dart are not installed and the SDK download host is outside the egress policy). Run on a machine with Flutter, or in CI where the SDK is provisioned.
+  FL-DARTTEST-test-source-lock-test-dart: No Flutter SDK in this environment (flutter/dart are not installed and the SDK download host is outside the egress policy). Run on a machine with Flutter, or in CI where the SDK is provisioned.
+mobile (333 blocked)
+  MB-IOS-PROJECT: No iOS project has been generated yet; generating and building one requires a macOS host with Xcode, which this environment does not have.
+  MB-ANDROID-Android-9--API-28--phone-01: No Android SDK, emulator or device in this environment (the SDK download host is outside the egress policy), and no Flutter SDK to build with.
+  MB-ANDROID-Android-9--API-28--phone-02: No Android SDK, emulator or device in this environment (the SDK download host is outside the egress policy), and no Flutter SDK to build with.
+  MB-ANDROID-Android-9--API-28--phone-03: No Android SDK, emulator or device in this environment (the SDK download host is outside the egress policy), and no Flutter SDK to build with.
+  MB-ANDROID-Android-9--API-28--phone-04: No Android SDK, emulator or device in this environment (the SDK download host is outside the egress policy), and no Flutter SDK to build with.
+docker-deploy (325 blocked)
+  DK-DAEMON: No Docker daemon in this environment: failed to connect to the docker API at unix:///var/run/docker.sock; check if the path is correct and if the daemon is running: dial unix /var/run/docker.sock: c
+  DK-IMAGE-BUILD-linux-amd64-01: No Docker daemon in this environment (failed to connect to the docker API at unix:///var/run/docker.sock; check if the path is correct and if the daemon is running: dial unix /var/run/docker.sock: c). Run this matrix on a host with Docker, or in CI where the docker job provides one.
+  DK-IMAGE-BUILD-linux-amd64-02: No Docker daemon in this environment (failed to connect to the docker API at unix:///var/run/docker.sock; check if the path is correct and if the daemon is running: dial unix /var/run/docker.sock: c). Run this matrix on a host with Docker, or in CI where the docker job provides one.
+  DK-IMAGE-BUILD-linux-amd64-03: No Docker daemon in this environment (failed to connect to the docker API at unix:///var/run/docker.sock; check if the path is correct and if the daemon is running: dial unix /var/run/docker.sock: c). Run this matrix on a host with Docker, or in CI where the docker job provides one.
+  DK-IMAGE-BUILD-linux-amd64-04: No Docker daemon in this environment (failed to connect to the docker API at unix:///var/run/docker.sock; check if the path is correct and if the daemon is running: dial unix /var/run/docker.sock: c). Run this matrix on a host with Docker, or in CI where the docker job provides one.
+
+FAILED ITEMS
+------------------------------------------------------------------------------
+none
+
+EVIDENCE
+------------------------------------------------------------------------------
+Full per-test evidence : reports/gate-evidence.jsonl   (one JSON record per case)
+Committed sample       : reports/gate-evidence-sample.jsonl
+Each record carries    : test_id, category, description, input, expected, actual,
+                         assertions, status, severity, timestamp, build, dataset_version

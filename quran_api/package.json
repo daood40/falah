@@ -26,7 +26,8 @@
     "discover:sources": "node scripts/source-discovery.ts",
     "scheme:list": "node src/import/scheme-cli.ts --list",
     "scheme:decide": "node src/import/scheme-cli.ts",
-    "bootstrap:check": "node scripts/clean-bootstrap.ts"
+    "bootstrap:check": "node scripts/clean-bootstrap.ts",
+    "gate:tests": "node tests/gate/run.ts"
   },
   "dependencies": {
     "pg": "^8.13.1",

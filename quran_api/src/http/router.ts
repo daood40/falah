@@ -77,7 +77,17 @@ export class Router {
       if (route.method !== method) continue;
       const params: Record<string, string> = {};
       route.keys.forEach((key, index) => {
-        params[key] = decodeURIComponent(match[index + 1] ?? '');
+        const raw = match[index + 1] ?? '';
+        try {
+          params[key] = decodeURIComponent(raw);
+        } catch {
+          // Malformed percent-encoding is caller error, not a server fault.
+          throw new ApiError('VALIDATION_ERROR', 'Invalid percent-encoding in path');
+        }
+        // A NUL byte cannot be stored or compared in Postgres text.
+        if (params[key]!.includes('\u0000')) {
+          throw new ApiError('VALIDATION_ERROR', 'Input contains a NUL byte');
+        }
       });
       return { route, params };
     }

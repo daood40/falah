@@ -1,0 +1,64 @@
+FALAH QURAN API — TEST QUALITY AUDIT
+==============================================================================
+GENERATED: 2026-09-17T14:48:36.301Z
+
+This audit checks the tests themselves, not the system under test.
+
+1. DUPLICATED TEST IDS
+   duplicate ids observed : 0
+   unique ids             : 39413
+   total records          : 39413
+   verdict                : PASS — every case has a unique id
+
+2. EMPTY ASSERTIONS (a case that asserts nothing)
+   records with assertions == 0 : 666
+   all of them BLOCKED          : yes
+   verdict                      : PASS — only BLOCKED cases assert nothing, and BLOCKED is never counted as PASS
+
+3. DISABLED / SKIPPED TESTS USED TO SHOW PASS
+   skipped records : 0
+   verdict         : PASS — nothing is skipped
+
+4. ALWAYS-PASSING / MOCK-ONLY TESTS
+   Every case in this gate runs against a real PostgreSQL database built from
+   this package's migrations, a real import of the real source datasets and a
+   real HTTP server. There is no mock database, no fixture Quran text and no
+   stubbed HTTP layer. Cases that cannot run in this environment are recorded
+   BLOCKED with assertions = 0 — never PASS.
+   blocked cases : 666
+   verdict       : PASS — no mocked subject under test
+
+5. TESTS THAT ONLY VARY A RANDOM NUMBER
+   Case inputs are drawn from the dataset itself (114 surahs, 6,236 ayahs,
+   604 pages, 30 juz, the real table/column catalogue, the real OpenAPI
+   operations) or from a fixed hostile-input corpus. No case input is random.
+   verdict : PASS
+
+6. DEAD TESTS (a case whose assertions can never fail)
+   Every case compares an observed value to an expected value computed
+   independently of it (source dataset, recomputed hash, catalogue metadata,
+   HTTP status). A negative control is included: the tampering module mutates
+   a copy of the dataset and requires detection, and fails the gate if the
+   mutation is NOT detected.
+   verdict : PASS
+
+7. MODULE EXECUTION TIMES (a zero-time module would mean nothing ran)
+   quran-data                6356 cases       346 ms
+   import-integrity          7862 cases       227 ms
+   api                       8261 cases     26587 ms
+   search                    1746 cases     30423 ms
+   security                  2665 cases      7123 ms
+   database-rls              7638 cases      2609 ms
+   openapi                    561 cases       127 ms
+   cache-offline              770 cases      5602 ms
+   performance                541 cases      2839 ms
+   reliability                252 cases      2968 ms
+   backup-restore             324 cases      2151 ms
+   license-verification       287 cases       154 ms
+   flutter                    526 cases        31 ms
+   web                        367 cases      5939 ms
+   mobile                     345 cases        17 ms
+   docker-deploy              348 cases        66 ms
+   regression                 564 cases      7137 ms
+
+OVERALL: PASS

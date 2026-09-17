@@ -404,11 +404,16 @@ export async function runImport(
   return finish(verification.failed === 0 ? 'success' : 'failed');
 }
 
-/** Recomputes every stored hash from the source dataset and flips `verified`. */
+/**
+ * Recomputes every stored hash from the source dataset and flips `verified`.
+ * `options.surahNumber` narrows the run to a single surah, which is what the
+ * ops tooling uses to re-verify one surah without touching the rest.
+ */
 export async function verifyEdition(
   client: SqlClient,
   editionId: string,
   dataset: ParsedDataset = parseDataset([]),
+  options: { surahNumber?: number } = {},
 ): Promise<{ verified: number; failed: number; errors: string[] }> {
   const errors: string[] = [];
   const expected = new Map<string, string>();
@@ -425,8 +430,10 @@ export async function verifyEdition(
   }>(
     `select a.id, s.surah_number, a.ayah_number, a.raw_text, a.content_hash
      from quran.ayahs a join quran.surahs s on s.id = a.surah_id
-     where a.edition_id = $1 order by a.global_ayah_number`,
-    [editionId],
+     where a.edition_id = $1
+       ${options.surahNumber === undefined ? '' : 'and s.surah_number = $2::int'}
+     order by a.global_ayah_number`,
+    options.surahNumber === undefined ? [editionId] : [editionId, options.surahNumber],
   );
 
   const okIds: string[] = [];
@@ -466,8 +473,11 @@ export async function verifyEdition(
   // stored text, never trusting the stored hash column.
   const { rows: translationRows } = await client.query<{ id: string; text: string; content_hash: string }>(
     `select at.id, at.text, at.content_hash from quran.ayah_translations at
-     join quran.ayahs a on a.id = at.ayah_id where a.edition_id = $1`,
-    [editionId],
+     join quran.ayahs a on a.id = at.ayah_id
+     join quran.surahs s on s.id = a.surah_id
+     where a.edition_id = $1
+       ${options.surahNumber === undefined ? '' : 'and s.surah_number = $2::int'}`,
+    options.surahNumber === undefined ? [editionId] : [editionId, options.surahNumber],
   );
   const okTranslations: string[] = [];
   let failedTranslations = 0;

@@ -42,6 +42,12 @@
 - [ ] حذف الفروع القديمة من واجهة GitHub (claude/quiz-platform-build-swm4wi،
       claude/project-structure-overview-lfiuui، gh-pages) — الوكيل ممنوع من حذف refs
 
+## بوابة الجودة (بعد 2026-09-17)
+- [ ] تشغيل مصفوفة أندرويد/iOS (333 حالة محجوبة) على جهاز فيه Flutter+Android SDK
+- [ ] تشغيل مصفوفة Docker (325 حالة محجوبة) على مضيف فيه daemon
+- [ ] تسجيل التراخيص الأربعة + الاعتماد البشري ثم إعادة release:gate
+      (التفاصيل السبعة لكل بند في quran_api/reports/QUALITY_GATE_RELEASE_REPORT.txt)
+
 ## P2 / لاحقًا
 - [ ] iOS ‏(M4): حساب Apple + TestFlight
 - [ ] رفع skills-repo كمستودع daood40/skills لتفعيل زر sync-skills
