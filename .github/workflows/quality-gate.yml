@@ -332,6 +332,37 @@ jobs:
       - name: Merge every evidence file into the release result
         run: node tests/gate/merge.ts reports/evidence --release
         working-directory: quran_api
+
+      # The release report states the licence and dataset position too, and the
+      # public release gate reads those from a real database — so one is built
+      # here, imported and then asked.
+      - name: PostgreSQL for the release gate
+        run: |
+          docker run -d --name release-db -e POSTGRES_PASSWORD=falah -p 5432:5432 postgres:16-alpine
+          for attempt in $(seq 1 90); do
+            if docker exec release-db psql -U postgres -h 127.0.0.1 -c 'select 1' > /dev/null 2>&1; then
+              echo "postgres accepts TCP queries"; exit 0
+            fi
+            sleep 1
+          done
+          echo "postgres never became ready"; docker logs release-db; exit 1
+      - name: Dataset for the release gate
+        working-directory: quran_api
+        env:
+          DATABASE_URL: postgresql://postgres:falah@127.0.0.1:5432/postgres
+        run: |
+          npm run db:apply
+          npm run import -- --version=${{ env.QURAN_DATASET_VERSION }} --translations=en --publish
+      - name: RELEASE_REPORT (every number counted from the merged evidence)
+        working-directory: quran_api
+        env:
+          DATABASE_URL: postgresql://postgres:falah@127.0.0.1:5432/postgres
+          SUPABASE_JWT_SECRET: gate-secret-for-falah-quran-api-quality-gate
+        run: |
+          node scripts/release-report.ts --evidence=reports/gate-evidence.jsonl
+          echo '================ RELEASE_REPORT.txt ================'
+          cat reports/RELEASE_REPORT.txt
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -342,4 +373,5 @@ jobs:
             quran_api/reports/gate-evidence.jsonl.gz
             quran_api/reports/gate-evidence-sample.jsonl
             quran_api/reports/gate-evidence-sources.json
+            quran_api/reports/RELEASE_REPORT.txt
           retention-days: 30
