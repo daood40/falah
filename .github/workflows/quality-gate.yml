@@ -234,14 +234,11 @@ jobs:
           disable-animations: true
           working-directory: flutter_app
           script: |
+            set -o pipefail
             flutter pub get
             flutter gen-l10n
-            flutter test integration_test/gate_device_test.dart \
-              --dart-define=GATE_API_BASE_URL=http://10.0.2.2:8787 \
-              --dart-define=GATE_DEVICE_PROFILE=android-api-${{ matrix.api-level }} \
-              --dart-define=GATE_BUILD=ci \
-              --dart-define=GATE_DATASET_VERSION=${{ env.QURAN_DATASET_VERSION }} \
-              2>&1 | tee /tmp/device-run-${{ matrix.api-level }}.log
+            flutter devices
+            flutter test integration_test/gate_device_test.dart -d emulator-5554 --dart-define=GATE_API_BASE_URL=http://10.0.2.2:8787 --dart-define=GATE_DEVICE_PROFILE=android-api-${{ matrix.api-level }} --dart-define=GATE_BUILD=ci --dart-define=GATE_DATASET_VERSION=${{ env.QURAN_DATASET_VERSION }} 2>&1 | tee /tmp/device-run-${{ matrix.api-level }}.log
 
       - name: Turn the device output into gate evidence
         if: always()
