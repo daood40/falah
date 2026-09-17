@@ -31,19 +31,8 @@ jobs:
     timeout-minutes: 45
     defaults:
       run: { working-directory: quran_api }
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_PASSWORD: falah
-        ports: ['5432:5432']
-        options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
     env:
-      DATABASE_URL: postgresql://postgres:falah@localhost:5432/postgres
+      DATABASE_URL: postgresql://postgres:falah@127.0.0.1:5432/postgres
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -55,6 +44,19 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y postgresql-client-16 || sudo apt-get install -y postgresql-client
+      # A plain container, not a service: a service dumps its whole statement
+      # log at teardown (thousands of lines from the hostile-input cases) and
+      # buries the failure list below.
+      - name: PostgreSQL (plain container, not a service)
+        run: |
+          docker run -d --name gate-db -e POSTGRES_PASSWORD=falah -p 5432:5432 postgres:16-alpine
+          for attempt in $(seq 1 90); do
+            if docker exec gate-db psql -U postgres -h 127.0.0.1 -c 'select 1' > /dev/null 2>&1; then
+              echo "postgres accepts TCP queries"; exit 0
+            fi
+            sleep 1
+          done
+          echo "postgres never became ready"; docker logs gate-db; exit 1
       - run: npm ci
       - run: npm run typecheck
       - run: npm run gate:core

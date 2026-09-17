@@ -315,13 +315,27 @@ export async function run(ctx: GateContext): Promise<void> {
 
   const analyze = flutter(root, ['analyze'], 900_000);
   const issues = (analyze.stdout.match(/^\s*(info|warning|error)\s+•/gm) ?? []).length;
-  gate.check('FL-ANALYZE', CATEGORY, 'flutter analyze reports no issue', { command: 'flutter analyze' }, analyze.ok && issues === 0, 'exit 0 with no issue', `exit ${analyze.code}, ${issues} issue(s)`, 'HIGH', 2);
+  const issueLines = (analyze.stdout.match(/^\s*(info|warning|error)\s+•.*$/gm) ?? []).map((line) => line.trim()).slice(0, 10);
+  gate.check(
+    'FL-ANALYZE',
+    CATEGORY,
+    'flutter analyze reports no issue',
+    { command: 'flutter analyze' },
+    analyze.ok && issues === 0,
+    'exit 0 with no issue',
+    `exit ${analyze.code}, ${issues} issue(s)${issueLines.length > 0 ? `: ${issueLines.join(' | ').slice(0, 1200)}` : ''}`,
+    'HIGH',
+    2,
+  );
 
   // One gate case per Dart test, taken from the machine-readable reporter.
   const dartTests = flutter(root, ['test', '--machine'], 1_800_000);
   const names = new Map<number, string>();
   const suites = new Map<number, string>();
   const testSuite = new Map<number, number>();
+  // The reporter sends the failure text as a separate `error` event before
+  // `testDone`; keep it so a failing case says why, not just "error".
+  const errors = new Map<number, string>();
   let reported = 0;
   let dartFailures = 0;
   for (const line of dartTests.stdout.split('\n')) {
@@ -340,6 +354,10 @@ export async function run(ctx: GateContext): Promise<void> {
       names.set(event.test.id, String(event.test.name ?? ''));
       testSuite.set(event.test.id, event.test.suiteID);
     }
+    if (event.type === 'error' && typeof event.testID === 'number') {
+      const text = `${String(event.error ?? '')}\n${String(event.stackTrace ?? '')}`.replace(/\s+/g, ' ').trim();
+      errors.set(event.testID, `${errors.get(event.testID) ?? ''}${text}`.slice(0, 1500));
+    }
     if (event.type === 'testDone' && !event.hidden) {
       const name = names.get(event.testID) ?? `test-${event.testID}`;
       const suitePath = path.relative(root, suites.get(testSuite.get(event.testID) ?? -1) ?? '');
@@ -352,7 +370,7 @@ export async function run(ctx: GateContext): Promise<void> {
         description: `flutter test — ${suitePath}: ${name}`,
         input: { suite: suitePath, test: name },
         expected: 'success',
-        actual: String(event.result),
+        actual: passed ? 'success' : `${String(event.result)}: ${errors.get(event.testID) ?? 'no error text reported'}`,
         assertions: 1,
         status: passed ? 'PASS' : 'FAIL',
         severity: 'HIGH',

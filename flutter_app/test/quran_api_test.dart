@@ -370,7 +370,10 @@ void _configGuards() {
   });
 
   group('mushaf classifications', () {
-    Map<String, Object> division(int n, {Map<String, Object?> extra = const {}}) => {
+    Map<String, Object?> division(
+      int n, {
+      Map<String, Object?> extra = const {},
+    }) => {
       'id': '00000000-0000-0000-0000-0000000000${n.toString().padLeft(2, '0')}',
       'number': n,
       'start_surah': 1,
