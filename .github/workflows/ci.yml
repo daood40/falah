@@ -190,19 +190,9 @@ jobs:
             console.log('OK: licence flags consistent', JSON.stringify(flags));
           " --input-type=module
       - run: npm test
-      # The full quality gate lives in .github/workflows/quality-gate.yml, where
-      # each category runs on a runner that has its tooling (Docker, Flutter,
-      # Android). Here we run the core categories only.
-      - name: Quality gate · core categories
-        run: npm run gate:core
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: quran-quality-gate-core
-          path: |
-            quran_api/reports/gate-evidence-core.jsonl
-            quran_api/reports/performance-samples.json
-          retention-days: 14
+      # The quality gate (all categories, including these) runs in
+      # .github/workflows/quality-gate.yml so the two do not run the same work
+      # twice and compete for runners.
       - uses: actions/upload-artifact@v4
         if: always()
         with:

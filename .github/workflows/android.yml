@@ -1,8 +1,11 @@
 name: Build Android APK
 
+# The quality gate builds and inspects the release APK on every branch
+# (.github/workflows/quality-gate.yml). This workflow only publishes the
+# shareable debug APK from main, so the two do not compete for runners.
 on:
   push:
-    branches: ['main', 'claude/**']
+    branches: ['main']
   workflow_dispatch:
 
 jobs:
