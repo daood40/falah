@@ -14,7 +14,7 @@ import { signSupabaseJwt } from '../../src/auth/jwt.ts';
 import { parseDataset, type ParsedDataset } from '../../src/import/parse.ts';
 import { runImport } from '../../src/import/pipeline.ts';
 import { API_RELEASE } from '../../src/routes/meta.ts';
-import { Gate } from './framework.ts';
+import type { Gate } from './framework.ts';
 
 export const MIGRATIONS = [
   '001_quran_platform.sql',
@@ -150,3 +150,30 @@ export async function buildContext(gate: Gate): Promise<GateContext> {
 }
 
 export const BUILD = API_RELEASE;
+
+/**
+ * Context for the categories that do not touch the database or the HTTP server
+ * (web, flutter, mobile, docker-deploy). They run on runners that have their own
+ * toolchain but no PostgreSQL, so building the full context there would fail for
+ * a reason that has nothing to do with what they test. The database handles are
+ * present but refuse to be used.
+ */
+export function buildLightContext(gate: Gate): GateContext {
+  const refuse = (): never => {
+    throw new Error('this category runs without a database context — it must not touch the pool or the API');
+  };
+  return {
+    gate,
+    pool: new Proxy({} as pg.Pool, { get: refuse }),
+    adminUrl: '',
+    databaseUrl: '',
+    baseUrl: '',
+    datasetVersion: DATASET_VERSION,
+    env: gateEnv('postgresql://unused'),
+    dataset: parseDataset(['en']),
+    user: { id: 'n/a', token: 'n/a' },
+    otherUser: { id: 'n/a', token: 'n/a' },
+    request: refuse,
+    close: async () => undefined,
+  };
+}

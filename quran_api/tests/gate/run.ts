@@ -8,8 +8,11 @@ import { createGzip } from 'node:zlib';
 import { pipeline } from 'node:stream/promises';
 import path from 'node:path';
 import { Gate } from './framework.ts';
-import { buildContext, BUILD, DATASET_VERSION } from './context.ts';
+import { buildContext, buildLightContext, BUILD, DATASET_VERSION } from './context.ts';
 import { MINIMUMS, writeMasterReport, writeQualityAudit } from './report.ts';
+
+/** Categories that run without a database or a live HTTP server. */
+const DB_FREE = new Set(['web', 'flutter', 'mobile', 'docker-deploy']);
 
 const MODULES = [
   'quran-data',
@@ -53,7 +56,9 @@ async function main(): Promise<void> {
   });
 
   const startedAt = new Date();
-  const ctx = await buildContext(gate);
+  const selected = MODULES.filter((name) => (only.length === 0 || only.includes(name)) && !skip.has(name));
+  const needsDatabase = selected.some((name) => !DB_FREE.has(name));
+  const ctx = needsDatabase ? await buildContext(gate) : buildLightContext(gate);
   const timings: { module: string; ms: number; records: number }[] = [];
   try {
     for (const name of MODULES) {
