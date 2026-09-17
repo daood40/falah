@@ -114,6 +114,34 @@ class HadithCache {
     return entry == null || entry.contentHash == fresh.dataset.hash;
   }
 
+  /// Everything the cache holds, for a store that persists it.
+  Iterable<CachedEntry<Hadith>> get entries => List.unmodifiable(_entries.values);
+
+  /// Puts back an entry a store restored, keeping its original age.
+  void restore(CachedEntry<Hadith> entry) {
+    _entries[entry.key] = entry;
+  }
+
+  /// A serialisable snapshot: dataset identity plus every entry.
+  Map<String, dynamic> toJson() => {
+        'dataset_version': datasetVersion,
+        'dataset_hash': datasetHash,
+        'entries': _entries.values.map((e) => e.toJson((h) => h.raw)).toList(growable: false),
+      };
+
+  /// Restores a snapshot. Entries that no longer satisfy the dataset or
+  /// checksum rules are dropped on the next read, never shown.
+  void loadJson(Map<String, dynamic> json) {
+    datasetVersion = json['dataset_version'] as String?;
+    datasetHash = json['dataset_hash'] as String?;
+    _entries.clear();
+    for (final raw in (json['entries'] as List? ?? const [])) {
+      if (raw is! Map<String, dynamic>) continue;
+      final entry = CachedEntry.fromJson<Hadith>(raw, Hadith.fromJson);
+      if (entry != null) _entries[entry.key] = entry;
+    }
+  }
+
   void invalidate([String? id]) {
     if (id == null) {
       _entries.clear();

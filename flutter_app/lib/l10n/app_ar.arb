@@ -1,5 +1,4 @@
 {
-  "@@locale": "ar",
   "ai_disclaimer": "المساعد لا يؤلف نصوصًا دينية. النصوص الشرعية تأتي حصريًا من المصادر الموثقة",
   "ai_placeholder": "اسألني عن التصميم، الأفكار، العناوين…",
   "ai_send": "إرسال",
@@ -131,16 +130,114 @@
   "errors_storage": "تعذّر الحفظ. تحقق من المساحة المتاحة.",
   "errors_unknown": "حدث خطأ غير متوقع. حاول مجددًا.",
   "errors_validation": "بعض البيانات غير صحيحة. راجع المدخلات.",
+  "hadith_allOfBook": "كل الأحاديث",
+  "@hadith_allOfBook": {
+    "description": "Hadith feature string"
+  },
+  "hadith_bookLabel": "الكتاب",
+  "@hadith_bookLabel": {
+    "description": "Hadith feature string"
+  },
   "hadith_booksTitle": "كتب الجامع",
+  "hadith_chapterLabel": "الباب",
+  "@hadith_chapterLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_chaptersTitle": "الأبواب",
+  "@hadith_chaptersTitle": {
+    "description": "Hadith feature string"
+  },
+  "hadith_collectionLabel": "الكتاب المُخرِّج",
+  "@hadith_collectionLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_countLabel": "{count} حديثًا",
+  "@hadith_countLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hadith_datasetLine": "مجموعة {version} — {count} سجلًا",
+  "@hadith_datasetLine": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "hadith_empty": "لا توجد أحاديث في هذا القسم بعد",
   "hadith_error": "تعذّر الاتصال بخادم فلاح",
+  "hadith_errorBadRequest": "طلب غير صالح.",
+  "@hadith_errorBadRequest": {
+    "description": "Hadith feature string"
+  },
+  "hadith_errorNetwork": "لا يمكن الوصول إلى الخادم. تحقّق من الاتصال ثم أعد المحاولة.",
+  "@hadith_errorNetwork": {
+    "description": "Hadith feature string"
+  },
+  "hadith_errorNotFound": "لم يُعثر على هذا السجل.",
+  "@hadith_errorNotFound": {
+    "description": "Hadith feature string"
+  },
+  "hadith_errorRateLimited": "طلبات كثيرة في وقت قصير. انتظر لحظة ثم أعد المحاولة.",
+  "@hadith_errorRateLimited": {
+    "description": "Hadith feature string"
+  },
+  "hadith_errorServer": "الخدمة غير متاحة الآن. أعد المحاولة بعد قليل.",
+  "@hadith_errorServer": {
+    "description": "Hadith feature string"
+  },
   "hadith_gradingLabel": "الدرجة",
+  "hadith_hashLabel": "بصمة السجل: {hash}",
+  "@hadith_hashLabel": {
+    "placeholders": {
+      "hash": {
+        "type": "String"
+      }
+    }
+  },
+  "hadith_loadMore": "تحميل المزيد",
+  "@hadith_loadMore": {
+    "description": "Hadith feature string"
+  },
   "hadith_loading": "جارٍ التحميل…",
+  "hadith_locationLabel": "الموضع",
+  "@hadith_locationLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_locatorLabel": "المُعرّف المطبعي",
+  "@hadith_locatorLabel": {
+    "description": "Hadith feature string"
+  },
   "hadith_narratorLabel": "الراوي",
   "hadith_noResults": "لا نتائج مطابقة",
   "hadith_numberLabel": "رقم الحديث",
+  "hadith_pageStatus": "{shown} من {total}",
+  "@hadith_pageStatus": {
+    "placeholders": {
+      "shown": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "hadith_retry": "إعادة المحاولة",
   "hadith_searchHint": "ابحث في الأحاديث…",
+  "hadith_searchPrompt": "اكتب كلمة أو أكثر ثم ابحث",
+  "@hadith_searchPrompt": {
+    "description": "Hadith feature string"
+  },
+  "hadith_searchTitle": "بحث في الأحاديث",
+  "@hadith_searchTitle": {
+    "description": "Hadith feature string"
+  },
   "hadith_sourceLabel": "المصدر",
   "hadith_takhrijLabel": "التخريج",
   "hadith_textWithheld": "النص غير متاح حتى تأكيد حقوق النشر",
@@ -220,6 +317,7 @@
   "library_stories": "Stories",
   "library_title": "مكتبتي",
   "library_videos": "فيديوهات",
+  "@@locale": "ar",
   "menu_about": "حول فلاح",
   "menu_account": "الحساب",
   "menu_help": "المساعدة",

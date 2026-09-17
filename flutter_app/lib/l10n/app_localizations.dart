@@ -884,11 +884,53 @@ abstract class AppLocalizations {
   /// **'بعض البيانات غير صحيحة. راجع المدخلات.'**
   String get errors_validation;
 
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'كل الأحاديث'**
+  String get hadith_allOfBook;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'الكتاب'**
+  String get hadith_bookLabel;
+
   /// No description provided for @hadith_booksTitle.
   ///
   /// In ar, this message translates to:
   /// **'كتب الجامع'**
   String get hadith_booksTitle;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'الباب'**
+  String get hadith_chapterLabel;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'الأبواب'**
+  String get hadith_chaptersTitle;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'الكتاب المُخرِّج'**
+  String get hadith_collectionLabel;
+
+  /// No description provided for @hadith_countLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count} حديثًا'**
+  String hadith_countLabel(int count);
+
+  /// No description provided for @hadith_datasetLine.
+  ///
+  /// In ar, this message translates to:
+  /// **'مجموعة {version} — {count} سجلًا'**
+  String hadith_datasetLine(String version, int count);
 
   /// No description provided for @hadith_empty.
   ///
@@ -902,17 +944,71 @@ abstract class AppLocalizations {
   /// **'تعذّر الاتصال بخادم فلاح'**
   String get hadith_error;
 
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'طلب غير صالح.'**
+  String get hadith_errorBadRequest;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'لا يمكن الوصول إلى الخادم. تحقّق من الاتصال ثم أعد المحاولة.'**
+  String get hadith_errorNetwork;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يُعثر على هذا السجل.'**
+  String get hadith_errorNotFound;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'طلبات كثيرة في وقت قصير. انتظر لحظة ثم أعد المحاولة.'**
+  String get hadith_errorRateLimited;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'الخدمة غير متاحة الآن. أعد المحاولة بعد قليل.'**
+  String get hadith_errorServer;
+
   /// No description provided for @hadith_gradingLabel.
   ///
   /// In ar, this message translates to:
   /// **'الدرجة'**
   String get hadith_gradingLabel;
 
+  /// No description provided for @hadith_hashLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'بصمة السجل: {hash}'**
+  String hadith_hashLabel(String hash);
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'تحميل المزيد'**
+  String get hadith_loadMore;
+
   /// No description provided for @hadith_loading.
   ///
   /// In ar, this message translates to:
   /// **'جارٍ التحميل…'**
   String get hadith_loading;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'الموضع'**
+  String get hadith_locationLabel;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'المُعرّف المطبعي'**
+  String get hadith_locatorLabel;
 
   /// No description provided for @hadith_narratorLabel.
   ///
@@ -932,6 +1028,12 @@ abstract class AppLocalizations {
   /// **'رقم الحديث'**
   String get hadith_numberLabel;
 
+  /// No description provided for @hadith_pageStatus.
+  ///
+  /// In ar, this message translates to:
+  /// **'{shown} من {total}'**
+  String hadith_pageStatus(int shown, int total);
+
   /// No description provided for @hadith_retry.
   ///
   /// In ar, this message translates to:
@@ -943,6 +1045,18 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'ابحث في الأحاديث…'**
   String get hadith_searchHint;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب كلمة أو أكثر ثم ابحث'**
+  String get hadith_searchPrompt;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'بحث في الأحاديث'**
+  String get hadith_searchTitle;
 
   /// No description provided for @hadith_sourceLabel.
   ///

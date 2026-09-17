@@ -5,6 +5,12 @@ import 'package:go_router/go_router.dart';
 
 import '../features/azkar/azkar_screen.dart';
 import '../features/home/home_screen.dart';
+import '../features/hadith/data/hadith_providers.dart';
+import '../features/hadith/presentation/hadith_books_screen.dart';
+import '../features/hadith/presentation/hadith_chapters_screen.dart';
+import '../features/hadith/presentation/hadith_detail_screen.dart';
+import '../features/hadith/presentation/hadith_list_screen.dart';
+import '../features/hadith/presentation/hadith_search_screen.dart';
 import '../features/quran/presentation/surah_list_screen.dart';
 import '../features/quran/presentation/surah_reader_screen.dart';
 import '../features/settings/settings_screen.dart';
@@ -42,6 +48,66 @@ final routerProvider = Provider<GoRouter>((ref) {
                       surah: int.tryParse(s.pathParameters['n'] ?? '') ?? 1,
                       initialAyah: s.extra is int ? s.extra as int : null,
                     ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/hadith',
+                name: 'hadith',
+                builder: (c, s) => const HadithBooksScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'search',
+                    name: 'hadithSearch',
+                    builder: (c, s) => const HadithSearchScreen(),
+                  ),
+                  GoRoute(
+                    path: 'all',
+                    name: 'hadithAll',
+                    builder: (c, s) => const HadithListScreen(
+                      query: HadithListQuery(HadithListKind.all),
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'book/:bookId',
+                    name: 'hadithChapters',
+                    builder: (c, s) => HadithChaptersScreen(
+                      bookId: s.pathParameters['bookId']!,
+                      bookName: s.extra as String?,
+                    ),
+                    routes: [
+                      GoRoute(
+                        path: 'hadiths',
+                        name: 'hadithBookList',
+                        builder: (c, s) => HadithListScreen(
+                          query: HadithListQuery(
+                            HadithListKind.book,
+                            s.pathParameters['bookId']!,
+                          ),
+                          title: s.extra as String?,
+                        ),
+                      ),
+                    ],
+                  ),
+                  GoRoute(
+                    path: 'chapter/:chapterId',
+                    name: 'hadithChapterList',
+                    builder: (c, s) => HadithListScreen(
+                      query: HadithListQuery(
+                        HadithListKind.chapter,
+                        s.pathParameters['chapterId']!,
+                      ),
+                      title: s.extra as String?,
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'item/:id',
+                    name: 'hadithDetail',
+                    builder: (c, s) => HadithDetailScreen(id: s.pathParameters['id']!),
                   ),
                 ],
               ),
@@ -107,6 +173,11 @@ class _ShellScaffold extends StatelessWidget {
             icon: const Icon(Icons.menu_book_outlined),
             selectedIcon: const Icon(Icons.menu_book),
             label: t.create_quran,
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.format_quote_outlined),
+            selectedIcon: const Icon(Icons.format_quote),
+            label: t.hadith_title,
           ),
           NavigationDestination(
             icon: const Icon(Icons.radio_button_unchecked),

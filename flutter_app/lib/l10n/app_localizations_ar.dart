@@ -411,7 +411,32 @@ class AppLocalizationsAr extends AppLocalizations {
   String get errors_validation => 'بعض البيانات غير صحيحة. راجع المدخلات.';
 
   @override
+  String get hadith_allOfBook => 'كل الأحاديث';
+
+  @override
+  String get hadith_bookLabel => 'الكتاب';
+
+  @override
   String get hadith_booksTitle => 'كتب الجامع';
+
+  @override
+  String get hadith_chapterLabel => 'الباب';
+
+  @override
+  String get hadith_chaptersTitle => 'الأبواب';
+
+  @override
+  String get hadith_collectionLabel => 'الكتاب المُخرِّج';
+
+  @override
+  String hadith_countLabel(int count) {
+    return '$count حديثًا';
+  }
+
+  @override
+  String hadith_datasetLine(String version, int count) {
+    return 'مجموعة $version — $count سجلًا';
+  }
 
   @override
   String get hadith_empty => 'لا توجد أحاديث في هذا القسم بعد';
@@ -420,10 +445,42 @@ class AppLocalizationsAr extends AppLocalizations {
   String get hadith_error => 'تعذّر الاتصال بخادم فلاح';
 
   @override
+  String get hadith_errorBadRequest => 'طلب غير صالح.';
+
+  @override
+  String get hadith_errorNetwork =>
+      'لا يمكن الوصول إلى الخادم. تحقّق من الاتصال ثم أعد المحاولة.';
+
+  @override
+  String get hadith_errorNotFound => 'لم يُعثر على هذا السجل.';
+
+  @override
+  String get hadith_errorRateLimited =>
+      'طلبات كثيرة في وقت قصير. انتظر لحظة ثم أعد المحاولة.';
+
+  @override
+  String get hadith_errorServer =>
+      'الخدمة غير متاحة الآن. أعد المحاولة بعد قليل.';
+
+  @override
   String get hadith_gradingLabel => 'الدرجة';
 
   @override
+  String hadith_hashLabel(String hash) {
+    return 'بصمة السجل: $hash';
+  }
+
+  @override
+  String get hadith_loadMore => 'تحميل المزيد';
+
+  @override
   String get hadith_loading => 'جارٍ التحميل…';
+
+  @override
+  String get hadith_locationLabel => 'الموضع';
+
+  @override
+  String get hadith_locatorLabel => 'المُعرّف المطبعي';
 
   @override
   String get hadith_narratorLabel => 'الراوي';
@@ -435,10 +492,21 @@ class AppLocalizationsAr extends AppLocalizations {
   String get hadith_numberLabel => 'رقم الحديث';
 
   @override
+  String hadith_pageStatus(int shown, int total) {
+    return '$shown من $total';
+  }
+
+  @override
   String get hadith_retry => 'إعادة المحاولة';
 
   @override
   String get hadith_searchHint => 'ابحث في الأحاديث…';
+
+  @override
+  String get hadith_searchPrompt => 'اكتب كلمة أو أكثر ثم ابحث';
+
+  @override
+  String get hadith_searchTitle => 'بحث في الأحاديث';
 
   @override
   String get hadith_sourceLabel => 'المصدر';

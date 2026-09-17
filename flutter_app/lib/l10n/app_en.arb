@@ -1,5 +1,4 @@
 {
-  "@@locale": "en",
   "ai_disclaimer": "The assistant never authors religious texts. scripture comes exclusively from verified sources",
   "ai_placeholder": "Ask me about design, ideas, titles…",
   "ai_send": "Send",
@@ -131,16 +130,114 @@
   "errors_storage": "Could not save. Check available storage.",
   "errors_unknown": "Unexpected error. Please try again.",
   "errors_validation": "Some input is invalid. Please review.",
+  "hadith_allOfBook": "All hadiths",
+  "@hadith_allOfBook": {
+    "description": "Hadith feature string"
+  },
+  "hadith_bookLabel": "Book",
+  "@hadith_bookLabel": {
+    "description": "Hadith feature string"
+  },
   "hadith_booksTitle": "Collection books",
+  "hadith_chapterLabel": "Chapter",
+  "@hadith_chapterLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_chaptersTitle": "Chapters",
+  "@hadith_chaptersTitle": {
+    "description": "Hadith feature string"
+  },
+  "hadith_collectionLabel": "Cited collection",
+  "@hadith_collectionLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_countLabel": "{count} hadiths",
+  "@hadith_countLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hadith_datasetLine": "Dataset {version} — {count} records",
+  "@hadith_datasetLine": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "hadith_empty": "No hadiths in this section yet",
   "hadith_error": "Could not reach the FALAH server",
+  "hadith_errorBadRequest": "Invalid request.",
+  "@hadith_errorBadRequest": {
+    "description": "Hadith feature string"
+  },
+  "hadith_errorNetwork": "The server cannot be reached. Check your connection and try again.",
+  "@hadith_errorNetwork": {
+    "description": "Hadith feature string"
+  },
+  "hadith_errorNotFound": "This record was not found.",
+  "@hadith_errorNotFound": {
+    "description": "Hadith feature string"
+  },
+  "hadith_errorRateLimited": "Too many requests. Wait a moment and try again.",
+  "@hadith_errorRateLimited": {
+    "description": "Hadith feature string"
+  },
+  "hadith_errorServer": "The service is unavailable right now. Try again shortly.",
+  "@hadith_errorServer": {
+    "description": "Hadith feature string"
+  },
   "hadith_gradingLabel": "Grading",
+  "hadith_hashLabel": "Record fingerprint: {hash}",
+  "@hadith_hashLabel": {
+    "placeholders": {
+      "hash": {
+        "type": "String"
+      }
+    }
+  },
+  "hadith_loadMore": "Load more",
+  "@hadith_loadMore": {
+    "description": "Hadith feature string"
+  },
   "hadith_loading": "Loading…",
+  "hadith_locationLabel": "Location",
+  "@hadith_locationLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_locatorLabel": "Printed locator",
+  "@hadith_locatorLabel": {
+    "description": "Hadith feature string"
+  },
   "hadith_narratorLabel": "Narrator",
   "hadith_noResults": "No matching results",
   "hadith_numberLabel": "Hadith number",
+  "hadith_pageStatus": "{shown} of {total}",
+  "@hadith_pageStatus": {
+    "placeholders": {
+      "shown": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "hadith_retry": "Retry",
   "hadith_searchHint": "Search hadiths…",
+  "hadith_searchPrompt": "Type a word or more, then search",
+  "@hadith_searchPrompt": {
+    "description": "Hadith feature string"
+  },
+  "hadith_searchTitle": "Search hadiths",
+  "@hadith_searchTitle": {
+    "description": "Hadith feature string"
+  },
   "hadith_sourceLabel": "Source",
   "hadith_takhrijLabel": "Takhrij",
   "hadith_textWithheld": "Text unavailable until publishing rights are confirmed",
@@ -220,6 +317,7 @@
   "library_stories": "Stories",
   "library_title": "My library",
   "library_videos": "Videos",
+  "@@locale": "en",
   "menu_about": "About FALAH",
   "menu_account": "Account",
   "menu_help": "Help",

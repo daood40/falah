@@ -287,6 +287,7 @@ class Hadith {
     this.references = const [],
     this.gradings = const [],
     this.takhrij,
+    this.raw = const {},
   });
 
   final String id;
@@ -308,6 +309,10 @@ class Hadith {
   final List<HadithReference> references;
   final List<Grading> gradings;
   final Takhrij? takhrij;
+
+  /// The response exactly as the server sent it. Kept so a cache can persist
+  /// and restore the record without a second, lossy serialization of its own.
+  final Map<String, dynamic> raw;
 
   /// The text to display, or null. Never a fallback, never a guess.
   String? get displayText => text;
@@ -339,6 +344,7 @@ class Hadith {
         takhrij: json['takhrij'] is Map<String, dynamic>
             ? Takhrij.fromJson(json['takhrij'] as Map<String, dynamic>)
             : null,
+        raw: json,
       );
 }
 
