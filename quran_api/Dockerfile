@@ -18,6 +18,9 @@ COPY src ./src
 COPY openapi ./openapi
 COPY schemas ./schemas
 COPY scripts ./scripts
+# The API owns its schema: without the migrations the image can start but can
+# never create the tables it reads, so every content request fails.
+COPY migrations ./migrations
 
 # Run unprivileged.
 USER node
