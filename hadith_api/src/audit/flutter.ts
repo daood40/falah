@@ -28,6 +28,18 @@ function dartFiles(dir: string, acc: string[] = []): string[] {
 }
 
 export async function runFlutterChecks(audit: Auditor): Promise<void> {
+  // The app is a CONSUMER of this service, not part of it. In a standalone
+  // checkout of the API it is absent, and this family says so rather than
+  // failing checks about code that is not here.
+  if (!existsSync(`${APP}/pubspec.yaml`)) {
+    audit.skipped('flutter.app_present', 'flutter.project',
+      'the consumer application is checked alongside the service',
+      'no consumer application in this checkout (the service is standalone here)',
+      APP, REPRO);
+    await runLiveConsumerChecks(audit);
+    return;
+  }
+
   audit.check('flutter.app_present', 'flutter.project',
     'the Flutter application is part of the repository',
     existsSync(`${APP}/pubspec.yaml`), {
@@ -95,7 +107,21 @@ export async function runFlutterChecks(audit: Auditor): Promise<void> {
       APP, 'cd flutter_app && flutter test');
   }
 
-  // the request the Dart client actually issues, made against staging
+  await runLiveConsumerChecks(audit);
+}
+
+/// The requests a client actually issues, made against the deployed instance.
+/// These hold whether or not a consumer application sits next to the service.
+async function runLiveConsumerChecks(audit: Auditor): Promise<void> {
+  const ping = await http('/api/v1/health');
+  if (ping.status !== 200) {
+    audit.blocked('flutter.live', 'flutter.integration',
+      'the requests a client issues answer from a deployed instance',
+      `no instance answering at ${BASE_URL} (${ping.status} ${ping.error ?? ''})`,
+      BASE_URL, 'bash scripts/staging-up.sh');
+    return;
+  }
+
   const live = await http('/api/v1/hadiths?page=1&limit=20');
   const body = live.json as { data?: { id: string; text: unknown; text_available: unknown }[]; meta?: Record<string, unknown> };
   audit.check('flutter.live_list', 'flutter.integration',

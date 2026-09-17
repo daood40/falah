@@ -1,5 +1,5 @@
 ================================================================
-FINAL QA AUDIT — FALAH HADITH API — 2026-09-17T19:23:11.610Z
+FINAL QA AUDIT — FALAH HADITH API — 2026-09-17T23:34:10.938Z
 ================================================================
 Every line below is one independent automated check against a distinct
 object: a distinct record, endpoint, role, payload, file or invariant.
@@ -7,12 +7,12 @@ No check is repeated to inflate the count — duplicate check ids are
 themselves reported as failures (category harness.integrity).
 
 ================ TOTALS ================
-TOTAL CHECKS                        274919
-PASSED                              274917
+TOTAL CHECKS                        275080
+PASSED                              275078
 FAILED                                   0
 BLOCKED                                  2
 SKIPPED                                  0
-DURATION (s)                           124
+DURATION (s)                           126
 
 ================ SEVERITY ================
 CRITICAL                                 0
@@ -90,10 +90,11 @@ project.container                           4       3       0       1       0
 project.dataset                             3       3       0       0       0
 project.dependencies                       11      11       0       0       0
 project.docs                               27      27       0       0       0
-project.no_ai                              80      80       0       0       0
+project.no_ai                              82      82       0       0       0
 project.openapi                           101     101       0       0       0
 project.repo                                1       1       0       0       0
 project.reports                             8       8       0       0       0
+project.standalone                         89      89       0       0       0
 project.vocabulary                          4       4       0       0       0
 security.authz                            169     169       0       0       0
 security.client                            58      58       0       0       0
@@ -102,7 +103,7 @@ security.fuzz                           18615   18615       0       0       0
 security.fuzz_random                     1800    1800       0       0       0
 security.license_gate                     107     107       0       0       0
 security.robustness                        20      20       0       0       0
-security.secrets                          868     868       0       0       0
+security.secrets                          938     938       0       0       0
 suite.unit                                204     204       0       0       0
 
 ================ COVERAGE ================
@@ -123,11 +124,11 @@ project test cases executed      204
 DATA INTEGRITY              223579 checks   223579 pass / 0 fail / 0 blocked / 0 skipped   PASS
 DATABASE                      1871 checks   1871 pass / 0 fail / 0 blocked / 0 skipped   PASS
 API                          27135 checks   27135 pass / 0 fail / 0 blocked / 0 skipped   PASS
-SECURITY                     21639 checks   21639 pass / 0 fail / 0 blocked / 0 skipped   PASS
+SECURITY                     21709 checks   21709 pass / 0 fail / 0 blocked / 0 skipped   PASS
 PERFORMANCE                   1910 checks   1910 pass / 0 fail / 0 blocked / 0 skipped   PASS
 FLUTTER                        123 checks   122 pass / 0 fail / 1 blocked / 0 skipped   PASS (1 BLOCKED)
 DEPLOYMENT (staging)             6 checks   6 pass / 0 fail / 0 blocked / 0 skipped   PASS
-PROJECT / CONTRACT             368 checks   367 pass / 0 fail / 1 blocked / 0 skipped   PASS (1 BLOCKED)
+PROJECT / CONTRACT             459 checks   458 pass / 0 fail / 1 blocked / 0 skipped   PASS (1 BLOCKED)
 TEST SUITE                     204 checks   204 pass / 0 fail / 0 blocked / 0 skipped   PASS
 
 ================ SECURITY FINDINGS ================

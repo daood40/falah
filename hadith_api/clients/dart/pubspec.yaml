@@ -1,10 +1,25 @@
 name: falah_hadith_api
-description: Dart client for the FALAH Hadith API — models, HTTP client and repository.
-version: 1.0.0
+description: >-
+  Dart and Flutter client for the FALAH Hadith API: typed models, an HTTP
+  client, a repository of every documented endpoint, and an offline cache that
+  refuses a record whose dataset or checksum no longer matches the server.
+version: 1.2.0
+repository: https://github.com/daood40/falah
+issue_tracker: https://github.com/daood40/falah/issues
+# Consumed as a git dependency today. Set this to a pub.dev publisher when the
+# owner decides to publish; nothing else in the package needs to change.
 publish_to: 'none'
+
+topics:
+  - hadith
+  - arabic
+  - api-client
 
 environment:
   sdk: ^3.5.0
 
 dependencies:
   http: ^1.2.2
+
+dev_dependencies:
+  lints: ^5.0.0

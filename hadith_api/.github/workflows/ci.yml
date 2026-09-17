@@ -1,0 +1,129 @@
+# Continuous integration for the Hadith API as a STANDALONE repository.
+#
+# GitHub only reads workflows from the repository root, so this file is dormant
+# while the service lives inside the FALAH monorepo (that build is driven by
+# .github/workflows/hadith_api.yml there). After `scripts/extract-repo.sh`
+# publishes this folder as its own repository, this becomes its build.
+#
+# Any of these failing fails the build: checksum mismatch, unexpected data
+# modification, invalid numbering, OpenAPI mismatch, security leak, RLS
+# failure, source-lock failure, licence-gate failure, tests.
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  service:
+    name: Migrate · Test · Integrity · Security · Audit
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: falah
+          POSTGRES_DB: falah_corpus_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:falah@127.0.0.1:5432/falah_corpus_test
+      ADMIN_API_KEY: ci-admin-key-not-a-real-secret
+      SUPABASE_JWT_SECRET: ci-jwt-secret-not-a-real-secret
+      ENVIRONMENT: test
+      # Both content gates stay closed in CI: no build may publish edition text.
+      CONTENT_LICENSE_CONFIRMED: 'false'
+      PUBLIC_DATA_ENABLED: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22', cache: npm }
+
+      - run: npm ci
+
+      - name: Gate — no secret in the tree
+        run: npm run security:scan
+
+      - name: Apply every migration in order
+        run: |
+          for f in migrations/*.sql; do
+            psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -q -f "$f"
+          done
+        env:
+          PGPASSWORD: falah
+
+      - name: Gate — types
+        run: npx tsc --noEmit
+
+      - name: Gate — tests
+        run: npx vitest run --reporter=verbose
+
+      - name: Gate — data integrity rules
+        run: npm run verify
+
+      - name: Gate — OpenAPI matches the router
+        run: npx vitest run tests/openapi.test.ts
+
+      - name: Gate — the service starts and refuses an anonymous admin call
+        run: |
+          npm start &
+          API_PID=$!
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:8787/api/v1/health >/dev/null && break
+            sleep 1
+          done
+          curl -sf http://127.0.0.1:8787/api/v1/health | grep -q '"database":"up"'
+          curl -s -o /dev/null -w '%{http_code}\n' \
+            http://127.0.0.1:8787/api/v1/admin/stats | grep -q 401
+          npm run smoke
+          kill $API_PID
+        env:
+          PORT: '8787'
+
+      - name: Gate — backup and restore keep the fingerprint
+        run: npm run backup:test
+        env:
+          RESTORE_DB: falah_restore_ci
+
+      - name: Gate — audit (families that need no corpus)
+        run: npm run audit -- --only=db,project
+
+      # The corpus itself is never in CI: the edition files are the owner's and
+      # the licence is not confirmed. Their evidence is committed under reports/.
+      - name: Note — corpus-dependent gates
+        run: |
+          echo "edition:audit, chain:verify, cross-verify and sample-verify need"
+          echo "data/, which is git-ignored. Evidence lives in reports/."
+
+  docker:
+    name: Docker — clean build and run
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the image from a clean context
+        run: docker build -t falah-hadith-api:ci .
+      - name: Run it against a throwaway database
+        run: |
+          docker network create hadith-ci
+          docker run -d --name db --network hadith-ci \
+            -e POSTGRES_PASSWORD=falah -e POSTGRES_DB=hadith \
+            -v "$PWD/migrations:/docker-entrypoint-initdb.d:ro" postgres:16-alpine
+          for i in $(seq 1 30); do
+            docker exec db pg_isready -U postgres >/dev/null 2>&1 && break
+            sleep 2
+          done
+          docker run -d --name api --network hadith-ci -p 8787:8787 \
+            -e DATABASE_URL=postgresql://postgres:falah@db:5432/hadith \
+            -e CONTENT_LICENSE_CONFIRMED=false -e PUBLIC_DATA_ENABLED=false \
+            falah-hadith-api:ci
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:8787/api/v1/health >/dev/null && break
+            sleep 2
+          done
+          curl -sf http://127.0.0.1:8787/api/v1/health | grep -q '"api":"up"'
+          docker logs api | tail -5

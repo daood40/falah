@@ -92,8 +92,15 @@ describe('Shamela text adapter — headings, grading, narrator', () => {
 
 // Runs only when the owner-supplied volumes are present (they are git-ignored).
 const REAL = 'data/jami-kamil-j01.txt';
+// vitest still RUNS the callback of a skipped describe to collect its tests,
+// so the file must not be read here unconditionally: a standalone checkout has
+// no corpus, and reading it crashed the whole test file instead of skipping
+// this one block.
+const realVolume = () =>
+  existsSync(REAL) ? adapter.parse(readFileSync(REAL), 'jami-kamil-j01.txt') : null;
+
 describe.runIf(existsSync(REAL))('Shamela adapter against the real volume 1', () => {
-  const real = adapter.parse(readFileSync(REAL), 'jami-kamil-j01.txt');
+  const real = realVolume()!;
 
   it('extracts the volume with stable counts', () => {
     expect(real.records.length).toBe(1086);

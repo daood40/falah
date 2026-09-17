@@ -1,0 +1,26 @@
+{
+  "name": "@falah/hadith-api",
+  "version": "1.2.0",
+  "description": "TypeScript client for the FALAH Hadith API — typed responses, no dependencies.",
+  "license": "MIT",
+  "type": "module",
+  "types": "./falah-hadith.ts",
+  "exports": {
+    ".": "./falah-hadith.ts"
+  },
+  "files": [
+    "falah-hadith.ts",
+    "README.md"
+  ],
+  "keywords": ["hadith", "arabic", "api-client"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/daood40/falah.git",
+    "directory": "hadith_api/clients/typescript"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "sideEffects": false,
+  "private": true
+}
