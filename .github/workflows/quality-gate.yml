@@ -251,11 +251,21 @@ jobs:
           disable-animations: true
           working-directory: flutter_app
           script: |
-            set -o pipefail
             flutter pub get
             flutter gen-l10n
             flutter devices
-            flutter test integration_test/gate_device_test.dart -d emulator-5554 --dart-define=GATE_API_BASE_URL=http://10.0.2.2:8787 --dart-define=GATE_DEVICE_PROFILE=android-api-${{ matrix.api-level }} --dart-define=GATE_BUILD=ci --dart-define=GATE_DATASET_VERSION=${{ env.QURAN_DATASET_VERSION }} 2>&1 | tee /tmp/device-run-${{ matrix.api-level }}.log
+            flutter test integration_test/gate_device_test.dart -d emulator-5554 --dart-define=GATE_API_BASE_URL=http://10.0.2.2:8787 --dart-define=GATE_DEVICE_PROFILE=android-api-${{ matrix.api-level }} --dart-define=GATE_BUILD=ci --dart-define=GATE_DATASET_VERSION=${{ env.QURAN_DATASET_VERSION }} > /tmp/device-run-${{ matrix.api-level }}.log 2>&1
+            status=$?
+            cat /tmp/device-run-${{ matrix.api-level }}.log
+            exit $status
+
+      - name: Device log (always, so a failure is readable)
+        if: always()
+        run: |
+          echo "--- device run log"
+          cat /tmp/device-run-${{ matrix.api-level }}.log 2>/dev/null | tail -n 120 || echo "no device log was produced"
+          echo "--- api server log"
+          tail -n 40 /tmp/api-server.log 2>/dev/null || echo "no api log"
 
       - name: Turn the device output into gate evidence
         if: always()
