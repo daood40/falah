@@ -1,0 +1,63 @@
+================================================================
+LICENSE AUDIT — 2026-09-17T14:02:50Z
+Five separate questions. Answering one does not answer the others.
+================================================================
+
+1. SOFTWARE LICENSE                                        PASS
+   The code in hadith_api/ is MIT (see LICENSE). It grants rights over the
+   SOFTWARE only, and says so explicitly.
+
+2. BOOK COPYRIGHT                                          RESERVED — NOT GRANTED
+   «الجامع الكامل في الحديث الصحيح الشامل», أبو أحمد محمد عبد الله الأعظمي
+   «الضياء», دار السلام, Riyadh, 1st printing 1437H/2016.
+   The edition's own copyright page states: «جميع حقوق الطبع محفوظة للمؤلف»
+   (volume 1, page 4 — present verbatim in the source files).
+   No transfer, waiver or grant of those rights is on file.
+
+3. DIGITAL DATASET LICENSE                                 NOT CONFIRMED
+   The text arrived as a Shamela export supplied by the project owner in this
+   session. That settles ACCESS. It does not state the terms under which the
+   digital text itself may be copied or served.
+   corpus.sources.license_status = 'unconfirmed' for both registered sources
+   (shamela-47 = the text, ketabonline-62920 = the reference the project began from).
+
+4. REDISTRIBUTION PERMISSION                               NOT GRANTED
+   No written permission from the publisher (دار السلام) or from المكتبة الشاملة
+   exists in this repository. Availability of the book on the internet is not
+   evidence of a right to redistribute it, and is not treated as such anywhere
+   in this system.
+
+5. COMMERCIAL PERMISSION                                   NOT GRANTED
+   Never requested, never granted, never assumed.
+
+----------------------------------------------------------------
+GATES AS SHIPPED
+   CONTENT_LICENSE_CONFIRMED = false   → the public API returns text as null
+                                         with text_available:false
+   PUBLIC_DATA_ENABLED       = false   → bulk export writes metadata only
+   hadith_api/data/                    → git-ignored; the corpus text is not in
+                                         this repository at all
+   corpus.app_settings.content_license_confirmed = 'false'
+                                       → corpus.hadiths_public withholds the
+                                         same columns at the SQL level, so a
+                                         direct database client cannot read
+                                         around the API
+   Verified live: reports/API_RUN.txt shows a public read returning
+   "text": null next to the same record read with an admin credential.
+   Verified by tests: tests/falah-contract.test.ts (both gates closed),
+   tests/license-flag.test.ts (the inverse, with the gate open).
+
+WHAT WOULD CHANGE THIS
+   A written permission covering redistribution of this edition's text, filed in
+   this repository and cited here. Then, and only then:
+     update corpus.sources set license_status='confirmed' where slug='shamela-47';
+     update corpus.app_settings set value='true' where key='content_license_confirmed';
+     CONTENT_LICENSE_CONFIRMED=true   (and PUBLIC_DATA_ENABLED=true to export)
+   No code change and no migration are involved.
+
+OWNER ACTION REQUIRED
+   Obtain and file the redistribution permission before any public deployment
+   that serves the text. Until then the service may run privately, and the
+   public API may serve structure, references, gradings and verification
+   verdicts — but not the hadith text.
+================================================================

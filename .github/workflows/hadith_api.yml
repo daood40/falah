@@ -1,0 +1,145 @@
+# Hadith API — every gate that must hold before this service ships.
+# Any of these failing fails the build: checksum mismatch, unexpected data
+# modification, invalid numbering, OpenAPI mismatch, security leak, RLS
+# failure, source-lock failure, licence-gate failure, tests.
+name: Hadith API CI
+
+on:
+  push:
+    paths: ['hadith_api/**', '.github/workflows/hadith_api.yml']
+  pull_request:
+    paths: ['hadith_api/**', '.github/workflows/hadith_api.yml']
+  workflow_dispatch:
+
+jobs:
+  hadith-api:
+    name: Migrate · Test · Integrity · Security · Smoke
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: falah
+          POSTGRES_DB: falah_corpus_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: falah
+      PGDATABASE: falah_corpus_test
+      DATABASE_URL: postgresql://postgres:falah@127.0.0.1:5432/falah_corpus_test
+      ADMIN_API_KEY: ci-admin-key
+      SUPABASE_JWT_SECRET: ci-jwt-secret
+      ENVIRONMENT: test
+      CONTENT_LICENSE_CONFIRMED: 'false'
+      PUBLIC_DATA_ENABLED: 'false'
+    defaults:
+      run: { working-directory: hadith_api }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: hadith_api/package-lock.json
+
+      - run: npm ci
+
+      - name: Gate — secrets and leaks
+        run: npm run security:scan
+
+      - name: Apply migrations (the service owns its schema)
+        run: |
+          for f in migrations/*.sql; do
+            echo "applying $f"
+            psql -v ON_ERROR_STOP=1 -q -f "$f"
+          done
+
+      - name: Gate — typecheck
+        run: npx tsc --noEmit
+
+      - name: Gate — tests (source lock, RLS, licence gate, integrity rules)
+        run: npx vitest run --reporter=verbose
+
+      - name: Gate — data integrity rules
+        run: npm run verify
+
+      - name: Gate — OpenAPI ↔ router parity
+        run: npx vitest run tests/openapi.test.ts
+
+      - name: Gate — licence flags are closed by default
+        run: |
+          node --experimental-strip-types -e "
+            import('./src/config.ts').then(({config}) => {
+              if (config.contentLicenseConfirmed || config.publicDataEnabled) {
+                console.error('licence gate is open in CI — refusing');
+                process.exit(1);
+              }
+              console.log('licence gates closed: content=' + config.contentLicenseConfirmed +
+                          ' public_data=' + config.publicDataEnabled);
+            })"
+
+      - name: Gate — live API smoke (every route from the router)
+        run: |
+          RATE_LIMIT_MAX=100000 node --experimental-strip-types src/http/server.ts &
+          API_PID=$!
+          for i in $(seq 1 20); do
+            curl -sf http://127.0.0.1:8787/api/v1/health >/dev/null && break || sleep 1
+          done
+          set -e
+          curl -sf http://127.0.0.1:8787/api/v1/health | grep -q '"database":"up"'
+          curl -sf http://127.0.0.1:8787/api/v1/version | grep -q '"api_version":"v1"'
+          curl -sf http://127.0.0.1:8787/openapi.yaml | head -1 | grep -q 'openapi'
+          curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8787/api/v1/admin/stats | grep -q 401
+          npm run smoke
+          kill $API_PID
+
+      - name: Gate — backup and restore (fingerprint must survive)
+        run: npm run backup:test
+        env:
+          RESTORE_DB: falah_restore_ci
+
+      # These need the owner-supplied corpus, which is never in CI.
+      # They run locally and their evidence lives in hadith_api/reports/.
+      - name: Note — corpus-dependent gates
+        run: |
+          echo "edition:audit, chain:verify, cross-verify and sample-verify need"
+          echo "hadith_api/data/, which is git-ignored (licence not confirmed)."
+          echo "Evidence from the local runs is committed under hadith_api/reports/."
+
+  docker:
+    name: Docker — clean build and run
+    runs-on: ubuntu-latest
+    defaults:
+      run: { working-directory: hadith_api }
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the image from a clean context
+        run: docker build -t falah-hadith-api:ci .
+      - name: Run it against a throwaway database
+        run: |
+          docker network create falah-ci
+          docker run -d --name db --network falah-ci \
+            -e POSTGRES_PASSWORD=falah -e POSTGRES_DB=hadith \
+            -v "$PWD/migrations:/docker-entrypoint-initdb.d:ro" postgres:16-alpine
+          for i in $(seq 1 30); do
+            docker exec db pg_isready -U postgres >/dev/null 2>&1 && break || sleep 2
+          done
+          docker run -d --name api --network falah-ci -p 8787:8787 \
+            -e DATABASE_URL=postgresql://postgres:falah@db:5432/hadith \
+            -e CONTENT_LICENSE_CONFIRMED=false -e PUBLIC_DATA_ENABLED=false \
+            falah-hadith-api:ci
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:8787/api/v1/health >/dev/null && break || sleep 2
+          done
+          curl -sf http://127.0.0.1:8787/api/v1/health | tee /dev/stderr | grep -q '"database":"up"'
+          curl -sf http://127.0.0.1:8787/api/v1/version | grep -q '"api_version":"v1"'
+          curl -sf http://127.0.0.1:8787/api/v1/stats  | grep -q '"hadiths"'
+          curl -sf http://127.0.0.1:8787/openapi.yaml | head -1 | grep -q openapi
+          docker logs api | tail -5
+          docker rm -f api db && docker network rm falah-ci

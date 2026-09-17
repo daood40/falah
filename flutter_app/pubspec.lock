@@ -116,7 +116,7 @@ packages:
   falah_hadith_api:
     dependency: "direct main"
     description:
-      path: "../hadith-api/clients/dart"
+      path: "../hadith_api/clients/dart"
       relative: true
     source: path
     version: "1.0.0"

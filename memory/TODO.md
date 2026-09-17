@@ -15,6 +15,9 @@
 - [ ] مراجعة 1,638 سجلًا لم يؤيّدها المصدر المستقل:
       GET /api/v1/cross-checks/review-queue (الأرجح فروق ألفاظ أو نقص المرجع)
 - [ ] مصدر مرجعي ثانٍ يغطي الحاكم/الطبراني/البيهقي/ابن حبان
+- [ ] إذن إعادة التوزيع مكتوبًا ⇒ يُودع في hadith_api/ ويُذكر في LICENSE_AUDIT
+      ثم تُفتح البوابتان (CONTENT_LICENSE_CONFIRMED + PUBLIC_DATA_ENABLED)
+- [ ] مستضيف للـAPI ⇒ ينتهي حجب DEPLOYMENT ويظهر عنوان عام
 - [ ] تأكيد حقوق النشر كتابةً قبل رفع CONTENT_LICENSE_CONFIRMED إلى true
       وتحديث corpus.sources.license_status
 - [ ] ضبط DATABASE_URL/SUPABASE_JWT_SECRET/ADMIN_API_KEY في بيئة النشر

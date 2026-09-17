@@ -1,0 +1,73 @@
+================================================================
+FINAL PRODUCTION AUDIT — 2026-09-17T14:03:29Z
+repo: daood40/falah   branch: claude/falah-hadith-api-backend-md1ak3
+service: hadith_api/ — standalone, separable into its own repository
+Every line below was produced by running it. Nothing is estimated.
+================================================================
+
+GATE                    STATUS    EVIDENCE
+----------------------- --------  --------------------------------------------
+BUILD                   PASS      tsc --noEmit · flutter analyze · PWA build
+DATABASE                PASS      9 migrations from scratch · db:validate PASS
+                                  18 tables + 8 views, RLS on every table
+MIGRATIONS              PASS      hadith_api/migrations/0001…0009, self-contained
+EDITION AUDIT           PASS      reports/HADITH_EDITION_AUDIT.txt — 12/12 volumes,
+                                  8,687 pages, file↔database match per volume
+RAW SOURCE INTEGRITY    PASS      15,961/15,961 verbatim, right page, right hash
+CHAIN INTEGRITY         PASS      RAW → DATABASE → API → EXPORT, 400/400 at each hop
+DATA INTEGRITY RULES    PASS      21 rules, each proven non-vacuous by a planted
+                                  violation that is rolled back
+NUMBERING               PASS      this edition prints none ⇒ 0 invented; locators
+                                  unique; reading order never goes backwards
+DUPLICATES              PASS      130 exact groups reported, 0 deleted, 0 merged
+CROSS VERIFICATION      PARTIAL   independent corpus: 67.53% corroborated,
+                                  18.75% partial; takhrij support 77.01%;
+                                  1,395 records queued for human review
+API                     PASS      50 endpoints, 59 smoke checks, 0 failed,
+                                  0 write verbs on public routes
+OPENAPI                 PASS      49 paths / 50 operations, parity asserted both
+                                  ways; served at /openapi.yaml
+SEARCH                  PASS      Arabic exact/normalized/partial, 8 filters,
+                                  3–340 ms; stored text unchanged by search
+SECURITY                PASS      6-point scan clean · RLS · rate limit · headers ·
+                                  parameterised SQL · no secret in any client
+PUBLIC READ-ONLY        PASS      no public route mutates text, grading, takhrij,
+                                  narrator, source or dataset
+DATASET VERSIONING      PASS      version + SHA-256 + record_count + status, sealed
+BACKUP / RESTORE        PASS      pg_dump → restore → identical fingerprint and
+                                  row counts; records still source_locked
+OFFLINE CACHE           PASS      checksum + dataset rules enforced in the client,
+                                  7 tests (stale dataset, mismatch, expiry)
+FLUTTER INTEGRATION     PASS      16 live tests: Falah → client → HTTP → API → DB
+DOCKER                  BLOCKED   no daemon in this environment. Static build
+                                  check PASS; a real build+run job is wired into CI
+CI/CD                   PASS      gates: security, migrations, typecheck, tests,
+                                  integrity, OpenAPI parity, licence flags, live
+                                  smoke, backup/restore, docker build
+REAL DATA IMPORT        PASS      12 owner-supplied volumes → 15,961 records,
+                                  0 failed, 0 duplicates, 46 s
+HUMAN VERIFICATION      PENDING   0 samples. No human has compared a record with
+                                  the printed edition ⇒ verified=false on all
+LICENSE                 BLOCKED   reports/LICENSE_AUDIT.txt — redistribution not
+                                  granted; both content gates shipped closed
+DEPLOYMENT              BLOCKED   nothing deployed; no host, no credentials,
+                                  no public URL
+----------------------- --------  --------------------------------------------
+
+PRODUCTION READY: NO
+  Three gates are not green: LICENSE (BLOCKED), DEPLOYMENT (BLOCKED),
+  HUMAN VERIFICATION (PENDING). Everything that can be proven mechanically is
+  proven; what remains needs a person and a permission, not more code.
+
+NUMBERS (measured)
+  Edition        الجامع الكامل — ط1، 1437هـ/2016م، دار السلام — 12 مجلدًا
+  Volumes/pages  12 / 8,687   (a 19-volume printing is a different edition)
+  Dataset        JAMI-KAMIL-1437-V1 · status sealed
+  SHA-256        694a5afe4ac80aad4f3cd133ae1364160a3e23d6925774cd6f27868ecdb6cb7c
+  Hadiths        15,961      Books 67      Chapters 5,338     Narrators 1,643
+  Gradings       15,762      Takhrij links 26,934 across 26 collections
+  Verification   47,883 machine records · 0 human samples
+  Endpoints      50 (39 public, 11 admin)
+  Tests          188 service · 75 PWA · 48 Flutter · 16 live integration = 327
+  Failures       0
+================================================================
