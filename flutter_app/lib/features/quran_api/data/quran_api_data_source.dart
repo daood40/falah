@@ -4,6 +4,11 @@ library;
 import '../domain/models.dart';
 import 'api_client.dart';
 
+/// The API refuses any list request above this limit (`limit must be <= 100`),
+/// so every paged read here asks for exactly this much and walks the pages.
+/// The surah index is the one endpoint that allows the full 114 at once.
+const int kMaxApiPageLimit = 100;
+
 class QuranApiDataSource {
   const QuranApiDataSource(this._client);
 

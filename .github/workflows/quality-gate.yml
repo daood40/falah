@@ -204,18 +204,25 @@ jobs:
           node scripts/device-expectations.ts --dataset-version=${{ env.QURAN_DATASET_VERSION }} --edition=quran-json-uthmani-hafs
         working-directory: quran_api
 
-      - name: Serve the API for the emulator (internal instance, public flags off)
+      # The emulator talks to the API in the real private posture — private mode
+      # on, no public data, no licence claimed — and authenticates like the app
+      # will inside FALAH, with an internal token.
+      - name: Serve the API for the emulator (private posture, internal token)
         working-directory: quran_api
         env:
           HOST: 0.0.0.0
           PORT: '8787'
-          PRIVATE_MODE: 'false'
-          PUBLIC_DATA_ENABLED: 'true'
-          CONTENT_LICENSE_CONFIRMED: 'true'
-          DATA_REDISTRIBUTION_ALLOWED: 'true'
+          PRIVATE_MODE: 'true'
+          PUBLIC_DATA_ENABLED: 'false'
+          CONTENT_LICENSE_CONFIRMED: 'false'
           RATE_LIMIT_MAX: '1000000'
           SUPABASE_JWT_SECRET: gate-secret-for-falah-quran-api-quality-gate
         run: |
+          node --input-type=module -e "
+            import { signSupabaseJwt } from './src/auth/jwt.ts';
+            process.stdout.write(signSupabaseJwt({ sub: '00000000-0000-0000-0000-000000000001', role: 'authenticated' }, process.env.SUPABASE_JWT_SECRET));
+          " > /tmp/gate-token
+          echo "GATE_API_TOKEN=$(cat /tmp/gate-token)" >> "$GITHUB_ENV"
           nohup node src/server.ts > /tmp/api-server.log 2>&1 &
           for attempt in $(seq 1 60); do
             if curl -sf http://127.0.0.1:8787/api/v1/health > /dev/null; then
@@ -254,7 +261,7 @@ jobs:
             flutter pub get
             flutter gen-l10n
             flutter devices
-            flutter test integration_test/gate_device_test.dart -d emulator-5554 --dart-define=GATE_API_BASE_URL=http://10.0.2.2:8787 --dart-define=GATE_DEVICE_PROFILE=android-api-${{ matrix.api-level }} --dart-define=GATE_BUILD=ci --dart-define=GATE_DATASET_VERSION=${{ env.QURAN_DATASET_VERSION }} > /tmp/device-run-${{ matrix.api-level }}.log 2>&1
+            flutter test integration_test/gate_device_test.dart -d emulator-5554 --dart-define=GATE_API_BASE_URL=http://10.0.2.2:8787 --dart-define=GATE_API_TOKEN=${{ env.GATE_API_TOKEN }} --dart-define=GATE_DEVICE_PROFILE=android-api-${{ matrix.api-level }} --dart-define=GATE_BUILD=ci --dart-define=GATE_DATASET_VERSION=${{ env.QURAN_DATASET_VERSION }} > /tmp/device-run-${{ matrix.api-level }}.log 2>&1
             status=$?
             cat /tmp/device-run-${{ matrix.api-level }}.log
             exit $status
@@ -271,6 +278,10 @@ jobs:
         if: always()
         run: |
           mkdir -p quran_api/reports
+          if [ ! -f /tmp/device-run-${{ matrix.api-level }}.log ]; then
+            echo "the device run never started — an earlier step failed; nothing to convert"
+            exit 0
+          fi
           grep -h '^GATE_RECORD ' /tmp/device-run-${{ matrix.api-level }}.log \
             | sed 's/^GATE_RECORD //' \
             > quran_api/reports/gate-evidence-android-${{ matrix.api-level }}.jsonl

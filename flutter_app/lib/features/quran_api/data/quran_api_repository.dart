@@ -42,14 +42,14 @@ class QuranApiRepository implements QuranApiRepositoryContract {
       surah,
       edition: edition,
       translation: translation,
-      limit: 300,
+      limit: kMaxApiPageLimit,
     );
     final ayahs = await _collect(result, (page) => _remote.getSurahAyahs(
           surah,
           edition: edition,
           translation: translation,
           page: page,
-          limit: 300,
+          limit: kMaxApiPageLimit,
         ));
     if (translation == null) await _cache?.writeSurahAyahs(surah, ayahs);
     return ayahs;
@@ -83,9 +83,9 @@ class QuranApiRepository implements QuranApiRepositoryContract {
 
   @override
   Future<List<QuranAyah>> getJuzAyahs(int juz) async {
-    final first = await _remote.getJuzAyahs(juz, edition: edition, limit: 300);
+    final first = await _remote.getJuzAyahs(juz, edition: edition, limit: kMaxApiPageLimit);
     return _collect(first, (page) =>
-        _remote.getJuzAyahs(juz, edition: edition, page: page, limit: 300));
+        _remote.getJuzAyahs(juz, edition: edition, page: page, limit: kMaxApiPageLimit));
   }
 
   @override

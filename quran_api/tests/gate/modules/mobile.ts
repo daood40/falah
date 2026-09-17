@@ -36,6 +36,20 @@ function run_(command: string, args: string[], options: { cwd?: string; timeout?
   };
 }
 
+/** aapt lives in the SDK build-tools, which are not on PATH on a CI runner. */
+function sdkBuildTool(command: string): string | null {
+  const sdk = process.env.ANDROID_SDK_ROOT ?? process.env.ANDROID_HOME;
+  if (!sdk) return null;
+  try {
+    const found = execFileSync('sh', ['-c', `ls -1 ${JSON.stringify(sdk)}/build-tools/*/${command} 2>/dev/null | sort -V | tail -n 1`], {
+      encoding: 'utf8',
+    }).trim();
+    return found.length > 0 ? found : null;
+  } catch {
+    return null;
+  }
+}
+
 function which(command: string): string | null {
   try {
     return execFileSync('sh', ['-c', `command -v ${command}`], { encoding: 'utf8' }).trim() || null;
@@ -113,12 +127,18 @@ export async function run(ctx: GateContext): Promise<void> {
   gate.check('MB-APK-SIZE', CATEGORY, 'the release APK stays under 100 MB', { file: 'app-release.apk' }, apkSize < 100 * 1024 * 1024, '< 100 MB', `${Math.round(apkSize / 1024 / 1024)} MB`, 'MEDIUM', 1);
 
   const entries = run_('unzip', ['-l', apk], { timeout: 300_000 }).stdout;
+  // A modern release APK is signed with scheme v2/v3, whose signature lives in
+  // the APK Signing Block between the entries and the central directory — there
+  // are no META-INF/*.RSA files to look for. So look for either.
+  const v1 = /META-INF\/[^\s]*\.(RSA|DSA|EC|SF)/.test(entries);
+  const v2 = run_('sh', ['-c', `LC_ALL=C grep -a -c 'APK Sig Block 42' ${JSON.stringify(apk)} || true`], { timeout: 300_000 }).stdout.trim() !== '0';
+  const signature = { ok: v1 || v2, actual: v1 && v2 ? 'v1 + v2/v3' : v1 ? 'v1 (META-INF)' : v2 ? 'v2/v3 signing block' : 'UNSIGNED' };
   const apkContents: { id: string; description: string; ok: boolean; expected: string; actual: string; severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' }[] = [
     { id: 'DEX', description: 'the APK contains compiled application code', ok: /classes\.dex/.test(entries), expected: 'classes.dex', actual: /classes\.dex/.test(entries) ? 'present' : 'MISSING', severity: 'CRITICAL' },
     { id: 'LIBFLUTTER', description: 'the APK contains the Flutter engine library', ok: /libflutter\.so/.test(entries), expected: 'libflutter.so', actual: /libflutter\.so/.test(entries) ? 'present' : 'MISSING', severity: 'HIGH' },
     { id: 'LIBAPP', description: 'the APK contains the AOT-compiled Dart application', ok: /libapp\.so/.test(entries), expected: 'libapp.so', actual: /libapp\.so/.test(entries) ? 'present' : 'MISSING', severity: 'HIGH' },
     { id: 'MANIFEST', description: 'the APK contains a binary manifest', ok: /AndroidManifest\.xml/.test(entries), expected: 'AndroidManifest.xml', actual: /AndroidManifest\.xml/.test(entries) ? 'present' : 'MISSING', severity: 'HIGH' },
-    { id: 'SIGNED', description: 'the APK carries a signing block (debug key in CI, release key with the owner secrets)', ok: /META-INF\/(CERT|.*\.RSA|.*\.SF)/.test(entries), expected: 'a signature block', actual: /META-INF\//.test(entries) ? 'present' : 'MISSING', severity: 'MEDIUM' },
+    { id: 'SIGNED', description: 'the APK carries a signing block (debug key in CI, release key with the owner secrets)', ok: signature.ok, expected: 'a v1, v2 or v3 signature', actual: signature.actual, severity: 'MEDIUM' },
     { id: 'NO-ENV', description: 'the APK ships no .env file', ok: !/\.env\b/.test(entries), expected: 'no .env entry', actual: 'scanned', severity: 'CRITICAL' },
     { id: 'NO-CONFIG-JSON', description: 'the APK ships no unexpected configuration json at the root', ok: !/\s(development|staging|production)\.json$/m.test(entries), expected: 'no raw config json', actual: 'scanned', severity: 'MEDIUM' },
   ];
@@ -142,7 +162,7 @@ export async function run(ctx: GateContext): Promise<void> {
   );
 
   // Manifest facts read back out of the built APK, not out of the source file.
-  const aapt = which('aapt2') ?? which('aapt');
+  const aapt = which('aapt2') ?? which('aapt') ?? sdkBuildTool('aapt2') ?? sdkBuildTool('aapt');
   if (aapt) {
     const badging = run_(aapt, [aapt.endsWith('aapt2') ? 'dump' : 'dump', aapt.endsWith('aapt2') ? 'badging' : 'badging', apk], { timeout: 300_000 }).stdout;
     const badgingChecks: { id: string; description: string; ok: boolean; expected: string; actual: string; severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' }[] = [
