@@ -3,9 +3,8 @@ library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../domain/models.dart';
-import 'hadith_api_client.dart';
-import 'hadith_repository.dart';
+
+import 'package:falah_hadith_api/falah_hadith_api.dart';
 
 /// Set at build time: flutter build --dart-define=FALAH_API_BASE_URL=https://…
 const String kFalahApiBaseUrl = String.fromEnvironment(

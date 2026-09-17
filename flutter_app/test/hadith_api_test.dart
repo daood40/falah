@@ -2,9 +2,7 @@
 // All payloads here are synthetic TEST DATA; no scripture is used in tests.
 import 'dart:convert';
 
-import 'package:falah/features/hadith/data/hadith_api_client.dart';
-import 'package:falah/features/hadith/data/hadith_repository.dart';
-import 'package:falah/features/hadith/domain/models.dart';
+import 'package:falah_hadith_api/falah_hadith_api.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';

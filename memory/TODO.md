@@ -12,6 +12,9 @@
 - [x] توفير ملفات «الجامع الكامل» — استُوردت 15,961 حديثًا (2026-09-16)
 - [ ] عيّنة تحقق بشرية: قارن 30 حديثًا بالمطبوع ثم
       POST /api/v1/admin/verification-samples (بدونها verified=false للجميع)
+- [ ] مراجعة 1,638 سجلًا لم يؤيّدها المصدر المستقل:
+      GET /api/v1/cross-checks/review-queue (الأرجح فروق ألفاظ أو نقص المرجع)
+- [ ] مصدر مرجعي ثانٍ يغطي الحاكم/الطبراني/البيهقي/ابن حبان
 - [ ] تأكيد حقوق النشر كتابةً قبل رفع CONTENT_LICENSE_CONFIRMED إلى true
       وتحديث corpus.sources.license_status
 - [ ] ضبط DATABASE_URL/SUPABASE_JWT_SECRET/ADMIN_API_KEY في بيئة النشر

@@ -1,0 +1,51 @@
+# Standalone stack: PostgreSQL + this API. Nothing else in the repository is
+# needed — `docker compose up` gives a working hadith API on :8787.
+#
+#   docker compose up -d                 # database + API, schema applied
+#   docker compose run --rm importer     # load volumes from ./data (if present)
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-falah}
+      POSTGRES_DB: ${POSTGRES_DB:-hadith}
+    ports: ['${DB_PORT:-5432}:5432']
+    volumes:
+      # every migration runs once, in order, on first start
+      - ./migrations:/docker-entrypoint-initdb.d:ro
+      - hadith-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      retries: 20
+
+  api:
+    build: .
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-falah}@db:5432/${POSTGRES_DB:-hadith}
+      ENVIRONMENT: ${ENVIRONMENT:-staging}
+      # false keeps the text out of public responses until rights are confirmed
+      CONTENT_LICENSE_CONFIRMED: ${CONTENT_LICENSE_CONFIRMED:-false}
+      ADMIN_API_KEY: ${ADMIN_API_KEY:-}
+      SUPABASE_JWT_SECRET: ${SUPABASE_JWT_SECRET:-}
+      CORS_ORIGINS: ${CORS_ORIGINS:-*}
+      PORT: '8787'
+    ports: ['${API_PORT:-8787}:8787']
+    restart: unless-stopped
+
+  # One-shot: parse and load the volumes mounted at /app/data.
+  importer:
+    build: .
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-falah}@db:5432/${POSTGRES_DB:-hadith}
+    volumes:
+      - ./data:/app/data:ro
+    profiles: ['tools']
+    entrypoint: ['bash', 'scripts/import-jami-kamil.sh']
+
+volumes:
+  hadith-db:

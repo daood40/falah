@@ -6,8 +6,7 @@
 // Without that define the suite skips, so CI without a server stays green.
 // It proves the Dart models parse what the server really sends — a contract
 // check, not a mock.
-import 'package:falah/features/hadith/data/hadith_api_client.dart';
-import 'package:falah/features/hadith/data/hadith_repository.dart';
+import 'package:falah_hadith_api/falah_hadith_api.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 const liveApi = String.fromEnvironment('FALAH_LIVE_API');

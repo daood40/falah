@@ -19,7 +19,7 @@ export default defineConfig({
     chunkSizeWarningLimit: 900,
   },
   test: {
-    // backend/ is a separate package with its own vitest config and a real
+    // hadith-api/ is a separate service with its own vitest config and a real
     // PostgreSQL; it must not be pulled into the PWA (jsdom) suite.
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
     environment: 'jsdom',

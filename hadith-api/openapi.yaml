@@ -1,0 +1,922 @@
+openapi: 3.1.0
+info:
+  title: FALAH Hadith API
+  version: 1.0.0
+  description: |
+    REST API over the FALAH hadith corpus (PostgreSQL / Supabase).
+
+    Rules that shape this contract:
+      * Religious text is never generated, edited, corrected or rephrased.
+      * Any field absent from the source is `null` — never guessed.
+      * Imported text is `source_locked`; corrections arrive as a new
+        `dataset_version`, never as an update of a historical row.
+      * While `CONTENT_LICENSE_CONFIRMED=false`, the public API returns
+        `raw_text`, `matn`, `isnad` and `takhrij` as `null` and sets
+        `text_available: false`. Admin credentials still read them internally.
+  license:
+    name: Application code — project license; corpus content — see the edition's source.
+servers:
+  - url: http://127.0.0.1:8787
+    description: Local development
+  - url: https://api.staging.falah.app
+    description: Staging (CONTENT_LICENSE_CONFIRMED=false)
+  - url: https://api.falah.app
+    description: Production
+
+tags:
+  - name: system
+  - name: hadiths
+  - name: catalogue
+  - name: classification
+  - name: verification
+  - name: search
+  - name: admin
+
+security: []
+
+components:
+  securitySchemes:
+    adminAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Supabase JWT with `app_metadata.corpus_role = "admin"`, or the
+        server-to-server `ADMIN_API_KEY`. The Supabase service-role key is
+        never used by a client and never leaves the server.
+  parameters:
+    page:
+      name: page
+      in: query
+      schema: { type: integer, minimum: 1, default: 1 }
+    limit:
+      name: limit
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      description: Hard-capped by MAX_PAGE_LIMIT; a larger value is rejected with 422.
+    id:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+  schemas:
+    Meta:
+      type: object
+      properties:
+        page: { type: integer }
+        limit: { type: integer }
+        total: { type: integer }
+        total_pages: { type: integer }
+    Error:
+      type: object
+      required: [success, error]
+      properties:
+        success: { type: boolean, enum: [false] }
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              enum: [BAD_REQUEST, VALIDATION_ERROR, UNAUTHORIZED, FORBIDDEN, NOT_FOUND,
+                     METHOD_NOT_ALLOWED, RATE_LIMITED, CONTENT_LICENSE_RESTRICTED,
+                     SOURCE_LOCKED, INTERNAL_ERROR]
+            message: { type: string }
+            details: {}
+        meta:
+          type: object
+          properties:
+            request_id: { type: string }
+    Ref:
+      type: object
+      nullable: true
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+    Hadith:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        hadith_number: { type: [string, 'null'] }
+        book: { $ref: '#/components/schemas/Ref' }
+        chapter: { $ref: '#/components/schemas/Ref' }
+        narrator: { $ref: '#/components/schemas/Ref' }
+        isnad: { type: [string, 'null'], description: Only when the source separates it. }
+        matn: { type: [string, 'null'], description: Only when the source separates it. }
+        raw_text: { type: [string, 'null'], description: Verbatim source text; null while the licence is unconfirmed. }
+        takhrij: { type: [string, 'null'] }
+        grading: { type: [string, 'null'], description: As written in the source; never inferred. }
+        volume: { type: [integer, 'null'] }
+        page: { type: [integer, 'null'] }
+        original_reference: { type: [string, 'null'] }
+        original_hadith_number: { type: [string, 'null'] }
+        source:
+          type: object
+          properties:
+            name: { type: [string, 'null'] }
+            edition: { type: [string, 'null'] }
+            publisher: { type: [string, 'null'] }
+        verification:
+          type: object
+          properties:
+            verified: { type: boolean }
+            status: { type: string, enum: [pending, verified, needs_review, rejected] }
+        source_locked: { type: boolean }
+        content_hash: { type: string, description: SHA-256 of raw_text, computed by the database. }
+        dataset_version: { type: string }
+        text_available: { type: boolean }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    HadithList:
+      type: object
+      properties:
+        success: { type: boolean }
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Hadith' }
+        meta: { $ref: '#/components/schemas/Meta' }
+    Book:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        edition_id: { type: string, format: uuid }
+        external_key: { type: [string, 'null'] }
+        name: { type: string }
+        order_number: { type: [integer, 'null'] }
+        description: { type: [string, 'null'] }
+        hadith_count: { type: integer }
+    Chapter:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        book_id: { type: string, format: uuid }
+        parent_id: { type: [string, 'null'], format: uuid }
+        name: { type: string }
+        chapter_number: { type: [string, 'null'] }
+        order_number: { type: [integer, 'null'] }
+        hadith_count: { type: integer }
+    Narrator:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        kunya: { type: [string, 'null'] }
+        laqab: { type: [string, 'null'] }
+        biography: { type: [string, 'null'], description: Only if the source carries it. }
+        source_reference: { type: [string, 'null'] }
+        hadith_count: { type: integer }
+    Source:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        slug: { type: string }
+        name: { type: string }
+        url: { type: [string, 'null'] }
+        publisher: { type: [string, 'null'] }
+        license_status:
+          type: string
+          enum: [unconfirmed, pending_review, confirmed, restricted, blocked]
+    Edition:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        slug: { type: string }
+        title: { type: string }
+        author: { type: [string, 'null'] }
+        publisher: { type: [string, 'null'] }
+        edition_number: { type: [integer, 'null'] }
+        publication_year: { type: [integer, 'null'] }
+        hijri_year: { type: [integer, 'null'] }
+        volume_count: { type: [integer, 'null'] }
+        isbn: { type: [string, 'null'] }
+        page_count: { type: [integer, 'null'] }
+        source_url: { type: [string, 'null'] }
+        dataset_version: { type: [string, 'null'] }
+    Stats:
+      type: object
+      properties:
+        sources: { type: integer }
+        editions: { type: integer }
+        books: { type: integer }
+        chapters: { type: integer }
+        hadiths: { type: integer }
+        narrators: { type: integer }
+        verified_hadiths: { type: integer }
+        pending_hadiths: { type: integer }
+        dataset_version: { type: string }
+        content_license_confirmed: { type: boolean }
+  responses:
+    BadRequest:
+      description: Malformed request
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    Unauthorized:
+      description: Missing or invalid credentials
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    NotFound:
+      description: Resource not found
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    Validation:
+      description: Invalid parameters
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    RateLimited:
+      description: Too many requests
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+
+paths:
+  /api/v1/health:
+    get:
+      tags: [system]
+      summary: Liveness of API, database, dataset and licence flag (no secrets)
+      responses:
+        '200':
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: object
+                    properties:
+                      api: { type: string }
+                      database: { type: string, enum: [up, down] }
+                      environment: { type: string }
+                      dataset_version: { type: [string, 'null'] }
+                      content_license_confirmed: { type: boolean }
+        '503': { description: Database unreachable }
+
+  /api/v1/stats:
+    get:
+      tags: [system]
+      summary: Real counts from the database
+      responses:
+        '200':
+          description: Counts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { $ref: '#/components/schemas/Stats' }
+
+  /api/v1/hadiths:
+    get:
+      tags: [hadiths]
+      summary: List hadiths
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+        - { name: edition_id, in: query, schema: { type: string, format: uuid } }
+        - { name: book_id, in: query, schema: { type: string, format: uuid } }
+        - { name: chapter_id, in: query, schema: { type: string, format: uuid } }
+        - { name: narrator_id, in: query, schema: { type: string, format: uuid } }
+        - { name: volume, in: query, schema: { type: integer } }
+        - { name: page_number, in: query, schema: { type: integer } }
+        - { name: verification_status, in: query, schema: { type: string, enum: [pending, verified, needs_review, rejected] } }
+        - { name: dataset_version, in: query, schema: { type: string } }
+        - { name: grading, in: query, schema: { type: string } }
+        - { name: order, in: query, schema: { type: string, enum: [asc, desc] } }
+      responses:
+        '200':
+          description: A page of hadiths
+          content: { application/json: { schema: { $ref: '#/components/schemas/HadithList' } } }
+        '422': { $ref: '#/components/responses/Validation' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /api/v1/hadiths/{id}:
+    get:
+      tags: [hadiths]
+      summary: One hadith
+      parameters: [{ $ref: '#/components/parameters/id' }]
+      responses:
+        '200':
+          description: The hadith
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { $ref: '#/components/schemas/Hadith' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/Validation' }
+
+  /api/v1/hadiths/by-number/{number}:
+    get:
+      tags: [hadiths]
+      summary: Lookup by the source's hadith number (may match several editions)
+      parameters:
+        - { name: number, in: path, required: true, schema: { type: string } }
+        - { name: edition_id, in: query, schema: { type: string, format: uuid } }
+        - { name: dataset_version, in: query, schema: { type: string } }
+      responses:
+        '200':
+          description: Matching hadiths
+          content: { application/json: { schema: { $ref: '#/components/schemas/HadithList' } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/books:
+    get:
+      tags: [catalogue]
+      summary: List books (كتب/أقسام) of an edition
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+        - { name: edition_id, in: query, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: A page of books
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { type: array, items: { $ref: '#/components/schemas/Book' } }
+                  meta: { $ref: '#/components/schemas/Meta' }
+
+  /api/v1/books/{id}:
+    get:
+      tags: [catalogue]
+      summary: One book
+      parameters: [{ $ref: '#/components/parameters/id' }]
+      responses:
+        '200':
+          description: The book
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { $ref: '#/components/schemas/Book' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/books/{id}/hadiths:
+    get:
+      tags: [catalogue]
+      summary: Hadiths of a book
+      parameters:
+        - $ref: '#/components/parameters/id'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: A page of hadiths
+          content: { application/json: { schema: { $ref: '#/components/schemas/HadithList' } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/chapters:
+    get:
+      tags: [catalogue]
+      summary: List chapters (أبواب), optionally by book or parent
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+        - { name: book_id, in: query, schema: { type: string, format: uuid } }
+        - { name: parent_id, in: query, schema: { type: string, format: uuid } }
+        - { name: root, in: query, schema: { type: string, enum: ['true'] } }
+      responses:
+        '200':
+          description: A page of chapters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { type: array, items: { $ref: '#/components/schemas/Chapter' } }
+                  meta: { $ref: '#/components/schemas/Meta' }
+
+  /api/v1/chapters/{id}:
+    get:
+      tags: [catalogue]
+      summary: One chapter
+      parameters: [{ $ref: '#/components/parameters/id' }]
+      responses:
+        '200':
+          description: The chapter
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { $ref: '#/components/schemas/Chapter' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/chapters/{id}/hadiths:
+    get:
+      tags: [catalogue]
+      summary: Hadiths of a chapter
+      parameters:
+        - $ref: '#/components/parameters/id'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: A page of hadiths
+          content: { application/json: { schema: { $ref: '#/components/schemas/HadithList' } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/narrators:
+    get:
+      tags: [catalogue]
+      summary: List narrators
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+        - { name: edition_id, in: query, schema: { type: string, format: uuid } }
+        - { name: name, in: query, schema: { type: string } }
+      responses:
+        '200':
+          description: A page of narrators
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { type: array, items: { $ref: '#/components/schemas/Narrator' } }
+                  meta: { $ref: '#/components/schemas/Meta' }
+
+  /api/v1/narrators/{id}:
+    get:
+      tags: [catalogue]
+      summary: One narrator
+      parameters: [{ $ref: '#/components/parameters/id' }]
+      responses:
+        '200':
+          description: The narrator
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { $ref: '#/components/schemas/Narrator' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/narrators/{id}/hadiths:
+    get:
+      tags: [catalogue]
+      summary: Hadiths attributed to a narrator (direct or in the isnad chain)
+      parameters:
+        - $ref: '#/components/parameters/id'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: A page of hadiths
+          content: { application/json: { schema: { $ref: '#/components/schemas/HadithList' } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/sources:
+    get:
+      tags: [catalogue]
+      summary: Registered sources and their licence status
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: A page of sources
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { type: array, items: { $ref: '#/components/schemas/Source' } }
+                  meta: { $ref: '#/components/schemas/Meta' }
+
+  /api/v1/editions:
+    get:
+      tags: [catalogue]
+      summary: Registered editions
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+        - { name: source_id, in: query, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: A page of editions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { type: array, items: { $ref: '#/components/schemas/Edition' } }
+                  meta: { $ref: '#/components/schemas/Meta' }
+
+  /api/v1/editions/{id}:
+    get:
+      tags: [catalogue]
+      summary: One edition
+      parameters: [{ $ref: '#/components/parameters/id' }]
+      responses:
+        '200':
+          description: The edition
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { $ref: '#/components/schemas/Edition' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/collections:
+    get:
+      tags: [classification]
+      summary: Collections named in the edition's takhrij, with counts
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: A page of collections
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name: { type: string, description: Verbatim as the edition prints it. }
+                        hadith_count: { type: integer }
+                        book_count: { type: integer }
+                        first_volume: { type: [integer, 'null'] }
+                        last_volume: { type: [integer, 'null'] }
+                        corroborated_count:
+                          type: integer
+                          description: How many were corroborated in an independent corpus.
+                  meta: { $ref: '#/components/schemas/Meta' }
+
+  /api/v1/collections/{name}/hadiths:
+    get:
+      tags: [classification]
+      summary: Records whose takhrij names this collection
+      parameters:
+        - { name: name, in: path, required: true, schema: { type: string } }
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200': { description: A page of records (metadata only, no text) }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/gradings:
+    get:
+      tags: [classification]
+      summary: Grading labels exactly as printed, with counts
+      responses:
+        '200':
+          description: The grading labels
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        label: { type: string }
+                        hadith_count: { type: integer }
+                        book_count: { type: integer }
+                        grader: { type: [string, 'null'] }
+                        verified_count: { type: integer }
+
+  /api/v1/volumes:
+    get:
+      tags: [classification]
+      summary: Volumes with their printed page ranges
+      parameters:
+        - { name: edition_id, in: query, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: The volumes }
+
+  /api/v1/volumes/{volume}/hadiths:
+    get:
+      tags: [classification]
+      summary: Records in a printed volume, in reading order
+      parameters:
+        - { name: volume, in: path, required: true, schema: { type: integer } }
+        - { name: page_number, in: query, schema: { type: integer } }
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200': { description: A page of records }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/catalog:
+    get:
+      tags: [classification]
+      summary: The whole book → chapter catalogue in one call
+      parameters:
+        - { name: edition_id, in: query, schema: { type: string, format: uuid } }
+        - { name: chapters, in: query, schema: { type: string, enum: ['true'] },
+            description: Include each book's chapters. }
+      responses:
+        '200': { description: Books, with chapters when asked for }
+
+  /api/v1/references:
+    get:
+      tags: [verification]
+      summary: Independent corpora this dataset has been cross-checked against
+      responses:
+        '200': { description: The reference corpora }
+
+  /api/v1/cross-checks/summary:
+    get:
+      tags: [verification]
+      summary: Cross-check roll-up per dataset and reference
+      responses:
+        '200':
+          description: Counts of corroborated / partial / not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        dataset_version: { type: string }
+                        reference_slug: { type: string }
+                        checked: { type: integer }
+                        corroborated: { type: integer }
+                        partial: { type: integer }
+                        not_found: { type: integer }
+                        takhrij_agrees: { type: integer }
+                        takhrij_disagrees: { type: integer }
+                        mean_similarity: { type: number }
+
+  /api/v1/cross-checks/review-queue:
+    get:
+      tags: [verification]
+      summary: Records an independent corpus did not corroborate — a human's queue
+      parameters:
+        - { name: verdict, in: query, schema: { type: string, enum: [not_found, partial, corroborated], default: not_found } }
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200': { description: A page of records needing human attention }
+
+  /api/v1/hadiths/{id}/cross-checks:
+    get:
+      tags: [verification]
+      summary: What independent corpora say about one record
+      parameters: [{ $ref: '#/components/parameters/id' }]
+      responses:
+        '200':
+          description: One verdict per reference corpus
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        reference: { type: string }
+                        reference_collection: { type: [string, 'null'] }
+                        reference_number: { type: [string, 'null'] }
+                        similarity: { type: number }
+                        verdict: { type: string, enum: [corroborated, partial, not_found] }
+                        takhrij_agrees: { type: [boolean, 'null'] }
+                        takhrij_collections: { type: array, items: { type: string } }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/search:
+    get:
+      tags: [search]
+      summary: Arabic search (full text + trigram), diacritics-insensitive
+      parameters:
+        - { name: q, in: query, required: true, schema: { type: string, minLength: 2, maxLength: 200 } }
+        - { name: type, in: query, schema: { type: string, enum: [hadiths, narrators, chapters, books], default: hadiths } }
+        - { name: source, in: query, schema: { type: string }, description: Matches takhrij text or a linked source name. }
+        - { name: hadith_number, in: query, schema: { type: string } }
+        - { name: grading, in: query, schema: { type: string } }
+        - { name: volume, in: query, schema: { type: integer } }
+        - { name: page_number, in: query, schema: { type: integer } }
+        - { name: book_id, in: query, schema: { type: string, format: uuid } }
+        - { name: chapter_id, in: query, schema: { type: string, format: uuid } }
+        - { name: narrator_id, in: query, schema: { type: string, format: uuid } }
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Ranked results
+          content: { application/json: { schema: { $ref: '#/components/schemas/HadithList' } } }
+        '422': { $ref: '#/components/responses/Validation' }
+
+  /api/v1/admin/stats:
+    get:
+      tags: [admin]
+      summary: Dashboard counters, dataset versions and last import
+      security: [{ adminAuth: [] }]
+      responses:
+        '200': { description: Dashboard payload }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/v1/admin/imports:
+    get:
+      tags: [admin]
+      summary: Import history
+      security: [{ adminAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200': { description: A page of import runs }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/v1/admin/imports/{id}:
+    get:
+      tags: [admin]
+      summary: One import run with its full report
+      security: [{ adminAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/id' }]
+      responses:
+        '200': { description: The import run }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/admin/dataset-versions:
+    get:
+      tags: [admin]
+      summary: Dataset versions with hadith counts
+      security: [{ adminAuth: [] }]
+      responses:
+        '200': { description: Dataset versions }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/v1/admin/audit-logs:
+    get:
+      tags: [admin]
+      summary: Audit trail
+      security: [{ adminAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200': { description: A page of audit entries }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/v1/admin/hadiths/{id}:
+    get:
+      tags: [admin]
+      summary: Internal read of a hadith including its text, whatever the licence flag
+      security: [{ adminAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/id' }]
+      responses:
+        '200':
+          description: The hadith with text
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { $ref: '#/components/schemas/Hadith' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/admin/hadiths/{id}/verify:
+    post:
+      tags: [admin]
+      summary: Record a verification (never edits the text)
+      description: |
+        `verified` becomes true only for `manual_sample` or `external_source`
+        with `result: passed`. A `hash_check` is a machine check and leaves the
+        hadith `pending` — imported is not verified.
+      security: [{ adminAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [verification_type, verified_by]
+              properties:
+                verification_type: { type: string, enum: [manual_sample, hash_check, structural, external_source] }
+                verified_by: { type: string }
+                result: { type: string, enum: [passed, failed, inconclusive], default: passed }
+                content_hash: { type: string, description: If sent, must equal the stored hash or the call is rejected. }
+                source_reference: { type: [string, 'null'] }
+                notes: { type: [string, 'null'] }
+      responses:
+        '201': { description: Verification recorded }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409':
+          description: content_hash mismatch — the stored text is not the one verified
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+        '422': { $ref: '#/components/responses/Validation' }
+
+  /api/v1/admin/verification-samples:
+    post:
+      tags: [admin]
+      summary: Record a human sample check of imported records against the source
+      description: |
+        Batch-level verification (§48). `passed` is refused unless every sampled
+        record matched and no discrepancy was recorded; the same rule is a
+        database constraint. AI never authors these rows.
+      security: [{ adminAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [dataset_version, sample_hadith_ids, verifier]
+              properties:
+                dataset_version: { type: string }
+                edition_id: { type: [string, 'null'], format: uuid }
+                sample_hadith_ids:
+                  type: array
+                  minItems: 1
+                  items: { type: string, format: uuid }
+                verifier: { type: string, description: The human who performed the check. }
+                source_reference: { type: [string, 'null'], description: What they compared against. }
+                exact_matches: { type: integer, minimum: 0 }
+                discrepancies:
+                  type: array
+                  items: { type: object }
+                notes: { type: [string, 'null'] }
+                status: { type: string, enum: [pending, passed, failed, blocked], default: pending }
+      responses:
+        '201': { description: Sample recorded }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/Validation' }
+    get:
+      tags: [admin]
+      summary: List recorded verification samples
+      security: [{ adminAuth: [] }]
+      parameters:
+        - { name: dataset_version, in: query, schema: { type: string } }
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200': { description: A page of samples }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/v1/admin/verification-status:
+    get:
+      tags: [admin]
+      summary: Verification state per dataset version
+      security: [{ adminAuth: [] }]
+      responses:
+        '200':
+          description: Per-dataset verification counters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        dataset_version: { type: string }
+                        hadiths: { type: integer }
+                        verified_hadiths: { type: integer }
+                        samples: { type: integer }
+                        passed_samples: { type: integer }
+                        last_sample_at: { type: [string, 'null'], format: date-time }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/v1/admin/verifications:
+    get:
+      tags: [admin]
+      summary: Verification records
+      security: [{ adminAuth: [] }]
+      parameters:
+        - { name: hadith_id, in: query, schema: { type: string, format: uuid } }
+        - { name: result, in: query, schema: { type: string, enum: [passed, failed, inconclusive] } }
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200': { description: A page of verification records }
+        '401': { $ref: '#/components/responses/Unauthorized' }

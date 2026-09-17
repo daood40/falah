@@ -13,7 +13,7 @@ run_psql() {
 if pg_isready >/dev/null 2>&1 || service postgresql start >/dev/null 2>&1; then
   echo "→ using local postgres"
   su postgres -c "dropdb --if-exists $DB && createdb $DB"
-  for f in supabase/migrations/*.sql; do
+  for f in supabase/migrations/*.sql hadith-api/migrations/*.sql; do
     echo "   applying $f"
     su postgres -c "psql -v ON_ERROR_STOP=1 -q -d $DB" < "$f"
   done
@@ -45,7 +45,7 @@ for _ in $(seq 1 30); do
   docker exec "$CONTAINER" pg_isready -U postgres >/dev/null 2>&1 && break
   sleep 1
 done
-for f in supabase/migrations/*.sql; do
+for f in supabase/migrations/*.sql hadith-api/migrations/*.sql; do
   echo "   applying $f"
   docker exec -i "$CONTAINER" psql -v ON_ERROR_STOP=1 -U postgres -q < "$f"
 done

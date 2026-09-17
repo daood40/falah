@@ -1,0 +1,96 @@
+================================================================
+FINAL PRODUCTION AUDIT — 2026-09-17T04:31:51Z
+repo: daood40/falah   branch: claude/falah-hadith-api-backend-md1ak3
+service: hadith-api/ — standalone, deployable on its own
+Every status below was produced by running it, on the real edition.
+================================================================
+
+ITEM                | STATUS  | EVIDENCE
+--------------------+---------+---------------------------------------------
+BUILD               | PASS    | tsc --noEmit · flutter analyze → No issues ·
+                    |         | PWA npm run build
+DATABASE            | PASS    | 8 service-owned migrations applied from scratch;
+                    |         | 18 tables + 8 views in schema corpus
+MIGRATIONS          | PASS    | hadith-api/migrations/0001…0008, no dependency on
+                    |         | the rest of the repository
+IMPORTER            | PASS    | reports/IMPORT_RUN.txt — 12 volumes, 0 failed
+REAL_DATA_IMPORT    | PASS    | 15,961 hadiths · 67 books · 5,338 chapters ·
+                    |         | 1,643 narrators · 15,762 gradings · 29,146 takhrij
+SOURCE_FIDELITY     | PASS    | layer 1: ALL 15,961 re-checked against the source
+                    |         | files — verbatim 15961/15961, right page
+                    |         | 15961/15961, hash 15961/15961
+DATA_INTEGRITY      | PASS    | layer 2: 21 rules PASS, each proven non-vacuous by
+                    |         | planting a violation and rolling it back
+CROSS_VERIFICATION  | PARTIAL | layer 3: reports/CROSS_CHECK.txt — 67.53%
+                    |         | corroborated and 18.75% partial in an independent
+                    |         | corpus; where that corpus can judge the takhrij,
+                    |         | 87.36% is supported and 12.64% (1,638 records) is
+                    |         | NOT, and sits in /cross-checks/review-queue.
+                    |         | This is a measurement, not a verdict on the book:
+                    |         | the reference covers 8 complete collections only.
+API                 | PASS    | 39/39 endpoints, 48 checks, admin routes refused
+                    |         | without a key (reports/API_ENDPOINTS_RUN.txt)
+CLASSIFICATION      | PASS    | reports/CLASSIFICATION_RUN.txt — collections,
+                    |         | gradings, volumes, catalogue, cross-checks, each
+                    |         | its own resource, 2-100 ms
+SEARCH              | PASS    | reports/SEARCH_RUN.txt — Arabic search over 15,961
+                    |         | records, 8 filters, 3-340 ms, stored text unchanged
+SECURITY            | PASS    | reports/SECURITY_REVIEW.txt — RLS everywhere, no
+                    |         | anon writes, injection attempts left data intact
+OPENAPI             | PASS    | 38 paths / 39 operations, parity with the router
+                    |         | asserted both ways; served at /openapi.yaml
+STANDALONE          | PASS    | own migrations, own compose, self-describing root,
+                    |         | TS client (0 deps) and Dart package; the Flutter app
+                    |         | now consumes the package like any other project
+FLUTTER_TESTS       | PASS    | 36 passed (+1 skipped) + 8 live-contract tests
+                    |         | against the real corpus, through the extracted package
+ANDROID_BUILD       | BLOCKED | no Android SDK here; built by CI workflow
+IOS_BUILD           | BLOCKED | needs macOS + Apple developer account
+DEPLOYMENT          | BLOCKED | no hosting target and no credentials. NOTHING IS
+                    |         | DEPLOYED; there is no public URL.
+HUMAN_VERIFICATION  | BLOCKED | 0 human samples. Machine layers 1-3 all ran, but no
+                    |         | human has compared a record against the printed
+                    |         | edition, so verified=false on all 15,961.
+CONTENT_LICENSE     | NOT CONFIRMED | no permission on file; text withheld by the
+                    |         | API, by corpus.hadiths_public and by .gitignore
+--------------------+---------+---------------------------------------------
+
+PRODUCTION READY: NO — four BLOCKED items and an unconfirmed licence.
+"100% correct" is claimed for exactly one thing, and it is the thing that can be
+proven mechanically: the corpus is byte-identical to the source it came from.
+Whether the book's own attributions are right is a scholarly question; layer 3
+measures it against one independent corpus and hands the disagreements to a human.
+
+REAL NUMBERS (measured)
+  Tables / views (corpus)           18 / 8
+  Migrations (service-owned)        8
+  Hadiths                           15,961      Books 67      Chapters 5,338
+  Narrators                         1,643       Gradings 15,762
+  Takhrij links                     29,146 across 26 collections
+  Cross-checks stored               15,961 (1 independent reference corpus)
+    corroborated                    10,778 (67.53%)
+    partial                         2,993 (18.75%)
+    not found                       2,190 (13.72%)
+    takhrij supported               11,319 of 12,957 judgeable (87.36%)
+    needs human review              1,638
+  Verification records              47,883 (15,961 hash + 15,961 structural +
+                                    15,961 from the earlier pass)
+  Human verification samples        0
+  API endpoints                     39 (28 public, 11 admin)
+  OpenAPI paths / operations        38 / 39
+  Service tests                     160 — 160 passed, 0 failed
+  PWA tests                         75  — 75 passed, 0 failed
+  Flutter tests                     44  — all passed
+  TOTAL passed                      279        TOTAL failed 0
+  Search latency                    3 ms – 340 ms
+  Classification latency            2 ms – 100 ms
+  Cross-check run                   7.5 s for 15,961 records
+  Import wall time                  46 s for 12 volumes
+
+WHAT IS STILL MISSING
+  1. A human sample against the printed edition → verified=true becomes possible.
+  2. Written redistribution rights → the licence flag can flip.
+  3. A hosting target → deployment stops being BLOCKED.
+  4. A second reference corpus (the current one covers 8 complete collections;
+     الحاكم، الطبراني، البيهقي، ابن حبان have no counterpart in it).
+================================================================

@@ -10,8 +10,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/tokens.dart';
 import '../../../l10n/app_localizations.dart';
+import 'package:falah_hadith_api/falah_hadith_api.dart';
+
 import '../data/hadith_providers.dart';
-import '../domain/models.dart';
 
 class HadithBooksScreen extends ConsumerWidget {
   const HadithBooksScreen({super.key});

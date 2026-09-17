@@ -1,0 +1,65 @@
+================================================================
+CONTENT LICENSE — 2026-09-16T06:11:29Z
+================================================================
+
+LICENSE STATUS:
+    NOT CONFIRMED
+
+SOURCE:
+    text actually imported
+        name     المكتبة الشاملة — الجامع الكامل في الحديث الصحيح الشامل
+        url      https://shamela.ws/book/47
+        slug     shamela-47   (corpus.sources.license_status = 'unconfirmed')
+        how      12 UTF-8 volume files supplied by the project owner in this
+                 session. Nothing was fetched, scraped or unlocked by this
+                 system: no Cloudflare bypass, no CAPTCHA, no paywall, no
+                 robots/ToS evasion. ketabonline.com remains blocked by the
+                 environment's egress policy and was never reached.
+    digital reference the project started from
+        name     ketabonline — الجامع الكامل في الحديث الصحيح الشامل
+        url      https://ketabonline.com/ar/books/62920
+        slug     ketabonline-62920   (registered, unconfirmed, no text taken)
+
+EDITION:
+    title            الجامع الكامل في الحديث الصحيح الشامل المرتب على أبواب الفقه
+    author           أبو أحمد محمد عبد الله الأعظمي المعروف بـ«الضياء»
+    edition_number   1        hijri_year 1437        publication_year 2016
+    volume_count     12       publisher  دار السلام للنشر والتوزيع – الرياض
+    dataset_version  JAMI-KAMIL-1437-V1
+    isbn / page_count are NULL — not supplied, therefore not invented.
+
+PERMISSION EVIDENCE:
+    NONE ON FILE.
+    The owner supplied the files, which settles access, not redistribution.
+    No licence, written permission, or rights statement from the publisher
+    (دار السلام) or from المكتبة الشاملة has been filed in this repository.
+    The copyright page of the edition itself reads
+    «جميع حقوق الطبع محفوظة للمؤلف» (ج1 ص4) — all printing rights reserved.
+
+PUBLIC DISTRIBUTION:
+    DISABLED — and the text now exists, so this is the live gate, not a plan.
+      1. CONTENT_LICENSE_CONFIRMED=false → the public API returns
+         raw_text / matn / isnad / takhrij as null with text_available=false.
+         Verified live: reports/API_RUN.txt shows a public read of a real
+         record with raw_text=null next to the same record read with an admin
+         credential, where the text is present.
+      2. corpus.app_settings.content_license_confirmed='false' → the SQL view
+         corpus.hadiths_public withholds the same columns, so a direct Supabase
+         client cannot read around the API.
+      3. The 29 MB of source text lives in hadith-api/data/, which is GIT-IGNORED.
+         The repository is public; committing the text would itself be
+         publication. Only the schema, the parser and the reports are committed.
+      4. corpus.sources.license_status='unconfirmed' for both source rows.
+
+HOW TO FLIP IT (only after rights are confirmed in writing):
+    1. File the permission document and cite it in this report.
+    2. update corpus.sources set license_status='confirmed' where slug='shamela-47';
+       update corpus.app_settings set value='true' where key='content_license_confirmed';
+    3. Set CONTENT_LICENSE_CONFIRMED=true in the deployment environment.
+    No code change and no migration are needed.
+
+CORPUS UNDER THIS LICENCE (imported, withheld):
+    hadiths 15,961 · books 67 · chapters 5,338 · narrators 1,643
+    grading records 15,762 · takhrij links 29,146 · import runs 12
+    human verification: 0 samples — see FINAL_PRODUCTION_AUDIT.txt
+================================================================

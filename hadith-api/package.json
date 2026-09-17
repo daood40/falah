@@ -1,0 +1,33 @@
+{
+  "name": "falah-hadith-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Standalone REST API over a verified hadith corpus (PostgreSQL). Usable from any project.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "node --env-file=.env --experimental-strip-types src/http/server.ts",
+    "start": "node --experimental-strip-types src/http/server.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "import": "node --experimental-strip-types src/importer/cli.ts",
+    "verify": "node --experimental-strip-types src/scripts/verify-integrity.ts",
+    "db:reset": "bash scripts/reset-db.sh",
+    "smoke": "node --experimental-strip-types src/scripts/smoke-endpoints.ts",
+    "cross-verify": "node --experimental-strip-types --max-old-space-size=4096 src/scripts/cross-verify.ts",
+    "sample-verify": "node --experimental-strip-types src/scripts/sample-verify.ts",
+    "import:jami": "bash scripts/import-jami-kamil.sh"
+  },
+  "dependencies": {
+    "pg": "^8.13.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.11.10",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0",
+    "yaml": "^2.9.1"
+  }
+}
