@@ -354,9 +354,17 @@ export async function run(ctx: GateContext): Promise<void> {
       names.set(event.test.id, String(event.test.name ?? ''));
       testSuite.set(event.test.id, event.test.suiteID);
     }
+    // A widget test that throws prints the exception (as `print` events) and
+    // then fails with "See exception logs above" — keep those lines too.
+    if (event.type === 'print' && typeof event.testID === 'number' && typeof event.message === 'string') {
+      const text = event.message.replace(/\s+/g, ' ').trim();
+      if (/exception|error|overflow|failed|thrown/i.test(text)) {
+        errors.set(event.testID, `${errors.get(event.testID) ?? ''}${text} `.slice(0, 2500));
+      }
+    }
     if (event.type === 'error' && typeof event.testID === 'number') {
       const text = `${String(event.error ?? '')}\n${String(event.stackTrace ?? '')}`.replace(/\s+/g, ' ').trim();
-      errors.set(event.testID, `${errors.get(event.testID) ?? ''}${text}`.slice(0, 1500));
+      errors.set(event.testID, `${errors.get(event.testID) ?? ''}${text}`.slice(0, 2500));
     }
     if (event.type === 'testDone' && !event.hidden) {
       const name = names.get(event.testID) ?? `test-${event.testID}`;
