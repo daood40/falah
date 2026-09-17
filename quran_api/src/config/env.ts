@@ -28,6 +28,8 @@ export type Env = {
   host: string;
   port: number;
   databaseUrl: string;
+  /** False when no DATABASE_URL/SUPABASE_DB_URL was given and the fallback is in use. */
+  databaseUrlProvided: boolean;
   /** Supabase JWT secret (HS256). Absent → authenticated endpoints return 401. */
   jwtSecret: string | null;
   datasetVersion: string;
@@ -76,6 +78,7 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
       source.DATABASE_URL ??
       source.SUPABASE_DB_URL ??
       'postgresql://postgres@localhost:5432/postgres',
+    databaseUrlProvided: Boolean(source.DATABASE_URL ?? source.SUPABASE_DB_URL),
     jwtSecret: source.SUPABASE_JWT_SECRET ?? null,
     datasetVersion: source.QURAN_DATASET_VERSION ?? 'unset',
     flags,
@@ -99,6 +102,20 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
  */
 export function unsafeConfiguration(env: Env): string[] {
   const problems: string[] = [];
+
+  // Boot-critical configuration, checked in every posture: a deployment with no
+  // database of its own would silently fall back to a local one, and a short
+  // JWT secret is guessable, so both must stop the process instead of serving.
+  // The test environment builds its own configuration and is exempt.
+  if (env.environment !== 'test') {
+    if (!env.databaseUrlProvided) {
+      problems.push('no DATABASE_URL (or SUPABASE_DB_URL) was given');
+    }
+    if (env.jwtSecret !== null && env.jwtSecret.length < 32) {
+      problems.push('SUPABASE_JWT_SECRET is shorter than 32 characters');
+    }
+  }
+
   if (env.privateMode) return problems; // private mode already forced everything off
 
   if (env.flags.publicDataEnabled && !env.flags.contentLicenseConfirmed) {

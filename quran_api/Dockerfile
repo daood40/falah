@@ -22,6 +22,13 @@ COPY scripts ./scripts
 # never create the tables it reads, so every content request fails.
 COPY migrations ./migrations
 
+# Build identity: /api/v1/version must say which commit and build is running,
+# so an image in a registry can be traced back to its source.
+ARG BUILD_COMMIT=unknown
+ARG BUILD_TIME=unknown
+ENV BUILD_COMMIT=$BUILD_COMMIT \
+    BUILD_TIME=$BUILD_TIME
+
 # Run unprivileged.
 USER node
 
