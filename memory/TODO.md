@@ -21,7 +21,11 @@
 - [ ] تأكيد حقوق النشر كتابةً قبل رفع CONTENT_LICENSE_CONFIRMED إلى true
       وتحديث corpus.sources.license_status
 - [ ] ضبط DATABASE_URL/SUPABASE_JWT_SECRET/ADMIN_API_KEY في بيئة النشر
-- [ ] اختيار مستضيف للـAPI (لا يوجد نشر ولا عنوان عام حتى الآن)
+- [ ] اختيار مستضيف للـAPI (لا يوجد نشر عام ولا عنوان حتى الآن؛ Staging محلي يعمل
+      عبر `npm run staging:up`)
+- [ ] إذن إعادة التوزيع المكتوب من دار السلام/المؤلف قبل فتح النص للعامة
+      (CONTENT_LICENSE_CONFIRMED وPUBLIC_DATA_ENABLED يبقيان false حتى ذلك)
+- [ ] تشغيل حزمة اختبارات Flutter وبناء Docker محليًا/في CI (محجوبان في بيئة الوكيل)
 
 ## P1 — بعد الإطلاق
 - [ ] قرار مالك (بوابة 14): تقارير أعطال عن بُعد (تغيّر نموذج البيانات

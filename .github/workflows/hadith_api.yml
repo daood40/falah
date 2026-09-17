@@ -99,6 +99,15 @@ jobs:
           npm run smoke
           kill $API_PID
 
+      - name: Gate — full QA audit (db, project and contract families)
+        # The data/api/security families need the owner-supplied corpus and a
+        # staging deployment, so CI runs the families that work on an empty
+        # schema. The full run (all five families) is executed locally and its
+        # evidence is committed under hadith_api/reports/FINAL_QA_AUDIT.txt.
+        run: npm run audit -- --only=db,project
+        env:
+          DATABASE_URL: postgresql://falah:falah@127.0.0.1:5432/falah_corpus_test
+
       - name: Gate — backup and restore (fingerprint must survive)
         run: npm run backup:test
         env:

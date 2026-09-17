@@ -1,0 +1,225 @@
+================================================================
+FINAL QA AUDIT — FALAH HADITH API — 2026-09-17T15:40:18.841Z
+================================================================
+Every line below is one independent automated check against a distinct
+object: a distinct record, endpoint, role, payload, file or invariant.
+No check is repeated to inflate the count — duplicate check ids are
+themselves reported as failures (category harness.integrity).
+
+================ TOTALS ================
+TOTAL CHECKS                        274881
+PASSED                              274879
+FAILED                                   0
+BLOCKED                                  2
+SKIPPED                                  0
+DURATION (s)                           120
+
+================ SEVERITY ================
+CRITICAL                                 0
+HIGH                                     0
+MEDIUM                                   0
+LOW                                      0
+
+================ BY CATEGORY ================
+category                                 total    pass    fail   block    skip
+api.catalogue                            1435    1435       0       0       0
+api.daily                                  51      51       0       0       0
+api.deployment                              6       6       0       0       0
+api.detail                              11970   11970       0       0       0
+api.detail.envelope                      1330    1330       0       0       0
+api.detail.latency                       1330    1330       0       0       0
+api.detail.leakage                       1330    1330       0       0       0
+api.errors                                 36      36       0       0       0
+api.errors.envelope                        18      18       0       0       0
+api.errors.latency                         18      18       0       0       0
+api.errors.leakage                         18      18       0       0       0
+api.filters                               474     474       0       0       0
+api.headers                               100     100       0       0       0
+api.includes                               56      56       0       0       0
+api.license_gate                         1380    1380       0       0       0
+api.pagination                           1505    1505       0       0       0
+api.pagination.envelope                   300     300       0       0       0
+api.pagination.latency                    300     300       0       0       0
+api.pagination.leakage                    300     300       0       0       0
+api.random                                151     151       0       0       0
+api.rate_limit                              2       2       0       0       0
+api.routes                                100     100       0       0       0
+api.routes.envelope                        50      50       0       0       0
+api.routes.latency                         50      50       0       0       0
+api.routes.leakage                         50      50       0       0       0
+api.search                               4186    4186       0       0       0
+api.search.envelope                       195     195       0       0       0
+api.search.latency                        195     195       0       0       0
+api.search.leakage                        195     195       0       0       0
+api.system                                  4       4       0       0       0
+data.dataset                            15959   15959       0       0       0
+data.duplicates                           129     129       0       0       0
+data.encoding                           15959   15959       0       0       0
+data.export_parity                      15959   15959       0       0       0
+data.hash_integrity                     15959   15959       0       0       0
+data.locator                            47877   47877       0       0       0
+data.metadata                           15959   15959       0       0       0
+data.no_ai_generation                   15959   15959       0       0       0
+data.no_rewrite                         15959   15959       0       0       0
+data.page_claim                         15959   15959       0       0       0
+data.raw_verbatim                       15959   15959       0       0       0
+data.source_files                          24      24       0       0       0
+data.source_lock                        15959   15959       0       0       0
+data.text_shape                         15959   15959       0       0       0
+db.concurrency                             50      50       0       0       0
+db.constraints                             82      82       0       0       0
+db.dataset                                  4       4       0       0       0
+db.integrity_rules                         21      21       0       0       0
+db.normalization                          508     508       0       0       0
+db.performance                             17      17       0       0       0
+db.privileges                             144     144       0       0       0
+db.rls                                     54      54       0       0       0
+db.schema                                 373     373       0       0       0
+db.source_lock                            600     600       0       0       0
+db.views                                   18      18       0       0       0
+flutter.config                              2       2       0       0       0
+flutter.integration                        27      27       0       0       0
+flutter.project                             2       2       0       0       0
+flutter.religious_safety                   22      22       0       0       0
+flutter.security                           44      44       0       0       0
+flutter.tests                               2       1       0       1       0
+project.ci                                  7       7       0       0       0
+project.clients                            95      95       0       0       0
+project.config                             27      27       0       0       0
+project.container                           4       3       0       1       0
+project.dataset                             3       3       0       0       0
+project.dependencies                       11      11       0       0       0
+project.docs                               27      27       0       0       0
+project.no_ai                              80      80       0       0       0
+project.openapi                           101     101       0       0       0
+project.repo                                1       1       0       0       0
+project.reports                             8       8       0       0       0
+project.vocabulary                          4       4       0       0       0
+security.authz                            169     169       0       0       0
+security.client                            44      44       0       0       0
+security.cors                               2       2       0       0       0
+security.fuzz                           18615   18615       0       0       0
+security.fuzz_random                     1800    1800       0       0       0
+security.license_gate                     107     107       0       0       0
+security.robustness                        20      20       0       0       0
+security.secrets                          868     868       0       0       0
+suite.unit                                204     204       0       0       0
+
+================ COVERAGE ================
+records in the corpus            15959
+records individually checked     15959 (each against its source file, hash, locator, metadata, export)
+per-record assertions            223579
+endpoints registered             50
+endpoints called over HTTP       50
+hadith detail responses compared 1330 against the database
+catalogue rows compared          1435
+search terms property-tested     195
+distinct malicious payloads      20415 assertions
+database privilege attempts      144 (table x role x operation, each rolled back)
+SOURCE_LOCK write attempts       600
+project test cases executed      204
+
+================ RESULTS BY AREA ================
+DATA INTEGRITY              223579 checks   223579 pass / 0 fail / 0 blocked / 0 skipped   PASS
+DATABASE                      1871 checks   1871 pass / 0 fail / 0 blocked / 0 skipped   PASS
+API                          27135 checks   27135 pass / 0 fail / 0 blocked / 0 skipped   PASS
+SECURITY                     21625 checks   21625 pass / 0 fail / 0 blocked / 0 skipped   PASS
+PERFORMANCE                   1910 checks   1910 pass / 0 fail / 0 blocked / 0 skipped   PASS
+FLUTTER                         99 checks   98 pass / 0 fail / 1 blocked / 0 skipped   PASS (1 BLOCKED)
+DEPLOYMENT (staging)             6 checks   6 pass / 0 fail / 0 blocked / 0 skipped   PASS
+PROJECT / CONTRACT             368 checks   367 pass / 0 fail / 1 blocked / 0 skipped   PASS (1 BLOCKED)
+TEST SUITE                     204 checks   204 pass / 0 fail / 0 blocked / 0 skipped   PASS
+
+================ SECURITY FINDINGS ================
+open security findings           0
+  critical                       0
+  high                           0
+  medium                         0
+  low                            0
+gates: CONTENT_LICENSE_CONFIRMED=false and PUBLIC_DATA_ENABLED=false — no edition text
+is served or exported, and no public release may happen before written permission.
+
+================ FINDINGS FOUND AND FIXED IN THIS AUDIT ================
+[HIGH] QA-1 — two printed ornaments were stored as hadiths
+  detected by  data.text_shape — per-record check that stored text is Arabic prose
+  cause        the Shamela adapter treated any bullet line as a record and only skipped the "• * *" form, so the ornament "• • •" on ج11/ص195 and ج11/ص278 became two records whose raw_text was "• •" — served by the API as if they were narrations.
+  where        src/importer/adapters/jami_kamil_shamela.ts
+  reproduce    GET /api/v1/hadiths?volume=11 and look for ج11/ص195/#1 in the V1 dataset
+  fix          a bullet line carrying no Arabic letter is an ornament, not a record. Locked text is never edited in place, so the correction is a new sealed dataset JAMI-KAMIL-1437-V2 (15,959 records) re-imported from the same, byte-identical source files; V1 is kept as superseded with its own fingerprint (migrations/0012_dataset_v2.sql).
+  retest       PASS — 15,959/15,959 verbatim, 15,959/15,959 page match, 15,959/15,959 hashes; tests/audit-regressions.test.ts "QA-1"; data.text_shape 15,959/15,959 PASS
+
+[HIGH] QA-2 — a malformed percent-escape in a path returned 500
+  detected by  security.fuzz — path-segment fuzzing
+  cause        decodeURIComponent() threw inside the router, so a caller error surfaced as a server fault
+  where        src/http/router.ts
+  reproduce    curl -s -o /dev/null -w "%{http_code}" "$BASE/api/v1/hadiths/%E0%A4%A"  # was 500
+  fix          the router decodes defensively and raises BAD_REQUEST (400) for an invalid escape
+  retest       PASS — now 400; tests/audit-regressions.test.ts "QA-2"; 18,615 fuzz checks PASS
+
+[HIGH] QA-3 — a NUL byte in a query value reached the database driver and returned 500
+  detected by  security.fuzz_random — generated payloads containing control characters
+  cause        PostgreSQL text cannot hold a NUL byte; the driver failed and the request became a 500
+  where        src/http/validate.ts, src/routes/classification.ts
+  reproduce    curl -s -o /dev/null -w "%{http_code}" "$BASE/api/v1/search?q=%00abc"  # was 500
+  fix          text inputs and path names are refused with VALIDATION_ERROR (422) when they carry a control character
+  retest       PASS — now 422; tests/audit-regressions.test.ts "QA-3"; 1,800 random-fuzz checks PASS
+
+[HIGH] QA-4 — out-of-range integers reached the database and returned 500
+  detected by  security.fuzz — numeric payload family
+  cause        Number() accepted 9999999999999999999, 2147483648 and 0x27… as integers; PostgreSQL int4 did not
+  where        src/http/validate.ts, src/routes/classification.ts
+  reproduce    curl -s -o /dev/null -w "%{http_code}" "$BASE/api/v1/hadiths?page=9999999999999999999"  # was 500
+  fix          only plain decimal integers inside the int4 range are accepted; anything else is a 422
+  retest       PASS — now 422; tests/audit-regressions.test.ts "QA-4"
+
+[HIGH] QA-5 — the public view was unreadable by the anonymous role
+  detected by  db.views — reading each view as the anon role
+  cause        corpus.hadiths_public calls corpus.content_license_confirmed(), which reads the operator-only corpus.app_settings, so anon was refused with "permission denied for table app_settings"
+  where        migrations/0001_corpus.sql (function), migrations/0010_public_gate_access.sql (fix)
+  reproduce    psql -c "begin; set local role anon; select count(*) from corpus.hadiths_public;"
+  fix          the gate function is SECURITY DEFINER with a fixed search_path and returns only a boolean; app_settings itself stays closed to the public roles
+  retest       PASS — anon reads 15,959 rows with the text withheld; tests/audit-regressions.test.ts "QA-5"
+
+[MEDIUM] QA-6 — search took about 3 s for a very common short term
+  detected by  api.search.latency — per-term latency budget
+  cause        the substring branch matched on an expression index, so every index recheck re-ran three regular expressions over the row text, and the count was a second full pass
+  where        migrations/0011_search_normalized_column.sql, src/routes/search.ts
+  reproduce    time curl -s "$BASE/api/v1/search?q=%D9%85%D9%86&limit=20" > /dev/null  # was ~3.0 s
+  fix          the normalized text is stored in a generated column with its own trigram index, and the page and its total are computed in one pass with a window count. raw_text is untouched and content_hash still hashes raw_text alone.
+  retest       PASS — 464 ms for the same term, identical totals; 195/195 search latency checks PASS
+
+[MEDIUM] QA-7 — the official clients did not cover the whole contract
+  detected by  project.clients — every public operation matched against the client sources
+  cause        the Dart client had no call for editions, collections, volumes or cross-checks, and the TypeScript client had none for datasets/version, so an integrator had to hand-roll HTTP
+  where        clients/dart/lib/src/{models,repository}.dart, clients/typescript/falah-hadith.ts
+  reproduce    npm run audit -- --only=project
+  fix          typed models and repository methods were added for all of them; the TS client gained version() and datasets()
+  retest       PASS — 95/95 client checks PASS
+
+[LOW] QA-8 — the audit itself was not a CI gate
+  detected by  project.ci — every gate the workflow must run
+  cause        the new audit existed only as a local script
+  where        .github/workflows/hadith_api.yml
+  reproduce    npm run audit -- --only=project
+  fix          CI runs "npm run audit -- --only=db,project" on every push; the corpus-dependent families run locally
+  retest       PASS — 7/7 CI gate checks PASS
+
+[HIGH] QA-9 — the test suite could seed synthetic rows into a release database
+  detected by  db.dataset — the sealed fingerprint of every dataset, recomputed
+  cause        the suite takes its database from DATABASE_URL and seeds a TEST-FIXTURE edition. Run once with that variable pointing at the release database, it left a sealed TEST-FIXTURE-V1 dataset row behind (7 declared records, 0 rows).
+  where        tests/helpers.ts
+  reproduce    DATABASE_URL=<release db> npx vitest run  # used to seed the fixture
+  fix          the suite refuses to start when the database holds any non-TEST dataset; the stray fixture rows were removed from the release database and the sealed fingerprint of JAMI-KAMIL-1437-V2 was re-verified unchanged.
+  retest       PASS — 204/204 tests on the scratch database, refusal on the release database, db.dataset 4/4 PASS
+
+================ FAILURES ================
+none
+================ BLOCKED / SKIPPED ================
+[BLOCKED] project.docker_build — the container image builds and runs from a clean checkout
+  reason     no Docker daemon in this environment; the build/run job runs in CI instead
+  where      Dockerfile
+
+[BLOCKED] flutter.suite — the Flutter unit and live suites pass
+  reason     no Flutter SDK in this environment; the suites run in CI and on the owner machine
+  where      ../flutter_app
+

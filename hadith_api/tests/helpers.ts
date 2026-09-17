@@ -50,7 +50,27 @@ export const auth = { authorization: `Bearer ${ADMIN_KEY}` };
 export const TEST_EDITION_SLUG = 'test-fixture-edition';
 export const TEST_DATASET = 'TEST-FIXTURE-V1';
 
+/**
+ * The suite writes synthetic rows, so it must never point at a database that
+ * holds a real corpus. One accidental run against the release database left a
+ * sealed TEST-FIXTURE dataset behind; this makes that impossible.
+ */
+async function refuseRealCorpus(): Promise<void> {
+  const rows = await query<{ dataset_version: string }>(
+    `select distinct dataset_version from corpus.hadiths
+      where dataset_version not like 'TEST-%' limit 1`,
+  );
+  const foreign = rows[0]?.dataset_version;
+  if (foreign) {
+    throw new Error(
+      `refusing to run the test suite against a database holding the real corpus ` +
+        `(dataset_version=${foreign}). Point DATABASE_URL at the scratch test database.`,
+    );
+  }
+}
+
 export async function seedTestEdition(): Promise<{ sourceId: string; editionId: string }> {
+  await refuseRealCorpus();
   const source = await query<{ id: string }>(
     `insert into corpus.sources (slug, name, description, source_type, license_status)
      values ('test-fixture-source', 'TEST FIXTURE SOURCE', 'synthetic data for automated tests',

@@ -7,7 +7,7 @@ import { get } from '../http/router.ts';
 import { ok, paginated } from '../http/respond.ts';
 import { query, queryOne } from '../db.ts';
 import { notFound } from '../http/errors.ts';
-import { optionalInt, optionalText, optionalUuid, pagination, uuidParam } from '../http/validate.ts';
+import { parseBoundedInt, rejectControlCharacters, optionalInt, optionalText, optionalUuid, pagination, uuidParam } from '../http/validate.ts';
 
 // ---------------- collections cited in takhrij ----------------
 get('/api/v1/collections', async ({ res, query: q }) => {
@@ -23,7 +23,9 @@ get('/api/v1/collections', async ({ res, query: q }) => {
 });
 
 get('/api/v1/collections/:name/hadiths', async ({ res, query: q, params }) => {
-  const name = decodeURIComponent(params['name'] as string).trim();
+  // the router already decoded the segment; a control character here would
+  // reach the driver as a NUL and surface as a 500
+  const name = rejectControlCharacters(params['name'] as string, 'name').trim();
   const { page, limit, offset } = pagination(q);
   const exists = await queryOne('select 1 from corpus.hadith_sources where source_name = $1 limit 1', [name]);
   if (!exists) throw notFound('Collection');
@@ -70,8 +72,8 @@ get('/api/v1/volumes', async ({ res, query: q }) => {
 });
 
 get('/api/v1/volumes/:volume/hadiths', async ({ res, params, query: q }) => {
-  const volume = Number(params['volume']);
-  if (!Number.isInteger(volume) || volume < 1) throw notFound('Volume');
+  const volume = parseBoundedInt(params['volume'] as string, 'volume');
+  if (volume < 1) throw notFound('Volume');
   const { page, limit, offset } = pagination(q);
   const pageFilter = optionalInt(q, 'page_number');
   const params2: unknown[] = [volume];

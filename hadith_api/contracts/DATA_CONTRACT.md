@@ -39,7 +39,7 @@ npm run import -- --file ./data/jami-kamil.json --adapter jami_kamil \
 
 # الاستيراد الفعلي
 npm run import -- --file ./data/jami-kamil.json --adapter jami_kamil \
-  --edition jami-kamil-1437 --dataset JAMI-KAMIL-1437-V1 --actor "<name>"
+  --edition jami-kamil-1437 --dataset JAMI-KAMIL-1437-V2 --actor "<name>"
 ```
 
 ## الصيغ غير المدعومة عمدًا

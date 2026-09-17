@@ -10,3 +10,7 @@ reports/*.json
 # committing the text here would itself be public distribution.
 data/
 exports/
+
+.staging*.env
+.staging*.pid
+.staging*.log

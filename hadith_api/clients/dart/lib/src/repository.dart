@@ -209,6 +209,89 @@ class HadithRepository {
     return (res.data as List).cast<Map<String, dynamic>>().map(Grading.fromJson).toList(growable: false);
   }
 
+  // ---------------- editions, collections, volumes ----------------
+
+  /// `GET /api/v1/editions` — the printings this service holds. A different
+  /// printing is a different edition and a different dataset; they are never
+  /// merged.
+  Future<List<HadithEdition>> getEditions() async {
+    final res = await _api.get('/api/v1/editions', query: {'limit': 100});
+    return (res.data as List)
+        .cast<Map<String, dynamic>>()
+        .map(HadithEdition.fromJson)
+        .toList(growable: false);
+  }
+
+  Future<HadithEdition> getEdition(String id) async {
+    final res = await _api.get('/api/v1/editions/$id');
+    return HadithEdition.fromJson(res.data as Map<String, dynamic>);
+  }
+
+  /// `GET /api/v1/collections` — the collections cited in the takhrij.
+  Future<List<Collection>> getCollections() async {
+    final res = await _api.get('/api/v1/collections');
+    return (res.data as List)
+        .cast<Map<String, dynamic>>()
+        .map(Collection.fromJson)
+        .toList(growable: false);
+  }
+
+  /// `GET /api/v1/collections/{name}/hadiths`
+  Future<Paged<HadithSummary>> getCollectionHadiths(
+    String name, {
+    int page = 1,
+    int limit = 20,
+  }) async {
+    final res = await _api.get(
+      '/api/v1/collections/${Uri.encodeComponent(name)}/hadiths',
+      query: {'page': page, 'limit': limit},
+    );
+    return Paged.fromResponse(res.data, res.meta, HadithSummary.fromJson);
+  }
+
+  /// `GET /api/v1/volumes` — the printed volumes with their page ranges.
+  Future<List<Volume>> getVolumes() async {
+    final res = await _api.get('/api/v1/volumes');
+    return (res.data as List).cast<Map<String, dynamic>>().map(Volume.fromJson).toList(growable: false);
+  }
+
+  /// `GET /api/v1/volumes/{volume}/hadiths`
+  Future<Paged<HadithSummary>> getVolumeHadiths(
+    int volume, {
+    int page = 1,
+    int limit = 20,
+    int? pageNumber,
+  }) async {
+    final res = await _api.get('/api/v1/volumes/$volume/hadiths', query: {
+      'page': page,
+      'limit': limit,
+      if (pageNumber != null) 'page_number': pageNumber,
+    });
+    return Paged.fromResponse(res.data, res.meta, HadithSummary.fromJson);
+  }
+
+  // ---------------- cross-checks (machine, not human) ----------------
+
+  /// `GET /api/v1/cross-checks/summary` — how the dataset compares with an
+  /// independent corpus. Never treat this as human verification.
+  Future<List<CrossCheckSummary>> getCrossCheckSummary() async {
+    final res = await _api.get('/api/v1/cross-checks/summary');
+    return (res.data as List)
+        .cast<Map<String, dynamic>>()
+        .map(CrossCheckSummary.fromJson)
+        .toList(growable: false);
+  }
+
+  /// `GET /api/v1/cross-checks/review-queue` — the records a human still has
+  /// to look at, worst match first.
+  Future<Paged<HadithSummary>> getCrossCheckReviewQueue({int page = 1, int limit = 20}) async {
+    final res = await _api.get('/api/v1/cross-checks/review-queue', query: {
+      'page': page,
+      'limit': limit,
+    });
+    return Paged.fromResponse(res.data, res.meta, HadithSummary.fromJson);
+  }
+
   // ---------------- dataset and system ----------------
 
   /// Which dataset this client is holding — use `datasetHash` as a cache key.

@@ -1,3 +1,6 @@
+SUPERSEDED — this run describes dataset JAMI-KAMIL-1437-V1 (15,961 records).
+The active release is JAMI-KAMIL-1437-V2 (15,959); see reports/FINAL_QA_AUDIT.txt.
+
 ================================================================
 API PRODUCTION AUDIT — 2026-09-17T14:02:50Z
 ================================================================

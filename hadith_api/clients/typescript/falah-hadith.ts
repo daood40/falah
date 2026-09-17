@@ -154,6 +154,10 @@ export class HadithApi {
   // ---- system ----
   health = () => this.request<Record<string, unknown>>('/api/v1/health').then((e) => e.data);
   stats = () => this.request<Record<string, unknown>>('/api/v1/stats').then((e) => e.data);
+  version = () => this.request<Record<string, unknown>>('/api/v1/version').then((e) => e.data);
+  /** The dataset versions this service serves, with their sealed fingerprints. */
+  datasets = () =>
+    this.request<Record<string, unknown>[]>('/api/v1/datasets').then((e) => e.data);
 
   // ---- hadiths ----
   async hadiths(params: {

@@ -1,23 +1,4 @@
-================================================================
-HADITH EDITION AUDIT — 2026-09-17T14:01:24Z
-================================================================
-
-EDITION UNDER AUDIT
-  title            الجامع الكامل في الحديث الصحيح الشامل المرتب على أبواب الفقه
-  author           أبو أحمد محمد عبد الله الأعظمي المعروف بـ«الضياء»
-  printing         الطبعة الأولى — ربيع الثاني ١٤٣٧هـ / يناير ٢٠١٦م
-  publisher        دار السلام للنشر والتوزيع — الرياض
-  volumes          12
-  digital source   Shamela text export supplied by the project owner
-  dataset_version  JAMI-KAMIL-1437-V1
-
-THE 19-VOLUME PRINTING
-  A later printing attributed to 19 volumes is NOT this dataset and is NOT
-  assumed to match it: different pagination, possibly different content.
-  It would enter as its own edition row and its own dataset_version, and the
-  audit below asserts that no record here claims a volume beyond 12.
-  Nothing in this corpus was derived from it.
-
+generated 2026-09-17T15:31:18Z — dataset JAMI-KAMIL-1437-V2
 ================ EDITION MANIFEST ================
 file                   vol  pages  first   last  records  sha256
 jami-kamil-j01.txt       1    780      0    781     1086  e9cd463f9af9ab6e…
@@ -30,7 +11,7 @@ jami-kamil-j07.txt       7    565      0    565     1166  c71b27b0a95808a2…
 jami-kamil-j08.txt       8    788      0    788     1273  7e226b773ac4f87c…
 jami-kamil-j09.txt       9    856      0    856     1853  952428106b5faa2f…
 jami-kamil-j10.txt      10    699      0    699     1349  305a3181bcd1a7ac…
-jami-kamil-j11.txt      11    724      0    724     1815  0c0e44c11af4ef6a…
+jami-kamil-j11.txt      11    724      0    724     1813  0c0e44c11af4ef6a…
 jami-kamil-j12.txt      12    600      0    600     1437  ac3b45fd4fbdfe24…
 
 ================ COMPLETENESS ================
@@ -39,7 +20,7 @@ PASS  volumes are contiguous 1..12  — 1,2,3,4,5,6,7,8,9,10,11,12
 PASS  the edition row declares the same number of volumes  — declared 12, on disk 12
 PASS  page numbers never run backwards inside a volume
       pages across all volumes: 8687
-      records parsed from files: 15961
+      records parsed from files: 15959
 
 ================ FILE ↔ DATABASE ================
   "pages" counts every printed page in the file; "with text" counts the
@@ -54,10 +35,10 @@ PASS  page numbers never run backwards inside a volume
   ج8   file  1273 · db  1273  pages file  788 · with text  629  PASS
   ج9   file  1853 · db  1853  pages file  856 · with text  762  PASS
   ج10  file  1349 · db  1349  pages file  699 · with text  615  PASS
-  ج11  file  1815 · db  1815  pages file  724 · with text  677  PASS
+  ج11  file  1813 · db  1813  pages file  724 · with text  677  PASS
   ج12  file  1437 · db  1437  pages file  600 · with text  549  PASS
 PASS  every volume holds exactly the records its file parses to
-PASS  database total equals the files total  — db 15961, files 15961
+PASS  database total equals the files total  — db 15959, files 15959
 
 ================ NUMBERING & ORDER ================
 PASS  this edition prints no hadith numbers, so none was invented  — records carrying a number: 0
@@ -66,13 +47,13 @@ PASS  reading order never goes back a page inside a volume
 PASS  no record claims a volume beyond this edition (a 19-volume printing is a DIFFERENT edition)
 
 ================ FIELD COVERAGE ================
-  total            15961
+  total            15959
   with_grading     15762
   with_narrator    14754
   with_takhrij     15762
   with_matn        0
   with_isnad       0
-  with_location    15961
+  with_location    15959
   takhrij_links    26934 across 26 collections
   grading_records  15762
 PASS  every record carries the volume and page the print gives it

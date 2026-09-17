@@ -48,7 +48,7 @@ get('/api/v1/search', async ({ res, query: q, req }) => {
            where h.search_tsv @@ websearch_to_tsquery('simple', q.n)
         union
           select h.id from corpus.hadiths h, q
-           where corpus.normalize_ar(h.raw_text) like '%' || q.n || '%'
+           where h.raw_text_normalized like '%' || q.n || '%'
         union
           select h.id from corpus.hadiths h join corpus.narrators n on n.id = h.narrator_id, q
            where corpus.normalize_ar(n.name) like '%' || q.n || '%'
@@ -60,19 +60,29 @@ get('/api/v1/search', async ({ res, query: q, req }) => {
            where corpus.normalize_ar(b.name) like '%' || q.n || '%'
       )`;
 
-    const total =
-      (await queryOne<{ total: number }>(
-        `${hits} select count(*)::int as total ${HADITH_FROM}, hits ${where}`, f.params))?.total ?? 0;
-    const rows = await query<HadithRow>(
+    /**
+     * One pass, not two: counting the hits in a separate statement re-ran the
+     * whole union and doubled the cost of a common term. The window count is
+     * computed over the same scan as the page.
+     */
+    const rows = await query<HadithRow & { total_count: number }>(
       `${hits}
        select ${HADITH_SELECT},
-              ts_rank(h.search_tsv, websearch_to_tsquery('simple', corpus.normalize_ar(${nq}))) as rank
+              ts_rank(h.search_tsv, websearch_to_tsquery('simple', corpus.normalize_ar(${nq}))) as rank,
+              count(*) over ()::int as total_count
        ${HADITH_FROM}, hits ${where}
        order by rank desc, h.volume_number nulls last, h.page_number nulls last,
                 h.source_ordinal nulls last
        limit ${f.push(limit)} offset ${f.push(offset)}`,
       f.params,
     );
+    // an offset past the end returns no rows, so the total is re-read only then
+    const total = rows[0]?.total_count
+      ?? (offset > 0
+        ? (await queryOne<{ total: number }>(
+            `${hits} select count(*)::int as total ${HADITH_FROM}, hits ${where}`,
+            f.params.slice(0, f.params.length - 2)))?.total ?? 0
+        : 0);
     const isAdmin = isAdminRequest(req);
     paginated(res, rows.map((r) => serializeHadithListItem(r, isAdmin)), page, limit, total, {
       query: term,

@@ -147,9 +147,9 @@ class CachedHadith {
 ## 10. هوية المجموعة
 
 ```
-dataset_version : JAMI-KAMIL-1437-V1
-dataset_hash    : 694a5afe4ac80aad4f3cd133ae1364160a3e23d6925774cd6f27868ecdb6cb7c
-record_count    : 15961
+dataset_version : JAMI-KAMIL-1437-V2
+dataset_hash    : ab6bf4d53940ce679be173fd27f938139d1ca5cbe5344976b0c0d01907db8df9
+record_count    : 15959
 status          : sealed
 ```
 

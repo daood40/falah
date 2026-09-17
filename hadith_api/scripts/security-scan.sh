@@ -11,9 +11,15 @@ note() { printf '%-58s %s\n' "$1" "$2"; }
 
 # 1. real secret VALUES anywhere in the tracked tree (names are fine, values are not)
 PATTERN='(SUPABASE_SERVICE_ROLE_KEY|SERVICE_ROLE_KEY|JWT_SECRET|ADMIN_API_KEY|DATABASE_URL|PGPASSWORD)[[:space:]]*[:=][[:space:]]*["'"'"']?[A-Za-z0-9/_+.-]{16,}'
+# Only files git would publish are scanned: a git-ignored local runtime file
+# (e.g. the generated .staging.env) is not part of the tree that ships.
 HITS=$(grep -rInE "$PATTERN" \
   --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=data --exclude-dir=exports \
   --exclude-dir=reports --exclude='*.log' --exclude='security-scan.sh' . 2>/dev/null \
+  | while IFS= read -r line; do
+      file="${line%%:*}"
+      git check-ignore -q "$file" 2>/dev/null || printf '%s\n' "$line"
+    done \
   | grep -vE '(\.env\.example|not-a-real|ci-admin-key|local-demo-key|falah:falah|postgres:falah|<|\$\{|process\.env|example\.com)' || true)
 if [ -n "$HITS" ]; then note "1. secret values in the tree" "FAIL"; echo "$HITS" | head -10; FAIL=1;
 else note "1. secret values in the tree" "PASS — none"; fi

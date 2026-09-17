@@ -1,3 +1,6 @@
+SUPERSEDED — this run describes dataset JAMI-KAMIL-1437-V1 (15,961 records).
+The active release is JAMI-KAMIL-1437-V2 (15,959); see reports/FINAL_QA_AUDIT.txt.
+
 ============ SEARCH RUN (real corpus) — 2026-09-16T06:10:53Z ============
 dataset: JAMI-KAMIL-1437-V1 — 15,961 hadiths · 5,338 chapters · 1,643 narrators
 results carry text_available=false: search works while the text stays withheld.
