@@ -227,3 +227,12 @@ targetSdk 36 (المطلوب ≥35) · أذونات: 1 (INTERNET فقط) · تو
   و`gate-evidence.jsonl.gz` داخل أثر `quality-gate-release`.
 - الحكمان: **TECHNICALLY READY FOR FALAH INTEGRATION = YES** ·
   **RELEASE GATE = FAIL** (التراخيص والتحقق البشري لم تكتمل — مقصود).
+
+## تصنيفات المصحف كاملة (2026-09-17 — تشغيل 22)
+
+النتيجة المدمجة: **41,599 حالة · 41,599 PASS · 0 FAIL · 0 BLOCKED · 0 SKIPPED**.
+أُضيفت الركوعات (556، هجرة 008) ومسارات `/rukus`, `/rubs`, `/pages`,
+`/manzils/{n}` وتصفية السور بمكان النزول وترتيبه و`structure` لكل سورة؛
+والتطبيق يتصفح كل التصنيفات من `assets/quran/structure.json` (بلا نصّ، مولَّد
+من المصدر وتفحصه البوابة بايتًا بايت: FL-STRUCTURE-FRESH + 9 عدّادات).
+الحكمان بلا تغيير: TECHNICALLY READY = YES · RELEASE GATE = FAIL (تراخيص).
