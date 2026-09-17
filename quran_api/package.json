@@ -30,7 +30,8 @@
     "gate:tests": "node tests/gate/run.ts",
     "gate:core": "node tests/gate/run.ts --skip=flutter,web,mobile,docker-deploy --label=core",
     "gate:merge": "node tests/gate/merge.ts",
-    "device:expectations": "node scripts/device-expectations.ts"
+    "device:expectations": "node scripts/device-expectations.ts",
+    "release:report": "node scripts/release-report.ts"
   },
   "dependencies": {
     "pg": "^8.13.1",
