@@ -1,50 +1,8 @@
-============ SECURITY REVIEW — 2026-09-16T02:07:43Z ============
+1. secret values in the tree                               PASS — none
+2. .env committed                                          PASS — only .env.example
+3. private keys                                            PASS — none
+4. server secrets in client code                           PASS — none
+5. corpus text committed                                   PASS — data/ is git-ignored
+6. build artifacts                                         PASS — scanned, clean
 
-1. SECRETS
-   service_role key in flutter_app/ or src/ (client code):
-   NONE — clean
-   secrets committed in backend/:
-   NONE — only names, never values
-   .env files tracked by git:
-   NONE (only .env.example)
-
-2. RLS (measured on the live schema)
-   corpus tables with RLS: 16 / 16
-   write policies for anon/authenticated: 0
-   direct SELECT grant on corpus.hadiths to anon: 0
-
-3. AUTHENTICATION / AUTHORIZATION (live probes)
-   admin endpoint, no credential           -> 401
-   admin endpoint, wrong key               -> 401
-   admin endpoint, malformed JWT           -> 401
-   admin endpoint, correct key             -> 200
-   public endpoint returns text?           -> raw_text=None  text_available=False
-
-4. INPUT VALIDATION / INJECTION (live probes)
-   search injection payload                -> 200   filter payload -> 422
-   search injection payload                -> 200   filter payload -> 422
-   search injection payload                -> 200   filter payload -> 422
-   hadith count after injection attempts    -> 3 rows (table intact)
-   malformed JSON body                      -> 400
-   oversized body (>64KB)                   -> 400
-
-5. PAGINATION ABUSE
-   limit=100000                             -> 422
-   page=-1                                  -> 422
-
-6. HEADERS / CORS
-   x-content-type-options: nosniff
-   x-frame-options: DENY
-   referrer-policy: no-referrer
-   content-security-policy: default-src 'none'; frame-ancestors 'none'
-   cross-origin-resource-policy: same-site
-   permissions-policy: geolocation=(), microphone=(), camera=()
-   OPTIONS preflight                        -> 204
-
-7. ERROR DISCLOSURE
-   invalid id body: {"success":false,"error":{"code":"VALIDATION_ERROR","message":"\"id\" must be a UUID"},"meta":{"request_id":"475c8399-4eb1-4cb4-9eba-7b48d268a042"}}
-
-8. RATE LIMITING
-   enforced per IP with Retry-After; proven by tests/rate-limit.test.ts
-   (RATE_LIMIT_MAX in this run: 120 per window — not exercised here to keep the run reproducible)
-===========================================================
+SECURITY SCAN: PASS

@@ -43,7 +43,9 @@ function parseIncludes(q: URLSearchParams): IncludeName[] {
   const names = raw.split(',').map((n) => n.trim()).filter(Boolean);
   const unknown = names.filter((n) => !(INCLUDABLE as readonly string[]).includes(n));
   if (unknown.length > 0) {
-    throw badRequest(`unknown include: ${unknown.join(', ')}. Available: ${INCLUDABLE.join(', ')}`);
+    throw badRequest(
+      `unknown include: ${unknown.join(', ').slice(0, 80)}. Available: ${INCLUDABLE.join(', ')}`,
+    );
   }
   return names as IncludeName[];
 }

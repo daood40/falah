@@ -20,6 +20,19 @@ interface Route {
 
 const routes: Route[] = [];
 
+/**
+ * A client can send a malformed percent-escape ("/api/v1/hadiths/%E0%A4%A").
+ * decodeURIComponent throws on it, which surfaced as a 500: a bad request was
+ * reported as a server fault. It is the caller's error, so it is a 400.
+ */
+function decodeSegment(part: string): string {
+  try {
+    return decodeURIComponent(part);
+  } catch {
+    throw new ApiError('BAD_REQUEST', 'The URL contains an invalid percent-encoded sequence');
+  }
+}
+
 export function route(method: string, path: string, handler: Handler): void {
   routes.push({ method, path, segments: path.split('/').filter(Boolean), handler });
 }
@@ -46,7 +59,7 @@ export function match(
     for (let i = 0; i < r.segments.length; i++) {
       const seg = r.segments[i] as string;
       const part = parts[i] as string;
-      if (seg.startsWith(':')) params[seg.slice(1)] = decodeURIComponent(part);
+      if (seg.startsWith(':')) params[seg.slice(1)] = decodeSegment(part);
       else if (seg !== part) {
         hit = false;
         break;

@@ -1,35 +1,26 @@
-============ CROSS-CHECK REPORT — 2026-09-17T04:30:05Z ============
-question answered: does each record's text actually exist in the collection
-                   the author's takhrij attributes it to?
-method: word-shingle containment (5-word windows) against an INDEPENDENT
-        published corpus — npm package 'hadith'@1.3.0 (MIT packaging),
-        16 collections, 46,906 records. No text from it is stored here.
-rule: nothing is ever corrected. A record the reference does not support is
-      routed to /api/v1/cross-checks/review-queue for a human.
-
-
-
+generated 2026-09-17T15:32:15Z — dataset JAMI-KAMIL-1437-V2
 reading the reference corpus: /tmp/ref/node_modules/hadith/data/hadith.db
   46906 reference records in 16 collections
-  indexed 1162992 distinct shingles (4144 ms)
+  indexed 1162992 distinct shingles (3323 ms)
   9 printed names map onto reference collections
+(node:4522) ExperimentalWarning: SQLite is an experimental feature and might change at any time
 (Use `node --trace-warnings ...` to show where the warning was created)
-checking 15961 imported records…
-writing 15961 verdicts…
+checking 15959 imported records…
+writing 15959 verdicts…
 ============ CROSS-CHECK REPORT ============
 reference          npm hadith@1.3.0 — 46906 records, 16 collections
-records checked    15961
-corroborated       10778 (67.53%)  similarity ≥ 0.5
+records checked    15959
+corroborated       10778 (67.54%)  similarity ≥ 0.5
 partial            2993 (18.75%)  0.15 ≤ similarity < 0.5
-not found          2190 (13.72%)
+not found          2188 (13.71%)
 --- takhrij agreement (only where the cited collection exists in the reference) ---
-in scope           12957
-  strong support   9756 (75.30%)   cited collection scores ≥ 0.5
-  weak support     1563 (12.06%)   ≥ 0.15
-  no support       1638 (12.64%)  ← raised for human review, nothing changed
-out of scope       2515  (cites only collections absent or incomplete in the reference:
+in scope           12664
+  strong support   9753 (77.01%)   cited collection scores ≥ 0.5
+  weak support     1516 (11.97%)   ≥ 0.15
+  no support       1395 (11.02%)  ← raised for human review, nothing changed
+out of scope       2725  (cites only collections absent or incomplete in the reference:
                     الحاكم، الطبراني، البيهقي، ابن حبان، البزار… and مسند أحمد, which the reference itself marks incomplete)
-no takhrij stored  489
+no takhrij stored  570
 best-matching collection:
   صحيح البخاري           4129
   صحيح مسلم              3851
@@ -43,24 +34,5 @@ best-matching collection:
   مسند أحمد              95
   الأدب المفرد           82
   حصن المسلم             79
-elapsed            7.4 s
+elapsed            5.9 s
 ============================================
-
---- where the reference cannot judge ---
-  cites only collections the reference lacks or marks incomplete: 2515
-  the edition states no takhrij at all: 489
-
---- reference coverage of the collections this edition cites ---
-  مسلم           cited  6986   corroborated  5902  (84.5%)
-  البخاري        cited  5910   corroborated  4844  (82.0%)
-  أحمد           cited  3353   corroborated  1312  (39.1%)
-  أبو داود       cited  1726   corroborated  1324  (76.7%)
-  مالك           cited  1695   corroborated  1309  (77.2%)
-  الحاكم         cited  1283   corroborated   603  (47.0%)
-  النسائي        cited  1217   corroborated   826  (67.9%)
-  الترمذي        cited  1182   corroborated   896  (75.8%)
-  ابن حبان       cited   997   corroborated   473  (47.4%)
-  ابن ماجه       cited   993   corroborated   769  (77.4%)
-  الطبراني       cited   789   corroborated    97  (12.3%)
-  البيهقي        cited   721   corroborated   290  (40.2%)
-============================================================

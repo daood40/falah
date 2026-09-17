@@ -1,3 +1,6 @@
+SUPERSEDED — this run describes dataset JAMI-KAMIL-1437-V1 (15,961 records).
+The active release is JAMI-KAMIL-1437-V2 (15,959); see reports/FINAL_QA_AUDIT.txt.
+
 ============ IMPORT REPORT — 2026-09-16T06:08:07Z ============
 source files : 12 volumes supplied by the project owner (Shamela export of
                the printed edition, shamela.ws/book/47 — numbering matches print)

@@ -551,3 +551,142 @@ class Paged<T> {
     );
   }
 }
+
+/// One printed edition of a source book. `GET /api/v1/editions`.
+class HadithEdition {
+  const HadithEdition({
+    required this.id,
+    required this.title,
+    this.slug,
+    this.author,
+    this.publisher,
+    this.editionNumber,
+    this.publicationYear,
+    this.volumeCount,
+    this.hadithCount,
+  });
+
+  final String id;
+  final String title;
+  final String? slug;
+  final String? author;
+  final String? publisher;
+  final int? editionNumber;
+  final int? publicationYear;
+  final int? volumeCount;
+  final int? hadithCount;
+
+  factory HadithEdition.fromJson(Map<String, dynamic> json) => HadithEdition(
+        id: json['id'] as String,
+        title: json['title'] as String,
+        slug: _as<String>(json['slug']),
+        author: _as<String>(json['author']),
+        publisher: _as<String>(json['publisher']),
+        editionNumber: _as<int>(json['edition_number']),
+        publicationYear: _as<int>(json['publication_year']),
+        volumeCount: _as<int>(json['volume_count']),
+        hadithCount: _as<int>(json['hadith_count']),
+      );
+}
+
+/// A collection this edition cites in its takhrij. `GET /api/v1/collections`.
+class Collection {
+  const Collection({
+    required this.name,
+    required this.hadithCount,
+    this.bookCount,
+    this.firstVolume,
+    this.lastVolume,
+    this.corroboratedCount,
+  });
+
+  final String name;
+  final int hadithCount;
+  final int? bookCount;
+  final int? firstVolume;
+  final int? lastVolume;
+
+  /// How many of those citations an independent corpus corroborates.
+  final int? corroboratedCount;
+
+  factory Collection.fromJson(Map<String, dynamic> json) => Collection(
+        name: json['name'] as String,
+        hadithCount: _as<int>(json['hadith_count']) ?? 0,
+        bookCount: _as<int>(json['book_count']),
+        firstVolume: _as<int>(json['first_volume']),
+        lastVolume: _as<int>(json['last_volume']),
+        corroboratedCount: _as<int>(json['corroborated_count']),
+      );
+}
+
+/// One printed volume. `GET /api/v1/volumes`.
+class Volume {
+  const Volume({
+    required this.volume,
+    required this.hadithCount,
+    this.editionId,
+    this.firstPage,
+    this.lastPage,
+    this.pagesWithText,
+    this.bookCount,
+  });
+
+  final int volume;
+  final int hadithCount;
+  final String? editionId;
+  final int? firstPage;
+  final int? lastPage;
+  final int? pagesWithText;
+  final int? bookCount;
+
+  factory Volume.fromJson(Map<String, dynamic> json) => Volume(
+        volume: _as<int>(json['volume']) ?? 0,
+        hadithCount: _as<int>(json['hadith_count']) ?? 0,
+        editionId: _as<String>(json['edition_id']),
+        firstPage: _as<int>(json['first_page']),
+        lastPage: _as<int>(json['last_page']),
+        pagesWithText: _as<int>(json['pages_with_text']),
+        bookCount: _as<int>(json['book_count']),
+      );
+}
+
+/// How the dataset compares with an independent corpus. This is a MACHINE
+/// cross-check, never a human verification: it never makes a hadith "verified".
+class CrossCheckSummary {
+  const CrossCheckSummary({
+    required this.datasetVersion,
+    required this.referenceName,
+    required this.checked,
+    required this.corroborated,
+    required this.partial,
+    required this.notFound,
+    this.referenceSlug,
+    this.takhrijAgrees,
+    this.takhrijDisagrees,
+    this.meanSimilarity,
+  });
+
+  final String datasetVersion;
+  final String referenceName;
+  final int checked;
+  final int corroborated;
+  final int partial;
+  final int notFound;
+  final String? referenceSlug;
+  final int? takhrijAgrees;
+  final int? takhrijDisagrees;
+  final String? meanSimilarity;
+
+  factory CrossCheckSummary.fromJson(Map<String, dynamic> json) => CrossCheckSummary(
+        datasetVersion: json['dataset_version'] as String,
+        referenceName: (json['reference_name'] ?? '') as String,
+        checked: _as<int>(json['checked']) ?? 0,
+        corroborated: _as<int>(json['corroborated']) ?? 0,
+        partial: _as<int>(json['partial']) ?? 0,
+        notFound: _as<int>(json['not_found']) ?? 0,
+        referenceSlug: _as<String>(json['reference_slug']),
+        takhrijAgrees: _as<int>(json['takhrij_agrees']),
+        takhrijDisagrees: _as<int>(json['takhrij_disagrees']),
+        meanSimilarity: json['mean_similarity']?.toString(),
+      );
+}

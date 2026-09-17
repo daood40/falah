@@ -167,7 +167,10 @@ export const jamiKamilShamelaAdapter: Adapter = {
       if (!bullet) continue;
 
       const body = (bullet[1] as string).trim();
-      if (/^[*\s]*$/u.test(body)) {
+      // A bullet line that carries no Arabic letter is a printed ornament
+      // ("\u2022 * *", "\u2022 \u2022 \u2022"), not a narration. Importing one would put a
+      // record with no text into the corpus.
+      if (!/[\u0600-\u06FF]/u.test(body)) {
         decorative++;
         continue;
       }

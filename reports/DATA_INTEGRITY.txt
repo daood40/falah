@@ -1,3 +1,6 @@
+SUPERSEDED — this run describes dataset JAMI-KAMIL-1437-V1 (15,961 records).
+The active release is JAMI-KAMIL-1437-V2 (15,959); see reports/FINAL_QA_AUDIT.txt.
+
 # DATA INTEGRITY REPORT — 2026-09-16T01:30:35Z
 # database: falah_corpus_test (local PostgreSQL 16, migrations 0001-0005)
 

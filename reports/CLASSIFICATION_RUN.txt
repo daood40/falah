@@ -1,3 +1,6 @@
+SUPERSEDED — this run describes dataset JAMI-KAMIL-1437-V1 (15,961 records).
+The active release is JAMI-KAMIL-1437-V2 (15,959); see reports/FINAL_QA_AUDIT.txt.
+
 ============ CLASSIFICATION RUN — 2026-09-17T04:31:09Z ============
 every browsing surface, live, with timings. No text in any of these.
 

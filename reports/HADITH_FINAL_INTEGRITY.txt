@@ -1,14 +1,9 @@
-================================================================
-HADITH FINAL INTEGRITY — 2026-09-17T14:01:39Z
-dataset JAMI-KAMIL-1437-V1 · 15,961 records
-================================================================
-
-LAYER 1 — every record against the file it came from
+generated 2026-09-17T15:31:48Z — dataset JAMI-KAMIL-1437-V2 (15,959 records)
 ========= STRUCTURAL SAMPLE VERIFICATION =========
-sample size            15961
-text found verbatim    15961/15961
-page marker agrees     15961/15961
-content_hash agrees    15961/15961
+sample size            15959
+text found verbatim    15959/15959
+page marker agrees     15959/15959
+content_hash agrees    15959/15959
 failures               0
 -------------------------------------------------
 This is a machine check of the IMPORT, not a human check of the
@@ -16,78 +11,12 @@ HADITH. verified stays false and verification_status stays pending
 until a human compares a sample against the printed edition.
 =================================================
 
-LAYER 2 — the rules the database enforces
-
-
-============ DATA INTEGRITY REPORT ============
-PASS  1. every hadith resolves to a registered source
-PASS  2. every hadith belongs to a declared dataset_version
-PASS  3. every hadith has a content_hash equal to sha256(raw_text)
-PASS  4. no hadith carries an empty raw_text
-PASS  5. hadith_number is unique per (dataset_version, edition)
-PASS  6. identical text inside one chapter is reported, never auto-deleted
-PASS  7. every hadith is traceable to a recorded import run
-PASS  8. imported text is source_locked
-PASS  9. verified=true only with a passed human verification record
-PASS  9b. a passed verification still matches the stored text
-PASS  10. every grading record belongs to a hadith with a recorded source
-PASS  10b. gradings carrying neither grader nor source_reference
-PASS  11. every narrator is attached to an edition of a registered source
-PASS  11b. a hadith narrator belongs to the same edition as the hadith
-PASS  12. volume never exceeds the edition volume_count
-PASS  12b. page and volume are positive when present
-PASS  13. book belongs to the hadith edition
-PASS  14. chapter belongs to the hadith book
-PASS  15. edition belongs to a registered source
-PASS  16. no placeholder/sample religious text in the corpus
-PASS  17. every verification sample cites hadiths of its own dataset
------------------------------------------------
-counts:      {"sources":2,"editions":1,"books":67,"chapters":5338,"hadiths":15961,"narrators":1643,"verified_hadiths":0,"pending_hadiths":15961,"needs_review_hadiths":0,"rejected_hadiths":0,"gradings":15762,"imports":12}
-verification:[{"dataset_version":"JAMI-KAMIL-1437-V1","hadiths":15961,"verified_hadiths":0,"samples":0,"passed_samples":0,"last_sample_at":null}]
-===============================================
-RESULT: PASS
-
-LAYER 3 — an independent published corpus
-  reference      hadith (npm) — 16 collections incl. صحيح البخاري وصحيح مسلم
-  checked        15961
-  corroborated   10778
-  partial        2993
-  not found      2190
-  takhrij agrees 11269
-  no support     1395   ← human review queue
-  mean similarity 0.6358
-
-CHAIN — RAW SOURCE → DATABASE → API → EXPORT
 ============ CHAIN INTEGRITY ============
-sample                       400 records
-RAW SOURCE → text            400/400  PASS
-DATABASE → hash              400/400  PASS
-API → hash + text            400/400  PASS
-EXPORT → hash                400/400  PASS
+sample                       300 records
+RAW SOURCE → text            300/300  PASS
+DATABASE → hash              300/300  PASS
+API → hash + text            300/300  PASS
+EXPORT → hash                300/300  PASS
 failures                     0
 CHAIN INTEGRITY: PASS
 =========================================
-
-DUPLICATES — reported, never acted on
-
-============ DUPLICATE REPORT ============
-dataset                      JAMI-KAMIL-1437-V1
-records                      15961
-exact-duplicate groups       130  (268 records involved)
-  …of those, inside one chapter 5  ← the ones worth a human look
-potential near-duplicates    200 groups sharing an opening
-
-BACKUP / RESTORE
-dataset fingerprint 694a5afe4ac80aad4f3cd133ae1364160a3e23d6925774cd6f27868ecdb6cb7c
-restored fingerprint 694a5afe4ac80aad4f3cd133ae1364160a3e23d6925774cd6f27868ecdb6cb7c
-PASS  dataset fingerprint is identical after restore
-PASS  every corpus table has the same row count after restore
-PASS  restored records are still source_locked
-BACKUP/RESTORE: PASS
-
-HUMAN VERIFICATION
-  samples recorded: 0
-  records with verified=true: 0
-  STATUS: PENDING — no human has compared a record against the printed
-  edition. Automated layers 1-3 say nothing about that, by design.
-================================================================

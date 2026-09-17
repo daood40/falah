@@ -1,62 +1,58 @@
-============ ENDPOINT SMOKE — 2026-09-17T13:49:49Z ============
-database: falah_corpus (15,961 hadiths) · every route taken from the router
-
-
-
+generated 2026-09-17T15:32:49Z — against the staging deployment http://127.0.0.1:8799
 ============ ENDPOINT SMOKE RUN ============
-base: http://127.0.0.1:8787
+base: http://127.0.0.1:8799
 PASS  GET  /api/v1/health                                                               200 (expected 200)
 PASS  GET  /api/v1/version                                                              200 (expected 200)
 PASS  GET  /api/v1/datasets                                                             200 (expected 200)
 PASS  GET  /api/v1/stats                                                                200 (expected 200)
-PASS  GET  /api/v1/hadiths/4d0ee4be-15ec-4338-a3bd-634d5907529a/narrators               200 (expected 200)
-PASS  GET  /api/v1/hadiths/4d0ee4be-15ec-4338-a3bd-634d5907529a/references              200 (expected 200)
-PASS  GET  /api/v1/hadiths/4d0ee4be-15ec-4338-a3bd-634d5907529a/takhrij                 200 (expected 200)
-PASS  GET  /api/v1/hadiths/4d0ee4be-15ec-4338-a3bd-634d5907529a/gradings                200 (expected 200)
-PASS  GET  /api/v1/hadiths/4d0ee4be-15ec-4338-a3bd-634d5907529a/verification            200 (expected 200)
+PASS  GET  /api/v1/hadiths/8f9d8160-d639-472b-9742-2d9c4400641a/narrators               200 (expected 200)
+PASS  GET  /api/v1/hadiths/8f9d8160-d639-472b-9742-2d9c4400641a/references              200 (expected 200)
+PASS  GET  /api/v1/hadiths/8f9d8160-d639-472b-9742-2d9c4400641a/takhrij                 200 (expected 200)
+PASS  GET  /api/v1/hadiths/8f9d8160-d639-472b-9742-2d9c4400641a/gradings                200 (expected 200)
+PASS  GET  /api/v1/hadiths/8f9d8160-d639-472b-9742-2d9c4400641a/verification            200 (expected 200)
 PASS  GET  /api/v1/hadiths                                                              200 (expected 200)
 PASS  GET  /api/v1/hadiths/random                                                       200 (expected 200)
 PASS  GET  /api/v1/hadiths/daily                                                        200 (expected 200)
 PASS  GET  /api/v1/hadiths/by-number/1                                                  404 (expected 404)  · this dataset carries no hadith numbers — 404 is correct
-PASS  GET  /api/v1/hadiths/4d0ee4be-15ec-4338-a3bd-634d5907529a                         200 (expected 200)
+PASS  GET  /api/v1/hadiths/8f9d8160-d639-472b-9742-2d9c4400641a                         200 (expected 200)
 PASS  GET  /api/v1/sources                                                              200 (expected 200)
-PASS  GET  /api/v1/sources/e9cf1d01-cfb8-48ca-b229-7c530b8646d1                         200 (expected 200)
+PASS  GET  /api/v1/sources/46cffad3-adb6-4ca0-904a-7b2251e15505                         200 (expected 200)
 PASS  GET  /api/v1/editions                                                             200 (expected 200)
-PASS  GET  /api/v1/editions/2c0dfc3e-5467-49d2-b290-0f97ab46afb0                        200 (expected 200)
+PASS  GET  /api/v1/editions/b9850ee7-2a3f-4e10-af64-3da4a81c237b                        200 (expected 200)
 PASS  GET  /api/v1/books                                                                200 (expected 200)
-PASS  GET  /api/v1/books/13b7fafd-848d-4a9b-bd2c-47783247a566                           200 (expected 200)
-PASS  GET  /api/v1/books/13b7fafd-848d-4a9b-bd2c-47783247a566/chapters                  200 (expected 200)
-PASS  GET  /api/v1/books/13b7fafd-848d-4a9b-bd2c-47783247a566/hadiths                   200 (expected 200)
+PASS  GET  /api/v1/books/90bc8994-194c-4c79-9661-14502766863f                           200 (expected 200)
+PASS  GET  /api/v1/books/90bc8994-194c-4c79-9661-14502766863f/chapters                  200 (expected 200)
+PASS  GET  /api/v1/books/90bc8994-194c-4c79-9661-14502766863f/hadiths                   200 (expected 200)
 PASS  GET  /api/v1/chapters                                                             200 (expected 200)
-PASS  GET  /api/v1/chapters/1beb3f78-cdbb-470a-bd6d-ef75b0a6ce3e                        200 (expected 200)
-PASS  GET  /api/v1/chapters/1beb3f78-cdbb-470a-bd6d-ef75b0a6ce3e/hadiths                200 (expected 200)
+PASS  GET  /api/v1/chapters/aeb43e1d-5012-4cba-a2ad-7ec62e5d18c3                        200 (expected 200)
+PASS  GET  /api/v1/chapters/aeb43e1d-5012-4cba-a2ad-7ec62e5d18c3/hadiths                200 (expected 200)
 PASS  GET  /api/v1/narrators                                                            200 (expected 200)
-PASS  GET  /api/v1/narrators/0b7a06af-8ec4-4c6d-bfa8-5da84b571b30                       200 (expected 200)
-PASS  GET  /api/v1/narrators/0b7a06af-8ec4-4c6d-bfa8-5da84b571b30/hadiths               200 (expected 200)
+PASS  GET  /api/v1/narrators/d908e6ef-530c-4f0e-9d34-3cc49d0ff62d                       200 (expected 200)
+PASS  GET  /api/v1/narrators/d908e6ef-530c-4f0e-9d34-3cc49d0ff62d/hadiths               200 (expected 200)
 PASS  GET  /api/v1/search?q=%D8%A7%D8%AE%D8%AA%D8%A8%D8%A7%D8%B1                        200 (expected 200)
 PASS  GET  /api/v1/collections                                                          200 (expected 200)
-PASS  GET  /api/v1/collections/%D9%85%D8%A7%D9%84%D9%83/hadiths                         200 (expected 200)
+PASS  GET  /api/v1/collections/%D8%A7%D9%84%D8%A8%D8%AE%D8%A7%D8%B1%D9%8A/hadiths       200 (expected 200)
 PASS  GET  /api/v1/gradings                                                             200 (expected 200)
 PASS  GET  /api/v1/volumes                                                              200 (expected 200)
 PASS  GET  /api/v1/volumes/1/hadiths                                                    200 (expected 200)
 PASS  GET  /api/v1/catalog                                                              200 (expected 200)
 PASS  GET  /api/v1/references                                                           200 (expected 200)
 PASS  GET  /api/v1/cross-checks/summary                                                 200 (expected 200)
-PASS  GET  /api/v1/hadiths/4d0ee4be-15ec-4338-a3bd-634d5907529a/cross-checks            200 (expected 200)
+PASS  GET  /api/v1/hadiths/8f9d8160-d639-472b-9742-2d9c4400641a/cross-checks            200 (expected 200)
 PASS  GET  /api/v1/cross-checks/review-queue                                            200 (expected 200)
 PASS  GET  /api/v1/admin/stats                                                          200 (expected 200)
 PASS  GET  /api/v1/admin/stats  (no credential)                                         401 (expected 401)  · must be refused
 PASS  GET  /api/v1/admin/imports                                                        200 (expected 200)
 PASS  GET  /api/v1/admin/imports  (no credential)                                       401 (expected 401)  · must be refused
-PASS  GET  /api/v1/admin/imports/834d0659-c671-47be-a294-adf66c588bec                   200 (expected 200)
-PASS  GET  /api/v1/admin/imports/834d0659-c671-47be-a294-adf66c588bec  (no credential)  401 (expected 401)  · must be refused
+PASS  GET  /api/v1/admin/imports/54936779-ab8b-4bea-b102-5f800336816b                   200 (expected 200)
+PASS  GET  /api/v1/admin/imports/54936779-ab8b-4bea-b102-5f800336816b  (no credential)  401 (expected 401)  · must be refused
 PASS  GET  /api/v1/admin/dataset-versions                                               200 (expected 200)
 PASS  GET  /api/v1/admin/dataset-versions  (no credential)                              401 (expected 401)  · must be refused
 PASS  GET  /api/v1/admin/audit-logs                                                     200 (expected 200)
 PASS  GET  /api/v1/admin/audit-logs  (no credential)                                    401 (expected 401)  · must be refused
-PASS  GET  /api/v1/admin/hadiths/4d0ee4be-15ec-4338-a3bd-634d5907529a                   200 (expected 200)
-PASS  GET  /api/v1/admin/hadiths/4d0ee4be-15ec-4338-a3bd-634d5907529a  (no credential)  401 (expected 401)  · must be refused
-PASS  POST /api/v1/admin/hadiths/4d0ee4be-15ec-4338-a3bd-634d5907529a/verify            201 (expected 201)  · hash_check only — does not mark the hadith verified
+PASS  GET  /api/v1/admin/hadiths/8f9d8160-d639-472b-9742-2d9c4400641a                   200 (expected 200)
+PASS  GET  /api/v1/admin/hadiths/8f9d8160-d639-472b-9742-2d9c4400641a  (no credential)  401 (expected 401)  · must be refused
+PASS  POST /api/v1/admin/hadiths/8f9d8160-d639-472b-9742-2d9c4400641a/verify            201 (expected 201)  · hash_check only — does not mark the hadith verified
 PASS  GET  /api/v1/admin/verifications                                                  200 (expected 200)
 PASS  GET  /api/v1/admin/verifications  (no credential)                                 401 (expected 401)  · must be refused
 PASS  POST /api/v1/admin/verification-samples                                           201 (expected 201)  · status=pending — never a pass
