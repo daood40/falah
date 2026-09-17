@@ -161,19 +161,8 @@ jobs:
     name: Gate · android (release APK + on-device run)
     runs-on: ubuntu-latest
     timeout-minutes: 90
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_PASSWORD: falah
-        ports: ['5432:5432']
-        options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
     env:
-      DATABASE_URL: postgresql://postgres:falah@localhost:5432/postgres
+      DATABASE_URL: postgresql://postgres:falah@127.0.0.1:5432/postgres
     strategy:
       fail-fast: false
       matrix:
@@ -196,6 +185,17 @@ jobs:
           cache: true
       - run: npm ci
         working-directory: quran_api
+
+      - name: PostgreSQL for the dataset (plain container, not a service)
+        run: |
+          docker run -d --name gate-db -e POSTGRES_PASSWORD=falah -p 5432:5432 postgres:16-alpine
+          for attempt in $(seq 1 60); do
+            if docker exec gate-db pg_isready -U postgres > /dev/null 2>&1; then
+              echo "postgres is ready"; exit 0
+            fi
+            sleep 1
+          done
+          echo "postgres never became ready"; docker logs gate-db; exit 1
 
       - name: Build the dataset the device will read
         run: |
