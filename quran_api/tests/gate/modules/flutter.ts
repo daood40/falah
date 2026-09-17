@@ -1,13 +1,35 @@
 /**
- * Category: flutter — the Flutter client. The Dart test suite needs a Flutter
- * SDK, which is not installed in this environment, so those runs are recorded
- * BLOCKED (never PASS). Everything that can be checked without the SDK is
- * checked for real: every Dart source file is read and audited against the
- * repository's own rules, and every client config is validated.
+ * Category: flutter — the Flutter client.
+ *
+ * Every Dart source file is audited against the repository's own rules, and the
+ * Flutter toolchain is then driven for real: pub get, gen-l10n, analyze, the
+ * whole Dart test suite (one gate case per Dart test, parsed from
+ * `flutter test --machine`) and a web build. The module requires the SDK — it
+ * never records a BLOCKED case — so it must run where Flutter exists (the
+ * gate-flutter job in .github/workflows/quality-gate.yml).
  */
+import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 import type { GateContext } from '../context.ts';
+
+type Run = { ok: boolean; code: number | null; stdout: string; stderr: string };
+
+function flutter(root: string, args: string[], timeout = 1_200_000): Run {
+  const result = spawnSync('flutter', args, {
+    cwd: root,
+    encoding: 'utf8',
+    timeout,
+    maxBuffer: 64 * 1024 * 1024,
+    env: { ...process.env, CI: 'true' },
+  });
+  return {
+    ok: result.status === 0,
+    code: result.status,
+    stdout: String(result.stdout ?? ''),
+    stderr: String(result.stderr ?? '').slice(0, 4000),
+  };
+}
 
 const CATEGORY = 'flutter';
 
@@ -236,18 +258,92 @@ export async function run(ctx: GateContext): Promise<void> {
     gate.check(`FL-PUBSPEC-${check.id}`, CATEGORY, check.description, { file: 'pubspec.yaml' }, check.ok, check.expected, check.ok ? 'satisfied' : 'MISSING', 'MEDIUM', 1);
   }
 
-  // The Dart test suite itself cannot run here.
-  const testFiles = walk(path.join(root, 'test'));
-  for (const file of testFiles) {
-    const relative = path.relative(root, file);
-    gate.blocked(
-      `FL-DARTTEST-${relative.replace(/[^a-z0-9]/gi, '-')}`,
-      CATEGORY,
-      `flutter test ${relative}`,
-      'No Flutter SDK in this environment (flutter/dart are not installed and the SDK download host is outside the egress policy). Run on a machine with Flutter, or in CI where the SDK is provisioned.',
+  // ---- the Flutter toolchain, driven for real --------------------------------
+  const version = flutter(root, ['--version'], 300_000);
+  if (!version.ok) {
+    throw new Error(
+      'the flutter category requires a Flutter SDK on PATH. Run it in the gate-flutter job (.github/workflows/quality-gate.yml), not on a host without the SDK.',
     );
   }
-  gate.blocked('FL-BUILD-WEB', CATEGORY, 'flutter build web', 'No Flutter SDK in this environment.');
-  gate.blocked('FL-BUILD-APK', CATEGORY, 'flutter build apk', 'No Flutter SDK and no Android SDK in this environment.');
-  gate.blocked('FL-ANALYZE', CATEGORY, 'flutter analyze', 'No Flutter SDK in this environment.');
+  gate.check('FL-SDK', CATEGORY, 'a Flutter SDK is available and reports its version', { command: 'flutter --version' }, /Flutter\s+\d+\.\d+/.test(version.stdout), 'a Flutter version banner', version.stdout.split('\n')[0]?.slice(0, 120) ?? '', 'HIGH', 1);
+
+  const pubGet = flutter(root, ['pub', 'get'], 900_000);
+  gate.check('FL-PUB-GET', CATEGORY, 'flutter pub get resolves every dependency', { command: 'flutter pub get' }, pubGet.ok, 'exit 0', pubGet.ok ? 'exit 0' : `exit ${pubGet.code}: ${pubGet.stderr.slice(-300)}`, 'CRITICAL', 1);
+
+  const genL10n = flutter(root, ['gen-l10n'], 600_000);
+  gate.check('FL-GEN-L10N', CATEGORY, 'the localisation bundle generates from the .arb files', { command: 'flutter gen-l10n' }, genL10n.ok, 'exit 0', genL10n.ok ? 'exit 0' : `exit ${genL10n.code}: ${genL10n.stderr.slice(-300)}`, 'HIGH', 1);
+
+  const analyze = flutter(root, ['analyze'], 900_000);
+  const issues = (analyze.stdout.match(/^\s*(info|warning|error)\s+•/gm) ?? []).length;
+  gate.check('FL-ANALYZE', CATEGORY, 'flutter analyze reports no issue', { command: 'flutter analyze' }, analyze.ok && issues === 0, 'exit 0 with no issue', `exit ${analyze.code}, ${issues} issue(s)`, 'HIGH', 2);
+
+  // One gate case per Dart test, taken from the machine-readable reporter.
+  const dartTests = flutter(root, ['test', '--machine'], 1_800_000);
+  const names = new Map<number, string>();
+  const suites = new Map<number, string>();
+  const testSuite = new Map<number, number>();
+  let reported = 0;
+  let dartFailures = 0;
+  for (const line of dartTests.stdout.split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed.startsWith('{')) continue;
+    let event: any;
+    try {
+      event = JSON.parse(trimmed);
+    } catch {
+      continue;
+    }
+    if (event.type === 'suite' && event.suite) {
+      suites.set(event.suite.id, String(event.suite.path ?? ''));
+    }
+    if (event.type === 'testStart' && event.test) {
+      names.set(event.test.id, String(event.test.name ?? ''));
+      testSuite.set(event.test.id, event.test.suiteID);
+    }
+    if (event.type === 'testDone' && !event.hidden) {
+      const name = names.get(event.testID) ?? `test-${event.testID}`;
+      const suitePath = path.relative(root, suites.get(testSuite.get(event.testID) ?? -1) ?? '');
+      const passed = event.result === 'success';
+      if (!passed) dartFailures += 1;
+      reported += 1;
+      gate.record({
+        test_id: `FL-DART-${suitePath.replace(/[^a-z0-9]/gi, '-')}-${name.slice(0, 60).replace(/[^a-z0-9]/gi, '-')}`,
+        category: CATEGORY,
+        description: `flutter test — ${suitePath}: ${name}`,
+        input: { suite: suitePath, test: name },
+        expected: 'success',
+        actual: String(event.result),
+        assertions: 1,
+        status: passed ? 'PASS' : 'FAIL',
+        severity: 'HIGH',
+      });
+    }
+  }
+  gate.check('FL-DART-SUITE', CATEGORY, 'the whole Dart test suite passes', { command: 'flutter test --machine' }, dartTests.ok && reported > 0 && dartFailures === 0, '> 0 tests, zero failures', `${reported} tests, ${dartFailures} failed, exit ${dartTests.code}`, 'CRITICAL', 2);
+
+  const webBuild = flutter(root, ['build', 'web', '--release'], 1_800_000);
+  gate.check('FL-BUILD-WEB', CATEGORY, 'flutter build web --release succeeds', { command: 'flutter build web --release' }, webBuild.ok, 'exit 0', webBuild.ok ? 'exit 0' : `exit ${webBuild.code}: ${webBuild.stderr.slice(-300)}`, 'HIGH', 1);
+
+  const webDir = path.join(root, 'build', 'web');
+  const webArtifacts: { id: string; file: string; description: string }[] = [
+    { id: 'INDEX', file: 'index.html', description: 'the web build emits an app shell' },
+    { id: 'MAIN', file: 'main.dart.js', description: 'the web build emits the compiled application' },
+    { id: 'MANIFEST', file: 'manifest.json', description: 'the web build emits a web manifest' },
+  ];
+  for (const artifact of webArtifacts) {
+    const file = path.join(webDir, artifact.file);
+    gate.check(`FL-WEB-${artifact.id}`, CATEGORY, artifact.description, { file: `build/web/${artifact.file}` }, existsSync(file), 'present', existsSync(file) ? 'present' : 'MISSING', 'MEDIUM', 1);
+  }
+  const compiled = existsSync(path.join(webDir, 'main.dart.js')) ? readFileSync(path.join(webDir, 'main.dart.js'), 'utf8') : '';
+  gate.check(
+    'FL-WEB-NO-SECRET',
+    CATEGORY,
+    'the compiled web bundle contains no secret',
+    { file: 'build/web/main.dart.js' },
+    compiled.length > 0 && !/(eyJhbGciOi|service_role|SUPABASE_SERVICE_ROLE_KEY)/.test(compiled),
+    'no secret material in the bundle',
+    compiled.length > 0 ? 'scanned' : 'bundle missing',
+    'CRITICAL',
+    3,
+  );
 }

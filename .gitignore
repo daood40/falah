@@ -27,3 +27,7 @@ owner_dropzone/**
 
 # Raw quality-gate evidence (the gzipped copy is committed instead)
 quran_api/reports/gate-evidence.jsonl
+flutter_app/assets/gate/
+quran_api/reports/gate-evidence-*.jsonl
+quran_api/reports/gate-evidence-*.jsonl.gz
+!quran_api/reports/gate-evidence-sample.jsonl

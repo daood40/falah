@@ -15,8 +15,12 @@ export const MINIMUMS: Record<string, number> = {
   openapi: 500,
   flutter: 500,
   web: 300,
+  // Android only: iOS is out of scope by owner decision (see GATE_SCOPE.md).
   mobile: 300,
-  'docker-deploy': 300,
+  // The container matrix that can actually be executed; registry push, TLS and
+  // rollback are deployment steps against infrastructure that does not exist
+  // yet, and are owner items in GATE_SCOPE.md rather than test cases.
+  'docker-deploy': 250,
   'backup-restore': 250,
   'license-verification': 250,
   performance: 500,

@@ -27,7 +27,10 @@
     "scheme:list": "node src/import/scheme-cli.ts --list",
     "scheme:decide": "node src/import/scheme-cli.ts",
     "bootstrap:check": "node scripts/clean-bootstrap.ts",
-    "gate:tests": "node tests/gate/run.ts"
+    "gate:tests": "node tests/gate/run.ts",
+    "gate:core": "node tests/gate/run.ts --skip=flutter,web,mobile,docker-deploy --label=core",
+    "gate:merge": "node tests/gate/merge.ts",
+    "device:expectations": "node scripts/device-expectations.ts"
   },
   "dependencies": {
     "pg": "^8.13.1",

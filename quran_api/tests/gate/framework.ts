@@ -143,6 +143,36 @@ export class Gate {
     return ok;
   }
 
+  /**
+   * Ingests a record produced by another runner (a CI job with the Android,
+   * Docker or Flutter toolchain). The record keeps its own timestamp, build and
+   * dataset version — this gate does not rewrite someone else's evidence — and
+   * is counted exactly like a local one.
+   */
+  ingest(record: TestRecord): void {
+    if (this.seenIds.has(record.test_id)) this.duplicateIds += 1;
+    this.seenIds.add(record.test_id);
+    if (record.assertions <= 0) this.emptyAssertions += 1;
+
+    const bucket = this.counts.get(record.category) ?? {
+      total: 0, pass: 0, fail: 0, blocked: 0, skipped: 0,
+    };
+    bucket.total += 1;
+    if (record.status === 'PASS') bucket.pass += 1;
+    else if (record.status === 'FAIL') bucket.fail += 1;
+    else if (record.status === 'BLOCKED') bucket.blocked += 1;
+    else bucket.skipped += 1;
+    this.counts.set(record.category, bucket);
+
+    appendFileSync(this.context.evidencePath, `${JSON.stringify(record)}\n`);
+    const sampled = this.sampleCounts.get(record.category) ?? 0;
+    if (record.status !== 'PASS' || sampled < this.sampleCap) {
+      appendFileSync(this.context.samplePath, `${JSON.stringify(record)}\n`);
+      this.sampleCounts.set(record.category, sampled + 1);
+    }
+    if (record.status === 'FAIL' || record.status === 'BLOCKED') this.records.push(record);
+  }
+
   blocked(id: string, category: string, description: string, reason: string): void {
     this.record({
       test_id: id,

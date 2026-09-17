@@ -1,0 +1,298 @@
+# FALAH quality gate — every category runs where its tooling actually exists.
+#
+# gate-core     : the API, database, security, search and regression modules,
+#                 next to a real PostgreSQL service.
+# gate-web      : the PWA suite and the web static audit, with the root deps.
+# gate-docker   : the container matrix, on a runner with a Docker daemon.
+# gate-flutter  : the Dart suite, analyze and the web build, with the SDK.
+# gate-android  : the release APK plus the on-device run on real emulators.
+# gate-merge    : merges every evidence file into the release result and fails
+#                 if anything is FAIL, BLOCKED, SKIPPED or below its minimum.
+name: Quality Gate
+
+on:
+  push:
+    branches: ['main', 'claude/**']
+  workflow_dispatch:
+
+concurrency:
+  group: quality-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  QURAN_DATASET_VERSION: ci
+
+jobs:
+  gate-core:
+    name: Gate · core (db · api · security · regression)
+    runs-on: ubuntu-latest
+    defaults:
+      run: { working-directory: quran_api }
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: falah
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:falah@localhost:5432/postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: quran_api/package-lock.json
+      - name: Install PostgreSQL client tools (pg_dump / pg_restore)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-16 || sudo apt-get install -y postgresql-client
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run gate:core
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gate-evidence-core
+          path: quran_api/reports/gate-evidence-core.jsonl
+          retention-days: 14
+
+  gate-web:
+    name: Gate · web (PWA suite + static audit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install the PWA dependencies (the web module runs its suite)
+        run: npm ci
+      - name: Install the API package
+        run: npm ci
+        working-directory: quran_api
+      - name: Run the web category
+        run: node tests/gate/run.ts web --label=web
+        working-directory: quran_api
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gate-evidence-web
+          path: quran_api/reports/gate-evidence-web.jsonl
+          retention-days: 14
+
+  gate-docker:
+    name: Gate · docker (image · container · stack)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: quran_api/package-lock.json
+      - name: Docker daemon must be present
+        run: docker info
+      - run: npm ci
+        working-directory: quran_api
+      - name: Run the docker category
+        run: node tests/gate/run.ts docker-deploy --label=docker
+        working-directory: quran_api
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gate-evidence-docker
+          path: quran_api/reports/gate-evidence-docker.jsonl
+          retention-days: 14
+
+  gate-flutter:
+    name: Gate · flutter (analyze · dart tests · web build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: quran_api/package-lock.json
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.4'
+          channel: stable
+          cache: true
+      - run: npm ci
+        working-directory: quran_api
+      - name: Device expectations (needed by the asset bundle)
+        run: node scripts/device-expectations.ts --dataset-version=${{ env.QURAN_DATASET_VERSION }} --edition=quran-json-uthmani-hafs
+        working-directory: quran_api
+      - name: Run the flutter category
+        run: node tests/gate/run.ts flutter --label=flutter
+        working-directory: quran_api
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gate-evidence-flutter
+          path: quran_api/reports/gate-evidence-flutter.jsonl
+          retention-days: 14
+
+  gate-android:
+    name: Gate · android (release APK + on-device run)
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: falah
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:falah@localhost:5432/postgres
+    strategy:
+      fail-fast: false
+      matrix:
+        api-level: [29, 34]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: quran_api/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.4'
+          channel: stable
+          cache: true
+      - run: npm ci
+        working-directory: quran_api
+
+      - name: Build the dataset the device will read
+        run: |
+          npm run db:apply
+          npm run import -- --version=${{ env.QURAN_DATASET_VERSION }} --translations=en --publish
+          node scripts/device-expectations.ts --dataset-version=${{ env.QURAN_DATASET_VERSION }} --edition=quran-json-uthmani-hafs
+        working-directory: quran_api
+
+      - name: Serve the API for the emulator (internal instance, public flags off)
+        working-directory: quran_api
+        env:
+          HOST: 0.0.0.0
+          PORT: '8787'
+          PRIVATE_MODE: 'false'
+          PUBLIC_DATA_ENABLED: 'true'
+          CONTENT_LICENSE_CONFIRMED: 'true'
+          DATA_REDISTRIBUTION_ALLOWED: 'true'
+          RATE_LIMIT_MAX: '1000000'
+          SUPABASE_JWT_SECRET: gate-secret-for-falah-quran-api-quality-gate
+        run: |
+          nohup node src/server.ts > /tmp/api-server.log 2>&1 &
+          for attempt in $(seq 1 60); do
+            if curl -sf http://127.0.0.1:8787/api/v1/health > /dev/null; then
+              echo "API is up"; exit 0
+            fi
+            sleep 1
+          done
+          echo "API did not come up"; cat /tmp/api-server.log; exit 1
+
+      # The APK build and its inspection are architecture-independent, so they
+      # run once (on the newest API level) — running them per matrix entry would
+      # record the same test ids twice.
+      - name: Android project checks + release APK
+        if: matrix.api-level == 34
+        working-directory: quran_api
+        run: node tests/gate/run.ts mobile --label=android-apk
+
+      - name: Enable KVM for the emulator
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: On-device gate run (API ${{ matrix.api-level }})
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api-level }}
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          ram-size: 4096M
+          disable-animations: true
+          working-directory: flutter_app
+          script: |
+            flutter pub get
+            flutter gen-l10n
+            flutter test integration_test/gate_device_test.dart \
+              --dart-define=GATE_API_BASE_URL=http://10.0.2.2:8787 \
+              --dart-define=GATE_DEVICE_PROFILE=android-api-${{ matrix.api-level }} \
+              --dart-define=GATE_BUILD=ci \
+              --dart-define=GATE_DATASET_VERSION=${{ env.QURAN_DATASET_VERSION }} \
+              2>&1 | tee /tmp/device-run-${{ matrix.api-level }}.log
+
+      - name: Turn the device output into gate evidence
+        if: always()
+        run: |
+          mkdir -p quran_api/reports
+          grep -h '^GATE_RECORD ' /tmp/device-run-${{ matrix.api-level }}.log \
+            | sed 's/^GATE_RECORD //' \
+            > quran_api/reports/gate-evidence-android-${{ matrix.api-level }}.jsonl
+          count=$(wc -l < quran_api/reports/gate-evidence-android-${{ matrix.api-level }}.jsonl)
+          echo "device cases recorded: $count"
+          test "$count" -gt 0
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gate-evidence-android-${{ matrix.api-level }}
+          path: |
+            quran_api/reports/gate-evidence-android-apk.jsonl
+            quran_api/reports/gate-evidence-android-${{ matrix.api-level }}.jsonl
+          if-no-files-found: error
+          retention-days: 14
+
+  gate-merge:
+    name: Gate · merge (release result)
+    runs-on: ubuntu-latest
+    needs: [gate-core, gate-web, gate-docker, gate-flutter, gate-android]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: quran_api/package-lock.json
+      - run: npm ci
+        working-directory: quran_api
+      - uses: actions/download-artifact@v4
+        with:
+          path: quran_api/reports/evidence
+          pattern: gate-evidence-*
+          merge-multiple: false
+      - name: Merge every evidence file into the release result
+        run: node tests/gate/merge.ts reports/evidence --release
+        working-directory: quran_api
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: quality-gate-release
+          path: |
+            quran_api/reports/TEST_MASTER_REPORT.txt
+            quran_api/reports/TEST_QUALITY_AUDIT.txt
+            quran_api/reports/gate-evidence.jsonl.gz
+            quran_api/reports/gate-evidence-sample.jsonl
+            quran_api/reports/gate-evidence-sources.json
+          retention-days: 30
