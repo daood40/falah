@@ -83,8 +83,9 @@ try {
   await page.waitForTimeout(2000);
   step('the application loads', true, appUrl);
 
-  // navigate to the hadith tab by its route, which is what the tab does
-  await page.goto(`${appUrl}/#/hadith`, { waitUntil: 'load' });
+  // the hadith tab opens the classification hub; the books screen is one of
+  // its entries, and this script walks the reading path from there
+  await page.goto(`${appUrl}/#/hadith/books`, { waitUntil: 'load' });
   await page.waitForTimeout(3000);
   await page.evaluate(() => {
     const placeholder = document.querySelector('flt-semantics-placeholder');

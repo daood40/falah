@@ -130,8 +130,16 @@
   "errors_storage": "تعذّر الحفظ. تحقق من المساحة المتاحة.",
   "errors_unknown": "حدث خطأ غير متوقع. حاول مجددًا.",
   "errors_validation": "بعض البيانات غير صحيحة. راجع المدخلات.",
+  "hadith_allHadiths": "كل الأحاديث",
+  "@hadith_allHadiths": {
+    "description": "Hadith feature string"
+  },
   "hadith_allOfBook": "كل الأحاديث",
   "@hadith_allOfBook": {
+    "description": "Hadith feature string"
+  },
+  "hadith_authorLabel": "المؤلف",
+  "@hadith_authorLabel": {
     "description": "Hadith feature string"
   },
   "hadith_bookLabel": "الكتاب",
@@ -139,6 +147,10 @@
     "description": "Hadith feature string"
   },
   "hadith_booksTitle": "كتب الجامع",
+  "hadith_catalogTitle": "الفهرس الكامل",
+  "@hadith_catalogTitle": {
+    "description": "Hadith feature string"
+  },
   "hadith_chapterLabel": "الباب",
   "@hadith_chapterLabel": {
     "description": "Hadith feature string"
@@ -147,8 +159,32 @@
   "@hadith_chaptersTitle": {
     "description": "Hadith feature string"
   },
+  "hadith_checkedLabel": "سجلات فُحصت",
+  "@hadith_checkedLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_classificationsTitle": "الحديث الشريف",
+  "@hadith_classificationsTitle": {
+    "description": "Hadith feature string"
+  },
   "hadith_collectionLabel": "الكتاب المُخرِّج",
   "@hadith_collectionLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_collectionsTitle": "كتب التخريج",
+  "@hadith_collectionsTitle": {
+    "description": "Hadith feature string"
+  },
+  "hadith_corroboratedLabel": "مؤيَّد: {count}",
+  "@hadith_corroboratedLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hadith_corroboratedOnly": "مؤيَّد",
+  "@hadith_corroboratedOnly": {
     "description": "Hadith feature string"
   },
   "hadith_countLabel": "{count} حديثًا",
@@ -158,6 +194,26 @@
         "type": "int"
       }
     }
+  },
+  "hadith_crossCheckNone": "لا توجد نتيجة مقارنة لهذا السجل",
+  "@hadith_crossCheckNone": {
+    "description": "Hadith feature string"
+  },
+  "hadith_crossCheckNote": "مقارنة آلية بمجموعة مستقلة — دليل للمراجعة البشرية، وليست حكمًا على الحديث.",
+  "@hadith_crossCheckNote": {
+    "description": "Hadith feature string"
+  },
+  "hadith_crossCheckTitle": "التحقق المتقاطع",
+  "@hadith_crossCheckTitle": {
+    "description": "Hadith feature string"
+  },
+  "hadith_datasetHashLabel": "بصمة المجموعة",
+  "@hadith_datasetHashLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_datasetLabel": "المجموعة",
+  "@hadith_datasetLabel": {
+    "description": "Hadith feature string"
   },
   "hadith_datasetLine": "مجموعة {version} — {count} سجلًا",
   "@hadith_datasetLine": {
@@ -169,6 +225,14 @@
         "type": "int"
       }
     }
+  },
+  "hadith_datasetsTitle": "إصدارات البيانات",
+  "@hadith_datasetsTitle": {
+    "description": "Hadith feature string"
+  },
+  "hadith_editionsTitle": "الطبعات",
+  "@hadith_editionsTitle": {
+    "description": "Hadith feature string"
   },
   "hadith_empty": "لا توجد أحاديث في هذا القسم بعد",
   "hadith_error": "تعذّر الاتصال بخادم فلاح",
@@ -192,7 +256,15 @@
   "@hadith_errorServer": {
     "description": "Hadith feature string"
   },
+  "hadith_graderLabel": "الحاكم على الحديث",
+  "@hadith_graderLabel": {
+    "description": "Hadith feature string"
+  },
   "hadith_gradingLabel": "الدرجة",
+  "hadith_gradingsTitle": "الدرجات",
+  "@hadith_gradingsTitle": {
+    "description": "Hadith feature string"
+  },
   "hadith_hashLabel": "بصمة السجل: {hash}",
   "@hadith_hashLabel": {
     "placeholders": {
@@ -200,6 +272,22 @@
         "type": "String"
       }
     }
+  },
+  "hadith_humanReviewLabel": "مراجعة بشرية",
+  "@hadith_humanReviewLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_kunyaLabel": "الكنية",
+  "@hadith_kunyaLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_laqabLabel": "اللقب",
+  "@hadith_laqabLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_licenceLabel": "حالة الترخيص",
+  "@hadith_licenceLabel": {
+    "description": "Hadith feature string"
   },
   "hadith_loadMore": "تحميل المزيد",
   "@hadith_loadMore": {
@@ -214,9 +302,82 @@
   "@hadith_locatorLabel": {
     "description": "Hadith feature string"
   },
+  "hadith_lockedLabel": "مقفل ضد التعديل",
+  "@hadith_lockedLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_matchedInLabel": "طوبق في",
+  "@hadith_matchedInLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_methodLabel": "طريقة المقارنة",
+  "@hadith_methodLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_narratorHadiths": "كل أحاديث هذا الراوي",
+  "@hadith_narratorHadiths": {
+    "description": "Hadith feature string"
+  },
   "hadith_narratorLabel": "الراوي",
+  "hadith_narratorSearchHint": "ابحث عن راوٍ…",
+  "@hadith_narratorSearchHint": {
+    "description": "Hadith feature string"
+  },
+  "hadith_narratorSourceLabel": "مصدر التسمية",
+  "@hadith_narratorSourceLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_narratorsTitle": "الرواة",
+  "@hadith_narratorsTitle": {
+    "description": "Hadith feature string"
+  },
+  "hadith_needsReview": "بحاجة إلى مراجعة",
+  "@hadith_needsReview": {
+    "description": "Hadith feature string"
+  },
+  "hadith_no": "لا",
+  "@hadith_no": {
+    "description": "Hadith feature string"
+  },
+  "hadith_noNumberInEdition": "هذه الطبعة لا تُرقّم الأحاديث",
+  "@hadith_noNumberInEdition": {
+    "description": "Hadith feature string"
+  },
   "hadith_noResults": "لا نتائج مطابقة",
+  "hadith_notFoundLabel": "بلا مطابقة",
+  "@hadith_notFoundLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_notesLabel": "ملاحظات",
+  "@hadith_notesLabel": {
+    "description": "Hadith feature string"
+  },
   "hadith_numberLabel": "رقم الحديث",
+  "hadith_pageOf": "صفحة {page} من {totalPages} · {total}",
+  "@hadith_pageOf": {
+    "placeholders": {
+      "page": {
+        "type": "int"
+      },
+      "totalPages": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "hadith_pageRange": "الصفحات {first}–{last}",
+  "@hadith_pageRange": {
+    "placeholders": {
+      "first": {
+        "type": "int"
+      },
+      "last": {
+        "type": "int"
+      }
+    }
+  },
   "hadith_pageStatus": "{shown} من {total}",
   "@hadith_pageStatus": {
     "placeholders": {
@@ -228,7 +389,39 @@
       }
     }
   },
+  "hadith_partialLabel": "تأييد جزئي",
+  "@hadith_partialLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_printingLabel": "الطبعة",
+  "@hadith_printingLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_publisherLabel": "الناشر",
+  "@hadith_publisherLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_referenceCorpusLabel": "المجموعة المرجعية",
+  "@hadith_referenceCorpusLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_referenceLabel": "المرجع",
+  "@hadith_referenceLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_referencesTitle": "المراجع",
+  "@hadith_referencesTitle": {
+    "description": "Hadith feature string"
+  },
   "hadith_retry": "إعادة المحاولة",
+  "hadith_reviewQueueTitle": "طابور المراجعة البشرية",
+  "@hadith_reviewQueueTitle": {
+    "description": "Hadith feature string"
+  },
+  "hadith_roleLabel": "الدور",
+  "@hadith_roleLabel": {
+    "description": "Hadith feature string"
+  },
   "hadith_searchHint": "ابحث في الأحاديث…",
   "hadith_searchPrompt": "اكتب كلمة أو أكثر ثم ابحث",
   "@hadith_searchPrompt": {
@@ -238,13 +431,77 @@
   "@hadith_searchTitle": {
     "description": "Hadith feature string"
   },
+  "hadith_similarityLabel": "نسبة التطابق",
+  "@hadith_similarityLabel": {
+    "description": "Hadith feature string"
+  },
   "hadith_sourceLabel": "المصدر",
+  "hadith_sourceMatchLabel": "مطابقة المصدر",
+  "@hadith_sourceMatchLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_sourcesTitle": "المصادر",
+  "@hadith_sourcesTitle": {
+    "description": "Hadith feature string"
+  },
+  "hadith_statsTitle": "إحصاءات المجموعة",
+  "@hadith_statsTitle": {
+    "description": "Hadith feature string"
+  },
+  "hadith_statusLabel": "الحالة",
+  "@hadith_statusLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_takhrijAgreesLabel": "التخريج موافق",
+  "@hadith_takhrijAgreesLabel": {
+    "description": "Hadith feature string"
+  },
   "hadith_takhrijLabel": "التخريج",
+  "hadith_takhrijTextLabel": "نص التخريج",
+  "@hadith_takhrijTextLabel": {
+    "description": "Hadith feature string"
+  },
   "hadith_textWithheld": "النص غير متاح حتى تأكيد حقوق النشر",
   "hadith_title": "الحديث",
   "hadith_unverified": "لم يُوثَّق بعد",
+  "hadith_verdictCorroborated": "مؤيَّد",
+  "@hadith_verdictCorroborated": {
+    "description": "Hadith feature string"
+  },
+  "hadith_verdictLabel": "النتيجة",
+  "@hadith_verdictLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_verdictNotFound": "بلا مطابقة",
+  "@hadith_verdictNotFound": {
+    "description": "Hadith feature string"
+  },
+  "hadith_verdictPartial": "تأييد جزئي",
+  "@hadith_verdictPartial": {
+    "description": "Hadith feature string"
+  },
   "hadith_verified": "موثَّق",
+  "hadith_volumeCountLabel": "عدد المجلدات",
+  "@hadith_volumeCountLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_volumeLabel": "المجلد {volume}",
+  "@hadith_volumeLabel": {
+    "placeholders": {
+      "volume": {
+        "type": "int"
+      }
+    }
+  },
   "hadith_volumePage": "المجلد {volume} — صفحة {page}",
+  "hadith_volumesTitle": "المجلدات",
+  "@hadith_volumesTitle": {
+    "description": "Hadith feature string"
+  },
+  "hadith_yes": "نعم",
+  "@hadith_yes": {
+    "description": "Hadith feature string"
+  },
   "help_cat1": "الإنشاء والتصميم",
   "help_cat2": "الحفظ والنسخ الاحتياطي",
   "help_cat3": "القراءة والأدوات",

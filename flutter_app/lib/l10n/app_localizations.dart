@@ -888,7 +888,19 @@ abstract class AppLocalizations {
   ///
   /// In ar, this message translates to:
   /// **'كل الأحاديث'**
+  String get hadith_allHadiths;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'كل الأحاديث'**
   String get hadith_allOfBook;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'المؤلف'**
+  String get hadith_authorLabel;
 
   /// Hadith feature string
   ///
@@ -905,6 +917,12 @@ abstract class AppLocalizations {
   /// Hadith feature string
   ///
   /// In ar, this message translates to:
+  /// **'الفهرس الكامل'**
+  String get hadith_catalogTitle;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
   /// **'الباب'**
   String get hadith_chapterLabel;
 
@@ -917,8 +935,38 @@ abstract class AppLocalizations {
   /// Hadith feature string
   ///
   /// In ar, this message translates to:
+  /// **'سجلات فُحصت'**
+  String get hadith_checkedLabel;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'الحديث الشريف'**
+  String get hadith_classificationsTitle;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
   /// **'الكتاب المُخرِّج'**
   String get hadith_collectionLabel;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'كتب التخريج'**
+  String get hadith_collectionsTitle;
+
+  /// No description provided for @hadith_corroboratedLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'مؤيَّد: {count}'**
+  String hadith_corroboratedLabel(int count);
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'مؤيَّد'**
+  String get hadith_corroboratedOnly;
 
   /// No description provided for @hadith_countLabel.
   ///
@@ -926,11 +974,53 @@ abstract class AppLocalizations {
   /// **'{count} حديثًا'**
   String hadith_countLabel(int count);
 
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد نتيجة مقارنة لهذا السجل'**
+  String get hadith_crossCheckNone;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'مقارنة آلية بمجموعة مستقلة — دليل للمراجعة البشرية، وليست حكمًا على الحديث.'**
+  String get hadith_crossCheckNote;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'التحقق المتقاطع'**
+  String get hadith_crossCheckTitle;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'بصمة المجموعة'**
+  String get hadith_datasetHashLabel;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'المجموعة'**
+  String get hadith_datasetLabel;
+
   /// No description provided for @hadith_datasetLine.
   ///
   /// In ar, this message translates to:
   /// **'مجموعة {version} — {count} سجلًا'**
   String hadith_datasetLine(String version, int count);
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'إصدارات البيانات'**
+  String get hadith_datasetsTitle;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'الطبعات'**
+  String get hadith_editionsTitle;
 
   /// No description provided for @hadith_empty.
   ///
@@ -974,17 +1064,53 @@ abstract class AppLocalizations {
   /// **'الخدمة غير متاحة الآن. أعد المحاولة بعد قليل.'**
   String get hadith_errorServer;
 
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'الحاكم على الحديث'**
+  String get hadith_graderLabel;
+
   /// No description provided for @hadith_gradingLabel.
   ///
   /// In ar, this message translates to:
   /// **'الدرجة'**
   String get hadith_gradingLabel;
 
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'الدرجات'**
+  String get hadith_gradingsTitle;
+
   /// No description provided for @hadith_hashLabel.
   ///
   /// In ar, this message translates to:
   /// **'بصمة السجل: {hash}'**
   String hadith_hashLabel(String hash);
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'مراجعة بشرية'**
+  String get hadith_humanReviewLabel;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'الكنية'**
+  String get hadith_kunyaLabel;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'اللقب'**
+  String get hadith_laqabLabel;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'حالة الترخيص'**
+  String get hadith_licenceLabel;
 
   /// Hadith feature string
   ///
@@ -1010,11 +1136,71 @@ abstract class AppLocalizations {
   /// **'المُعرّف المطبعي'**
   String get hadith_locatorLabel;
 
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'مقفل ضد التعديل'**
+  String get hadith_lockedLabel;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'طوبق في'**
+  String get hadith_matchedInLabel;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'طريقة المقارنة'**
+  String get hadith_methodLabel;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'كل أحاديث هذا الراوي'**
+  String get hadith_narratorHadiths;
+
   /// No description provided for @hadith_narratorLabel.
   ///
   /// In ar, this message translates to:
   /// **'الراوي'**
   String get hadith_narratorLabel;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'ابحث عن راوٍ…'**
+  String get hadith_narratorSearchHint;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'مصدر التسمية'**
+  String get hadith_narratorSourceLabel;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'الرواة'**
+  String get hadith_narratorsTitle;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'بحاجة إلى مراجعة'**
+  String get hadith_needsReview;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'لا'**
+  String get hadith_no;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'هذه الطبعة لا تُرقّم الأحاديث'**
+  String get hadith_noNumberInEdition;
 
   /// No description provided for @hadith_noResults.
   ///
@@ -1022,11 +1208,35 @@ abstract class AppLocalizations {
   /// **'لا نتائج مطابقة'**
   String get hadith_noResults;
 
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'بلا مطابقة'**
+  String get hadith_notFoundLabel;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'ملاحظات'**
+  String get hadith_notesLabel;
+
   /// No description provided for @hadith_numberLabel.
   ///
   /// In ar, this message translates to:
   /// **'رقم الحديث'**
   String get hadith_numberLabel;
+
+  /// No description provided for @hadith_pageOf.
+  ///
+  /// In ar, this message translates to:
+  /// **'صفحة {page} من {totalPages} · {total}'**
+  String hadith_pageOf(int page, int totalPages, int total);
+
+  /// No description provided for @hadith_pageRange.
+  ///
+  /// In ar, this message translates to:
+  /// **'الصفحات {first}–{last}'**
+  String hadith_pageRange(int first, int last);
 
   /// No description provided for @hadith_pageStatus.
   ///
@@ -1034,11 +1244,59 @@ abstract class AppLocalizations {
   /// **'{shown} من {total}'**
   String hadith_pageStatus(int shown, int total);
 
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'تأييد جزئي'**
+  String get hadith_partialLabel;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'الطبعة'**
+  String get hadith_printingLabel;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'الناشر'**
+  String get hadith_publisherLabel;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'المجموعة المرجعية'**
+  String get hadith_referenceCorpusLabel;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'المرجع'**
+  String get hadith_referenceLabel;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'المراجع'**
+  String get hadith_referencesTitle;
+
   /// No description provided for @hadith_retry.
   ///
   /// In ar, this message translates to:
   /// **'إعادة المحاولة'**
   String get hadith_retry;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'طابور المراجعة البشرية'**
+  String get hadith_reviewQueueTitle;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'الدور'**
+  String get hadith_roleLabel;
 
   /// No description provided for @hadith_searchHint.
   ///
@@ -1058,17 +1316,59 @@ abstract class AppLocalizations {
   /// **'بحث في الأحاديث'**
   String get hadith_searchTitle;
 
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'نسبة التطابق'**
+  String get hadith_similarityLabel;
+
   /// No description provided for @hadith_sourceLabel.
   ///
   /// In ar, this message translates to:
   /// **'المصدر'**
   String get hadith_sourceLabel;
 
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'مطابقة المصدر'**
+  String get hadith_sourceMatchLabel;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'المصادر'**
+  String get hadith_sourcesTitle;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'إحصاءات المجموعة'**
+  String get hadith_statsTitle;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'الحالة'**
+  String get hadith_statusLabel;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'التخريج موافق'**
+  String get hadith_takhrijAgreesLabel;
+
   /// No description provided for @hadith_takhrijLabel.
   ///
   /// In ar, this message translates to:
   /// **'التخريج'**
   String get hadith_takhrijLabel;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'نص التخريج'**
+  String get hadith_takhrijTextLabel;
 
   /// No description provided for @hadith_textWithheld.
   ///
@@ -1088,17 +1388,65 @@ abstract class AppLocalizations {
   /// **'لم يُوثَّق بعد'**
   String get hadith_unverified;
 
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'مؤيَّد'**
+  String get hadith_verdictCorroborated;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'النتيجة'**
+  String get hadith_verdictLabel;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'بلا مطابقة'**
+  String get hadith_verdictNotFound;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'تأييد جزئي'**
+  String get hadith_verdictPartial;
+
   /// No description provided for @hadith_verified.
   ///
   /// In ar, this message translates to:
   /// **'موثَّق'**
   String get hadith_verified;
 
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'عدد المجلدات'**
+  String get hadith_volumeCountLabel;
+
+  /// No description provided for @hadith_volumeLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'المجلد {volume}'**
+  String hadith_volumeLabel(int volume);
+
   /// No description provided for @hadith_volumePage.
   ///
   /// In ar, this message translates to:
   /// **'المجلد {volume} — صفحة {page}'**
   String hadith_volumePage(Object page, Object volume);
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'المجلدات'**
+  String get hadith_volumesTitle;
+
+  /// Hadith feature string
+  ///
+  /// In ar, this message translates to:
+  /// **'نعم'**
+  String get hadith_yes;
 
   /// No description provided for @help_cat1.
   ///

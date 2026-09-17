@@ -204,7 +204,16 @@ class Takhrij {
 
 /// A record may carry several gradings, or none. None is mandatory.
 class Grading {
-  const Grading({required this.text, this.source, this.reference, this.notes, this.datasetVersion});
+  const Grading({
+    required this.text,
+    this.source,
+    this.reference,
+    this.notes,
+    this.datasetVersion,
+    this.hadithCount,
+    this.bookCount,
+    this.verifiedCount,
+  });
 
   final String text;
   final String? source;
@@ -212,12 +221,20 @@ class Grading {
   final String? notes;
   final String? datasetVersion;
 
+  /// Set on the label rows of `GET /api/v1/gradings`, not on a hadith grading.
+  final int? hadithCount;
+  final int? bookCount;
+  final int? verifiedCount;
+
   factory Grading.fromJson(Map<String, dynamic> json) => Grading(
         text: (json['grading_text'] ?? json['label']) as String,
         source: _as<String>(json['source']) ?? _as<String>(json['grader']),
         reference: _as<String>(json['reference']),
         notes: _as<String>(json['notes']),
         datasetVersion: _as<String>(json['dataset_version']),
+        hadithCount: _as<int>(json['hadith_count']),
+        bookCount: _as<int>(json['book_count']),
+        verifiedCount: _as<int>(json['verified_count']),
       );
 }
 
@@ -390,6 +407,9 @@ class HadithBook {
     this.orderNumber,
     this.chapterCount,
     this.description,
+    this.firstVolume,
+    this.lastVolume,
+    this.chapters = const [],
   });
 
   final String id;
@@ -399,6 +419,11 @@ class HadithBook {
   final int? orderNumber;
   final int? chapterCount;
   final String? description;
+  final int? firstVolume;
+  final int? lastVolume;
+
+  /// Filled only by `GET /api/v1/catalog?chapters=true`.
+  final List<HadithChapter> chapters;
 
   factory HadithBook.fromJson(Map<String, dynamic> json) => HadithBook(
         id: json['id'] as String,
@@ -408,6 +433,12 @@ class HadithBook {
         orderNumber: _as<int>(json['order_number']),
         chapterCount: _as<int>(json['chapter_count']),
         description: _as<String>(json['description']),
+        firstVolume: _as<int>(json['first_volume']),
+        lastVolume: _as<int>(json['last_volume']),
+        chapters: (json['chapters'] as List? ?? const [])
+            .cast<Map<String, dynamic>>()
+            .map(HadithChapter.fromJson)
+            .toList(growable: false),
       );
 }
 
@@ -436,7 +467,7 @@ class HadithChapter {
 
   factory HadithChapter.fromJson(Map<String, dynamic> json) => HadithChapter(
         id: json['id'] as String,
-        bookId: json['book_id'] as String,
+        bookId: _as<String>(json['book_id']) ?? '',
         title: (json['title'] ?? json['name']) as String,
         hadithCount: _as<int>(json['hadith_count']) ?? 0,
         parentId: _as<String>(json['parent_id']),
@@ -515,6 +546,11 @@ class HadithStats {
   int get references => _as<int>(raw['references']) ?? 0;
   int get gradings => _as<int>(raw['gradings']) ?? 0;
   int get verifiedHadiths => _as<int>(raw['verified_hadiths']) ?? 0;
+  int get pendingHadiths => _as<int>(raw['pending_hadiths']) ?? 0;
+  int get needsReviewHadiths => _as<int>(raw['needs_review_hadiths']) ?? 0;
+  int get rejectedHadiths => _as<int>(raw['rejected_hadiths']) ?? 0;
+  int get editions => _as<int>(raw['editions']) ?? 0;
+  int get imports => _as<int>(raw['imports']) ?? 0;
   bool get contentLicenseConfirmed => _as<bool>(raw['content_license_confirmed']) ?? false;
 
   factory HadithStats.fromJson(Map<String, dynamic> json) => HadithStats(raw: json);
@@ -694,5 +730,99 @@ class CrossCheckSummary {
         takhrijAgrees: _as<int>(json['takhrij_agrees']),
         takhrijDisagrees: _as<int>(json['takhrij_disagrees']),
         meanSimilarity: json['mean_similarity']?.toString(),
+      );
+}
+
+/// One machine cross-check of a record against an independent corpus.
+/// It is evidence for a human, never a verdict on the hadith itself.
+class CrossCheck {
+  const CrossCheck({
+    required this.reference,
+    required this.verdict,
+    this.referenceName,
+    this.referenceCollection,
+    this.referenceNumber,
+    this.method,
+    this.similarity,
+    this.takhrijAgrees,
+    this.takhrijCollections = const [],
+    this.details = const {},
+  });
+
+  /// The reference corpus slug, e.g. `npm-hadith-1.3.0`.
+  final String reference;
+  final String? referenceName;
+
+  /// corroborated | partial | not_found
+  final String verdict;
+  final String? referenceCollection;
+  final String? referenceNumber;
+  final String? method;
+  final String? similarity;
+  final bool? takhrijAgrees;
+  final List<String> takhrijCollections;
+  final Map<String, dynamic> details;
+
+  double get similarityValue => double.tryParse(similarity ?? '') ?? 0;
+
+  factory CrossCheck.fromJson(Map<String, dynamic> json) => CrossCheck(
+        reference: _as<String>(json['reference']) ?? '',
+        referenceName: _as<String>(json['reference_name']),
+        verdict: _as<String>(json['verdict']) ?? 'not_found',
+        referenceCollection: _as<String>(json['reference_collection']),
+        referenceNumber: json['reference_number']?.toString(),
+        method: _as<String>(json['method']),
+        similarity: json['similarity']?.toString(),
+        takhrijAgrees: _as<bool>(json['takhrij_agrees']),
+        takhrijCollections:
+            (json['takhrij_collections'] as List? ?? const []).map((e) => '$e').toList(growable: false),
+        details: _as<Map<String, dynamic>>(json['details']) ?? const {},
+      );
+}
+
+/// A record waiting for a human to look at it, worst match first.
+class ReviewQueueItem {
+  const ReviewQueueItem({
+    required this.hadithId,
+    required this.verdict,
+    this.sourceLocator,
+    this.volume,
+    this.page,
+    this.grading,
+    this.similarity,
+    this.takhrijCollections = const [],
+    this.takhrijAgrees,
+    this.referenceCollection,
+    this.book,
+    this.chapter,
+  });
+
+  final String hadithId;
+  final String verdict;
+  final String? sourceLocator;
+  final int? volume;
+  final int? page;
+  final String? grading;
+  final String? similarity;
+  final List<String> takhrijCollections;
+  final bool? takhrijAgrees;
+  final String? referenceCollection;
+  final String? book;
+  final String? chapter;
+
+  factory ReviewQueueItem.fromJson(Map<String, dynamic> json) => ReviewQueueItem(
+        hadithId: json['hadith_id'] as String,
+        verdict: _as<String>(json['verdict']) ?? 'not_found',
+        sourceLocator: _as<String>(json['source_locator']),
+        volume: _as<int>(json['volume']),
+        page: _as<int>(json['page']),
+        grading: _as<String>(json['grading']),
+        similarity: json['similarity']?.toString(),
+        takhrijCollections:
+            (json['takhrij_collections'] as List? ?? const []).map((e) => '$e').toList(growable: false),
+        takhrijAgrees: _as<bool>(json['takhrij_agrees']),
+        referenceCollection: _as<String>(json['reference_collection']),
+        book: _as<String>(json['book']),
+        chapter: _as<String>(json['chapter']),
       );
 }

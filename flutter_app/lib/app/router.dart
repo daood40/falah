@@ -11,6 +11,8 @@ import '../features/hadith/presentation/hadith_chapters_screen.dart';
 import '../features/hadith/presentation/hadith_detail_screen.dart';
 import '../features/hadith/presentation/hadith_list_screen.dart';
 import '../features/hadith/presentation/hadith_search_screen.dart';
+import '../features/hadith/presentation/hadith_classifications_screen.dart';
+import '../features/hadith/presentation/hadith_taxonomy_screens.dart';
 import '../features/quran/presentation/surah_list_screen.dart';
 import '../features/quran/presentation/surah_reader_screen.dart';
 import '../features/settings/settings_screen.dart';
@@ -58,8 +60,105 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/hadith',
                 name: 'hadith',
-                builder: (c, s) => const HadithBooksScreen(),
+                builder: (c, s) => const HadithClassificationsScreen(),
                 routes: [
+                  GoRoute(
+                    path: 'books',
+                    name: 'hadithBooks',
+                    builder: (c, s) => const HadithBooksScreen(),
+                  ),
+                  GoRoute(
+                    path: 'catalog',
+                    name: 'hadithCatalog',
+                    builder: (c, s) => const HadithCatalogScreen(),
+                  ),
+                  GoRoute(
+                    path: 'volumes',
+                    name: 'hadithVolumes',
+                    builder: (c, s) => const HadithVolumesScreen(),
+                    routes: [
+                      GoRoute(
+                        path: ':volume',
+                        name: 'hadithVolumeList',
+                        builder: (c, s) => HadithListScreen(
+                          query: HadithListQuery(
+                            HadithListKind.volume,
+                            s.pathParameters['volume']!,
+                          ),
+                          title: s.extra as String?,
+                        ),
+                      ),
+                    ],
+                  ),
+                  GoRoute(
+                    path: 'collections',
+                    name: 'hadithCollections',
+                    builder: (c, s) => const HadithCollectionsScreen(),
+                    routes: [
+                      GoRoute(
+                        path: ':name',
+                        name: 'hadithCollectionList',
+                        builder: (c, s) => HadithListScreen(
+                          query: HadithListQuery(
+                            HadithListKind.collection,
+                            s.pathParameters['name']!,
+                          ),
+                          title: s.extra as String?,
+                        ),
+                      ),
+                    ],
+                  ),
+                  GoRoute(
+                    path: 'gradings',
+                    name: 'hadithGradings',
+                    builder: (c, s) => const HadithGradingsScreen(),
+                    routes: [
+                      GoRoute(
+                        path: ':grading',
+                        name: 'hadithGradingList',
+                        builder: (c, s) => HadithListScreen(
+                          query: HadithListQuery(
+                            HadithListKind.grading,
+                            s.pathParameters['grading']!,
+                          ),
+                          title: s.extra as String?,
+                        ),
+                      ),
+                    ],
+                  ),
+                  GoRoute(
+                    path: 'narrators',
+                    name: 'hadithNarrators',
+                    builder: (c, s) => const HadithNarratorsScreen(),
+                    routes: [
+                      GoRoute(
+                        path: ':narratorId',
+                        name: 'hadithNarratorList',
+                        builder: (c, s) => HadithListScreen(
+                          query: HadithListQuery(
+                            HadithListKind.narrator,
+                            s.pathParameters['narratorId']!,
+                          ),
+                          title: s.extra as String?,
+                        ),
+                      ),
+                    ],
+                  ),
+                  GoRoute(
+                    path: 'editions',
+                    name: 'hadithEditions',
+                    builder: (c, s) => const HadithEditionsScreen(),
+                  ),
+                  GoRoute(
+                    path: 'cross-checks',
+                    name: 'hadithCrossCheck',
+                    builder: (c, s) => const HadithCrossCheckScreen(),
+                  ),
+                  GoRoute(
+                    path: 'stats',
+                    name: 'hadithStats',
+                    builder: (c, s) => const HadithStatsScreen(),
+                  ),
                   GoRoute(
                     path: 'search',
                     name: 'hadithSearch',

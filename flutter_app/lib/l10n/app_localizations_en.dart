@@ -417,7 +417,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errors_validation => 'Some input is invalid. Please review.';
 
   @override
+  String get hadith_allHadiths => 'All hadiths';
+
+  @override
   String get hadith_allOfBook => 'All hadiths';
+
+  @override
+  String get hadith_authorLabel => 'Author';
 
   @override
   String get hadith_bookLabel => 'Book';
@@ -426,13 +432,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hadith_booksTitle => 'Collection books';
 
   @override
+  String get hadith_catalogTitle => 'Full catalogue';
+
+  @override
   String get hadith_chapterLabel => 'Chapter';
 
   @override
   String get hadith_chaptersTitle => 'Chapters';
 
   @override
+  String get hadith_checkedLabel => 'Records checked';
+
+  @override
+  String get hadith_classificationsTitle => 'Hadith';
+
+  @override
   String get hadith_collectionLabel => 'Cited collection';
+
+  @override
+  String get hadith_collectionsTitle => 'Cited collections';
+
+  @override
+  String hadith_corroboratedLabel(int count) {
+    return 'Corroborated: $count';
+  }
+
+  @override
+  String get hadith_corroboratedOnly => 'Corroborated';
 
   @override
   String hadith_countLabel(int count) {
@@ -440,9 +466,31 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get hadith_crossCheckNone => 'No comparison result for this record';
+
+  @override
+  String get hadith_crossCheckNote =>
+      'A machine comparison against an independent corpus — evidence for human review, not a ruling on the hadith.';
+
+  @override
+  String get hadith_crossCheckTitle => 'Cross-check';
+
+  @override
+  String get hadith_datasetHashLabel => 'Dataset fingerprint';
+
+  @override
+  String get hadith_datasetLabel => 'Dataset';
+
+  @override
   String hadith_datasetLine(String version, int count) {
     return 'Dataset $version — $count records';
   }
+
+  @override
+  String get hadith_datasetsTitle => 'Dataset versions';
+
+  @override
+  String get hadith_editionsTitle => 'Editions';
 
   @override
   String get hadith_empty => 'No hadiths in this section yet';
@@ -469,12 +517,30 @@ class AppLocalizationsEn extends AppLocalizations {
       'The service is unavailable right now. Try again shortly.';
 
   @override
+  String get hadith_graderLabel => 'Graded by';
+
+  @override
   String get hadith_gradingLabel => 'Grading';
+
+  @override
+  String get hadith_gradingsTitle => 'Gradings';
 
   @override
   String hadith_hashLabel(String hash) {
     return 'Record fingerprint: $hash';
   }
+
+  @override
+  String get hadith_humanReviewLabel => 'Human review';
+
+  @override
+  String get hadith_kunyaLabel => 'Kunya';
+
+  @override
+  String get hadith_laqabLabel => 'Laqab';
+
+  @override
+  String get hadith_licenceLabel => 'Licence status';
 
   @override
   String get hadith_loadMore => 'Load more';
@@ -489,13 +555,60 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hadith_locatorLabel => 'Printed locator';
 
   @override
+  String get hadith_lockedLabel => 'Locked against edits';
+
+  @override
+  String get hadith_matchedInLabel => 'Matched in';
+
+  @override
+  String get hadith_methodLabel => 'Method';
+
+  @override
+  String get hadith_narratorHadiths => 'All hadiths of this narrator';
+
+  @override
   String get hadith_narratorLabel => 'Narrator';
+
+  @override
+  String get hadith_narratorSearchHint => 'Search a narrator…';
+
+  @override
+  String get hadith_narratorSourceLabel => 'Name source';
+
+  @override
+  String get hadith_narratorsTitle => 'Narrators';
+
+  @override
+  String get hadith_needsReview => 'Needs review';
+
+  @override
+  String get hadith_no => 'No';
+
+  @override
+  String get hadith_noNumberInEdition =>
+      'This edition prints no hadith numbers';
 
   @override
   String get hadith_noResults => 'No matching results';
 
   @override
+  String get hadith_notFoundLabel => 'Not found';
+
+  @override
+  String get hadith_notesLabel => 'Notes';
+
+  @override
   String get hadith_numberLabel => 'Hadith number';
+
+  @override
+  String hadith_pageOf(int page, int totalPages, int total) {
+    return 'Page $page of $totalPages · $total';
+  }
+
+  @override
+  String hadith_pageRange(int first, int last) {
+    return 'Pages $first–$last';
+  }
 
   @override
   String hadith_pageStatus(int shown, int total) {
@@ -503,7 +616,31 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get hadith_partialLabel => 'Partial';
+
+  @override
+  String get hadith_printingLabel => 'Printing';
+
+  @override
+  String get hadith_publisherLabel => 'Publisher';
+
+  @override
+  String get hadith_referenceCorpusLabel => 'Reference corpus';
+
+  @override
+  String get hadith_referenceLabel => 'Reference';
+
+  @override
+  String get hadith_referencesTitle => 'References';
+
+  @override
   String get hadith_retry => 'Retry';
+
+  @override
+  String get hadith_reviewQueueTitle => 'Human review queue';
+
+  @override
+  String get hadith_roleLabel => 'Role';
 
   @override
   String get hadith_searchHint => 'Search hadiths…';
@@ -515,10 +652,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hadith_searchTitle => 'Search hadiths';
 
   @override
+  String get hadith_similarityLabel => 'Similarity';
+
+  @override
   String get hadith_sourceLabel => 'Source';
 
   @override
+  String get hadith_sourceMatchLabel => 'Source match';
+
+  @override
+  String get hadith_sourcesTitle => 'Sources';
+
+  @override
+  String get hadith_statsTitle => 'Corpus statistics';
+
+  @override
+  String get hadith_statusLabel => 'Status';
+
+  @override
+  String get hadith_takhrijAgreesLabel => 'Takhrij agrees';
+
+  @override
   String get hadith_takhrijLabel => 'Takhrij';
+
+  @override
+  String get hadith_takhrijTextLabel => 'Takhrij text';
 
   @override
   String get hadith_textWithheld =>
@@ -531,12 +689,38 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hadith_unverified => 'Not yet verified';
 
   @override
+  String get hadith_verdictCorroborated => 'Corroborated';
+
+  @override
+  String get hadith_verdictLabel => 'Verdict';
+
+  @override
+  String get hadith_verdictNotFound => 'Not found';
+
+  @override
+  String get hadith_verdictPartial => 'Partial';
+
+  @override
   String get hadith_verified => 'Verified';
+
+  @override
+  String get hadith_volumeCountLabel => 'Volumes';
+
+  @override
+  String hadith_volumeLabel(int volume) {
+    return 'Volume $volume';
+  }
 
   @override
   String hadith_volumePage(Object page, Object volume) {
     return 'Volume $volume — page $page';
   }
+
+  @override
+  String get hadith_volumesTitle => 'Volumes';
+
+  @override
+  String get hadith_yes => 'Yes';
 
   @override
   String get help_cat1 => 'Creating and design';

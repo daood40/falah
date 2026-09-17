@@ -124,8 +124,104 @@ final hadithProvider = FutureProvider.family<Hadith, String>((ref, id) async {
   return fresh;
 }, retry: _noAutoRetry);
 
+// ---------------- classifications ----------------
+// Every way the edition organises itself is its own resource, so every one of
+// them is its own provider. None of them carries hadith text.
+
+/// `GET /api/v1/volumes` — the printed volumes with their page ranges.
+final hadithVolumesProvider = FutureProvider<List<Volume>>(
+  (ref) => ref.watch(hadithRepositoryProvider).getVolumes(),
+  retry: _noAutoRetry,
+);
+
+/// `GET /api/v1/collections` — the collections this edition cites in takhrij.
+final hadithCollectionsProvider = FutureProvider<List<Collection>>(
+  (ref) => ref.watch(hadithRepositoryProvider).getCollections(),
+  retry: _noAutoRetry,
+);
+
+/// `GET /api/v1/gradings` — the grading labels the author used, with counts.
+final hadithGradingLabelsProvider = FutureProvider<List<Grading>>(
+  (ref) => ref.watch(hadithRepositoryProvider).getGradingLabels(),
+  retry: _noAutoRetry,
+);
+
+/// `GET /api/v1/editions` — the printings this service holds.
+final hadithEditionsProvider = FutureProvider<List<HadithEdition>>(
+  (ref) => ref.watch(hadithRepositoryProvider).getEditions(),
+  retry: _noAutoRetry,
+);
+
+/// `GET /api/v1/sources` — where the text came from, with its licence state.
+final hadithSourcesProvider = FutureProvider<List<HadithSource>>(
+  (ref) => ref.watch(hadithRepositoryProvider).getSources(),
+  retry: _noAutoRetry,
+);
+
+/// `GET /api/v1/datasets` — every dataset version, sealed or superseded.
+final hadithDatasetsProvider = FutureProvider<List<DatasetVersion>>(
+  (ref) => ref.watch(hadithRepositoryProvider).getDatasets(),
+  retry: _noAutoRetry,
+);
+
+/// `GET /api/v1/stats` — the corpus in numbers.
+final hadithStatsProvider = FutureProvider<HadithStats>(
+  (ref) => ref.watch(hadithRepositoryProvider).getStats(),
+  retry: _noAutoRetry,
+);
+
+/// `GET /api/v1/catalog` — books with their chapters, one tree.
+final hadithCatalogProvider = FutureProvider<List<HadithBook>>(
+  (ref) => ref.watch(hadithRepositoryProvider).getCatalog(withChapters: true),
+  retry: _noAutoRetry,
+);
+
+/// `GET /api/v1/cross-checks/summary` — how the dataset compares with an
+/// independent corpus. Machine evidence, never a ruling on a hadith.
+final crossCheckSummaryProvider = FutureProvider<List<CrossCheckSummary>>(
+  (ref) => ref.watch(hadithRepositoryProvider).getCrossCheckSummary(),
+  retry: _noAutoRetry,
+);
+
+/// `GET /api/v1/hadiths/{id}/cross-checks` — the evidence for one record.
+final hadithCrossChecksProvider = FutureProvider.family<List<CrossCheck>, String>(
+  (ref, id) => ref.watch(hadithRepositoryProvider).getCrossChecks(id),
+  retry: _noAutoRetry,
+);
+
+/// Narrators, paged, optionally filtered by name.
+class NarratorQuery {
+  const NarratorQuery({this.page = 1, this.name = ''});
+
+  final int page;
+  final String name;
+
+  @override
+  bool operator ==(Object other) =>
+      other is NarratorQuery && other.page == page && other.name == name;
+
+  @override
+  int get hashCode => Object.hash(page, name);
+}
+
+final hadithNarratorsProvider = FutureProvider.family<Paged<Narrator>, NarratorQuery>(
+  (ref, q) => ref.watch(hadithRepositoryProvider).getAllNarrators(
+        page: q.page,
+        limit: 50,
+        name: q.name.isEmpty ? null : q.name,
+      ),
+  retry: _noAutoRetry,
+);
+
+/// The review queue: records an independent corpus did not corroborate.
+/// Nothing here is changed by the app — it is a reading list for a human.
+final reviewQueueProvider = FutureProvider.family<Paged<ReviewQueueItem>, int>(
+  (ref, page) => ref.watch(hadithRepositoryProvider).getCrossCheckReviewQueue(page: page),
+  retry: _noAutoRetry,
+);
+
 /// Which list a page request belongs to.
-enum HadithListKind { all, book, chapter, search }
+enum HadithListKind { all, book, chapter, search, volume, collection, grading, narrator }
 
 class HadithListQuery {
   const HadithListQuery(this.kind, [this.value = '']);
@@ -199,6 +295,14 @@ class HadithListNotifier extends AsyncNotifier<HadithListState> {
         return repo.getChapterHadiths(query.value, page: page, limit: kHadithPageSize);
       case HadithListKind.search:
         return repo.searchHadiths(query.value, page: page, limit: kHadithPageSize);
+      case HadithListKind.volume:
+        return repo.getVolumeHadiths(int.parse(query.value), page: page, limit: kHadithPageSize);
+      case HadithListKind.collection:
+        return repo.getCollectionHadiths(query.value, page: page, limit: kHadithPageSize);
+      case HadithListKind.grading:
+        return repo.getHadiths(grading: query.value, page: page, limit: kHadithPageSize);
+      case HadithListKind.narrator:
+        return repo.getNarratorHadiths(query.value, page: page, limit: kHadithPageSize);
     }
   }
 

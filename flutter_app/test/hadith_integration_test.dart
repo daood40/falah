@@ -22,6 +22,8 @@ import 'package:falah/features/hadith/presentation/hadith_chapters_screen.dart';
 import 'package:falah/features/hadith/presentation/hadith_detail_screen.dart';
 import 'package:falah/features/hadith/presentation/hadith_list_screen.dart';
 import 'package:falah/features/hadith/presentation/hadith_search_screen.dart';
+import 'package:falah/features/hadith/presentation/hadith_classifications_screen.dart';
+import 'package:falah/features/hadith/presentation/hadith_taxonomy_screens.dart';
 import 'package:falah/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -218,12 +220,13 @@ void main() {
       )).items.first;
       tall(tester, height: 3000);
       final hadith = await net(tester, () => container.read(hadithProvider(first.id).future));
+      await net(tester, () => container.read(hadithCrossChecksProvider(first.id).future));
       await show(tester, HadithDetailScreen(id: first.id), container);
 
       expect(hadith.id, first.id);
-      expect(find.textContaining(hadith.location.locator!), findsOneWidget);
+      expect(find.textContaining(hadith.location.locator!), findsWidgets);
       expect(find.textContaining(hadith.dataset.version), findsWidgets);
-      expect(find.textContaining(hadith.dataset.hash.substring(0, 12)), findsOneWidget);
+      expect(find.textContaining(hadith.dataset.hash.substring(0, 12)), findsWidgets);
     });
 
     testWidgets('withheld text is shown as withheld, never replaced', (tester) async {
@@ -235,6 +238,7 @@ void main() {
         () => container.read(hadithRepositoryProvider).getHadiths(limit: 1),
       )).items.first;
       final hadith = await net(tester, () => container.read(hadithProvider(first.id).future));
+      await net(tester, () => container.read(hadithCrossChecksProvider(first.id).future));
       await show(tester, HadithDetailScreen(id: first.id), container);
 
       if (!hadith.textAvailable) {
@@ -472,6 +476,240 @@ void main() {
       final page = await container
           .read(hadithListProvider(HadithListQuery(HadithListKind.book, book.id)).future);
       expect(page.total, book.hadithCount);
+    });
+  });
+
+  group('8. classifications', () {
+    testWidgets('the hub lists every classification with its real count', (tester) async {
+      final container = containerFor(liveApi);
+      addTearDown(container.dispose);
+      tall(tester);
+
+      final stats = await net(tester, () => container.read(hadithStatsProvider.future));
+      await show(tester, const HadithClassificationsScreen(), container);
+
+      for (final label in const [
+        'كتب الجامع', 'الأبواب', 'المجلدات', 'كتب التخريج',
+        'الدرجات', 'الرواة', 'الطبعات', 'التحقق المتقاطع', 'إحصاءات المجموعة',
+      ]) {
+        expect(find.text(label), findsOneWidget, reason: label);
+      }
+      expect(stats.hadiths, greaterThan(0));
+      expect(find.textContaining('${stats.books}'), findsWidgets);
+    });
+
+    testWidgets('volumes come from the API with their page ranges', (tester) async {
+      final container = containerFor(liveApi);
+      addTearDown(container.dispose);
+      tall(tester);
+
+      final volumes = await net(tester, () => container.read(hadithVolumesProvider.future));
+      await show(tester, const HadithVolumesScreen(), container);
+
+      expect(volumes.length, 12);
+      expect(volumes.every((v) => v.hadithCount > 0), isTrue);
+      expect(find.text('المجلد 1'), findsOneWidget);
+    });
+
+    testWidgets('a volume list only holds records printed in that volume', (tester) async {
+      final container = containerFor(liveApi);
+      addTearDown(container.dispose);
+      const query = HadithListQuery(HadithListKind.volume, '3');
+
+      final state = await net(tester, () => container.read(hadithListProvider(query).future));
+      await show(tester, const HadithListScreen(query: query, title: 'المجلد 3'), container);
+
+      expect(state.items, isNotEmpty);
+      expect(state.items.every((h) => h.volume == 3), isTrue);
+    });
+
+    testWidgets('cited collections render with their counts', (tester) async {
+      final container = containerFor(liveApi);
+      addTearDown(container.dispose);
+      tall(tester);
+
+      final collections = await net(tester, () => container.read(hadithCollectionsProvider.future));
+      await show(tester, const HadithCollectionsScreen(), container);
+
+      expect(collections, isNotEmpty);
+      expect(collections.first.hadithCount, greaterThan(0));
+      expect(find.text(collections.first.name), findsOneWidget);
+    });
+
+    testWidgets('a collection list holds records that cite that collection', (tester) async {
+      final container = containerFor(liveApi);
+      addTearDown(container.dispose);
+
+      final collection =
+          (await net(tester, () => container.read(hadithCollectionsProvider.future))).first;
+      final query = HadithListQuery(HadithListKind.collection, collection.name);
+      final state = await net(tester, () => container.read(hadithListProvider(query).future));
+
+      expect(state.items, isNotEmpty);
+      expect(state.total, collection.hadithCount);
+    });
+
+    testWidgets('grading labels render with the grader the edition names', (tester) async {
+      final container = containerFor(liveApi);
+      addTearDown(container.dispose);
+      tall(tester);
+
+      final gradings = await net(tester, () => container.read(hadithGradingLabelsProvider.future));
+      await show(tester, const HadithGradingsScreen(), container);
+
+      expect(gradings, isNotEmpty);
+      expect(gradings.first.hadithCount, greaterThan(0));
+      expect(find.text(gradings.first.text), findsOneWidget);
+    });
+
+    testWidgets('a grading list holds only records with that grading', (tester) async {
+      final container = containerFor(liveApi);
+      addTearDown(container.dispose);
+
+      final grading =
+          (await net(tester, () => container.read(hadithGradingLabelsProvider.future))).first;
+      final query = HadithListQuery(HadithListKind.grading, grading.text);
+      final state = await net(tester, () => container.read(hadithListProvider(query).future));
+
+      expect(state.items, isNotEmpty);
+      expect(state.total, grading.hadithCount);
+    });
+
+    testWidgets('narrators are paged and searchable', (tester) async {
+      final container = containerFor(liveApi);
+      addTearDown(container.dispose);
+      tall(tester);
+
+      final page = await net(
+        tester,
+        () => container.read(hadithNarratorsProvider(const NarratorQuery()).future),
+      );
+      await show(tester, const HadithNarratorsScreen(), container);
+
+      expect(page.items, isNotEmpty);
+      expect(page.total, greaterThan(page.items.length));
+      expect(find.text(page.items.first.name), findsOneWidget);
+    });
+
+    testWidgets('a narrator list holds only that narrator’s records', (tester) async {
+      final container = containerFor(liveApi);
+      addTearDown(container.dispose);
+
+      final narrator = (await net(
+        tester,
+        () => container.read(hadithNarratorsProvider(const NarratorQuery()).future),
+      )).items.first;
+      final query = HadithListQuery(HadithListKind.narrator, narrator.id);
+      final state = await net(tester, () => container.read(hadithListProvider(query).future));
+
+      expect(state.total, greaterThan(0));
+      expect(state.items, isNotEmpty);
+    });
+
+    testWidgets('editions, sources and dataset versions render', (tester) async {
+      final container = containerFor(liveApi);
+      addTearDown(container.dispose);
+      tall(tester);
+
+      final editions = await net(tester, () => container.read(hadithEditionsProvider.future));
+      final sources = await net(tester, () => container.read(hadithSourcesProvider.future));
+      final datasets = await net(tester, () => container.read(hadithDatasetsProvider.future));
+      await show(tester, const HadithEditionsScreen(), container);
+
+      expect(editions, isNotEmpty);
+      expect(sources, isNotEmpty);
+      expect(datasets.any((d) => d.status == 'sealed'), isTrue);
+      expect(find.text(editions.first.title), findsOneWidget);
+    });
+
+    testWidgets('the catalogue is one tree of books and their chapters', (tester) async {
+      final container = containerFor(liveApi);
+      addTearDown(container.dispose);
+      tall(tester);
+
+      final books = await net(tester, () => container.read(hadithCatalogProvider.future));
+      await show(tester, const HadithCatalogScreen(), container);
+
+      expect(books, isNotEmpty);
+      expect(books.first.chapters, isNotEmpty);
+      expect(find.text(books.first.name), findsOneWidget);
+    });
+
+    testWidgets('statistics report the corpus as the server counts it', (tester) async {
+      final container = containerFor(liveApi);
+      addTearDown(container.dispose);
+      tall(tester);
+
+      final stats = await net(tester, () => container.read(hadithStatsProvider.future));
+      await show(tester, const HadithStatsScreen(), container);
+
+      expect(stats.hadiths, greaterThan(0));
+      expect(stats.verifiedHadiths + stats.pendingHadiths + stats.needsReviewHadiths,
+          lessThanOrEqualTo(stats.hadiths));
+      expect(find.text('${stats.hadiths}'), findsWidgets);
+    });
+  });
+
+  group('9. verification evidence', () {
+    testWidgets('the cross-check summary and the review queue render', (tester) async {
+      final container = containerFor(liveApi);
+      addTearDown(container.dispose);
+      tall(tester);
+
+      final summary = await net(tester, () => container.read(crossCheckSummaryProvider.future));
+      final queue = await net(tester, () => container.read(reviewQueueProvider(1).future));
+      await show(tester, const HadithCrossCheckScreen(), container);
+
+      expect(summary, isNotEmpty);
+      expect(summary.first.checked, greaterThan(0));
+      expect(queue.items, isNotEmpty);
+      // the queue is evidence for a human: nothing in it claims to be verified
+      expect(queue.items.every((i) => i.verdict != 'corroborated'), isTrue);
+    });
+
+    testWidgets('a record carries its cross-check evidence, never a ruling', (tester) async {
+      final container = containerFor(liveApi);
+      addTearDown(container.dispose);
+      tall(tester, height: 4000);
+
+      final first = (await net(
+        tester,
+        () => container.read(hadithRepositoryProvider).getHadiths(limit: 1),
+      )).items.first;
+      final hadith = await net(tester, () => container.read(hadithProvider(first.id).future));
+      final checks = await net(
+        tester,
+        () => container.read(hadithCrossChecksProvider(first.id).future),
+      );
+      await show(tester, HadithDetailScreen(id: first.id), container);
+
+      expect(checks, isNotEmpty);
+      expect(checks.first.verdict, isIn(['corroborated', 'partial', 'not_found']));
+      expect(checks.first.method, isNotNull);
+      // machine evidence never makes a record verified
+      expect(hadith.verification.verified, isFalse);
+      expect(find.textContaining('مقارنة آلية'), findsOneWidget);
+    });
+
+    testWidgets('the detail screen shows narrators, grading and takhrij', (tester) async {
+      final container = containerFor(liveApi);
+      addTearDown(container.dispose);
+      tall(tester, height: 4000);
+
+      final first = (await net(
+        tester,
+        () => container.read(hadithRepositoryProvider).getHadiths(limit: 1),
+      )).items.first;
+      final hadith = await net(tester, () => container.read(hadithProvider(first.id).future));
+      await net(tester, () => container.read(hadithCrossChecksProvider(first.id).future));
+      await show(tester, HadithDetailScreen(id: first.id), container);
+
+      expect(hadith.narrators, isNotEmpty);
+      expect(hadith.gradings, isNotEmpty);
+      expect(hadith.takhrij, isNotNull);
+      expect(find.text(hadith.narrators.first.name), findsOneWidget);
+      expect(find.text(hadith.gradings.first.text), findsWidgets);
+      expect(find.textContaining(hadith.takhrij!.sources.first), findsWidgets);
     });
   });
 }

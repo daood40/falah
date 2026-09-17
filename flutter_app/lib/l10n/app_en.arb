@@ -130,8 +130,16 @@
   "errors_storage": "Could not save. Check available storage.",
   "errors_unknown": "Unexpected error. Please try again.",
   "errors_validation": "Some input is invalid. Please review.",
+  "hadith_allHadiths": "All hadiths",
+  "@hadith_allHadiths": {
+    "description": "Hadith feature string"
+  },
   "hadith_allOfBook": "All hadiths",
   "@hadith_allOfBook": {
+    "description": "Hadith feature string"
+  },
+  "hadith_authorLabel": "Author",
+  "@hadith_authorLabel": {
     "description": "Hadith feature string"
   },
   "hadith_bookLabel": "Book",
@@ -139,6 +147,10 @@
     "description": "Hadith feature string"
   },
   "hadith_booksTitle": "Collection books",
+  "hadith_catalogTitle": "Full catalogue",
+  "@hadith_catalogTitle": {
+    "description": "Hadith feature string"
+  },
   "hadith_chapterLabel": "Chapter",
   "@hadith_chapterLabel": {
     "description": "Hadith feature string"
@@ -147,8 +159,32 @@
   "@hadith_chaptersTitle": {
     "description": "Hadith feature string"
   },
+  "hadith_checkedLabel": "Records checked",
+  "@hadith_checkedLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_classificationsTitle": "Hadith",
+  "@hadith_classificationsTitle": {
+    "description": "Hadith feature string"
+  },
   "hadith_collectionLabel": "Cited collection",
   "@hadith_collectionLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_collectionsTitle": "Cited collections",
+  "@hadith_collectionsTitle": {
+    "description": "Hadith feature string"
+  },
+  "hadith_corroboratedLabel": "Corroborated: {count}",
+  "@hadith_corroboratedLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hadith_corroboratedOnly": "Corroborated",
+  "@hadith_corroboratedOnly": {
     "description": "Hadith feature string"
   },
   "hadith_countLabel": "{count} hadiths",
@@ -158,6 +194,26 @@
         "type": "int"
       }
     }
+  },
+  "hadith_crossCheckNone": "No comparison result for this record",
+  "@hadith_crossCheckNone": {
+    "description": "Hadith feature string"
+  },
+  "hadith_crossCheckNote": "A machine comparison against an independent corpus — evidence for human review, not a ruling on the hadith.",
+  "@hadith_crossCheckNote": {
+    "description": "Hadith feature string"
+  },
+  "hadith_crossCheckTitle": "Cross-check",
+  "@hadith_crossCheckTitle": {
+    "description": "Hadith feature string"
+  },
+  "hadith_datasetHashLabel": "Dataset fingerprint",
+  "@hadith_datasetHashLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_datasetLabel": "Dataset",
+  "@hadith_datasetLabel": {
+    "description": "Hadith feature string"
   },
   "hadith_datasetLine": "Dataset {version} — {count} records",
   "@hadith_datasetLine": {
@@ -169,6 +225,14 @@
         "type": "int"
       }
     }
+  },
+  "hadith_datasetsTitle": "Dataset versions",
+  "@hadith_datasetsTitle": {
+    "description": "Hadith feature string"
+  },
+  "hadith_editionsTitle": "Editions",
+  "@hadith_editionsTitle": {
+    "description": "Hadith feature string"
   },
   "hadith_empty": "No hadiths in this section yet",
   "hadith_error": "Could not reach the FALAH server",
@@ -192,7 +256,15 @@
   "@hadith_errorServer": {
     "description": "Hadith feature string"
   },
+  "hadith_graderLabel": "Graded by",
+  "@hadith_graderLabel": {
+    "description": "Hadith feature string"
+  },
   "hadith_gradingLabel": "Grading",
+  "hadith_gradingsTitle": "Gradings",
+  "@hadith_gradingsTitle": {
+    "description": "Hadith feature string"
+  },
   "hadith_hashLabel": "Record fingerprint: {hash}",
   "@hadith_hashLabel": {
     "placeholders": {
@@ -200,6 +272,22 @@
         "type": "String"
       }
     }
+  },
+  "hadith_humanReviewLabel": "Human review",
+  "@hadith_humanReviewLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_kunyaLabel": "Kunya",
+  "@hadith_kunyaLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_laqabLabel": "Laqab",
+  "@hadith_laqabLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_licenceLabel": "Licence status",
+  "@hadith_licenceLabel": {
+    "description": "Hadith feature string"
   },
   "hadith_loadMore": "Load more",
   "@hadith_loadMore": {
@@ -214,9 +302,82 @@
   "@hadith_locatorLabel": {
     "description": "Hadith feature string"
   },
+  "hadith_lockedLabel": "Locked against edits",
+  "@hadith_lockedLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_matchedInLabel": "Matched in",
+  "@hadith_matchedInLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_methodLabel": "Method",
+  "@hadith_methodLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_narratorHadiths": "All hadiths of this narrator",
+  "@hadith_narratorHadiths": {
+    "description": "Hadith feature string"
+  },
   "hadith_narratorLabel": "Narrator",
+  "hadith_narratorSearchHint": "Search a narrator…",
+  "@hadith_narratorSearchHint": {
+    "description": "Hadith feature string"
+  },
+  "hadith_narratorSourceLabel": "Name source",
+  "@hadith_narratorSourceLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_narratorsTitle": "Narrators",
+  "@hadith_narratorsTitle": {
+    "description": "Hadith feature string"
+  },
+  "hadith_needsReview": "Needs review",
+  "@hadith_needsReview": {
+    "description": "Hadith feature string"
+  },
+  "hadith_no": "No",
+  "@hadith_no": {
+    "description": "Hadith feature string"
+  },
+  "hadith_noNumberInEdition": "This edition prints no hadith numbers",
+  "@hadith_noNumberInEdition": {
+    "description": "Hadith feature string"
+  },
   "hadith_noResults": "No matching results",
+  "hadith_notFoundLabel": "Not found",
+  "@hadith_notFoundLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_notesLabel": "Notes",
+  "@hadith_notesLabel": {
+    "description": "Hadith feature string"
+  },
   "hadith_numberLabel": "Hadith number",
+  "hadith_pageOf": "Page {page} of {totalPages} · {total}",
+  "@hadith_pageOf": {
+    "placeholders": {
+      "page": {
+        "type": "int"
+      },
+      "totalPages": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "hadith_pageRange": "Pages {first}–{last}",
+  "@hadith_pageRange": {
+    "placeholders": {
+      "first": {
+        "type": "int"
+      },
+      "last": {
+        "type": "int"
+      }
+    }
+  },
   "hadith_pageStatus": "{shown} of {total}",
   "@hadith_pageStatus": {
     "placeholders": {
@@ -228,7 +389,39 @@
       }
     }
   },
+  "hadith_partialLabel": "Partial",
+  "@hadith_partialLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_printingLabel": "Printing",
+  "@hadith_printingLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_publisherLabel": "Publisher",
+  "@hadith_publisherLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_referenceCorpusLabel": "Reference corpus",
+  "@hadith_referenceCorpusLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_referenceLabel": "Reference",
+  "@hadith_referenceLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_referencesTitle": "References",
+  "@hadith_referencesTitle": {
+    "description": "Hadith feature string"
+  },
   "hadith_retry": "Retry",
+  "hadith_reviewQueueTitle": "Human review queue",
+  "@hadith_reviewQueueTitle": {
+    "description": "Hadith feature string"
+  },
+  "hadith_roleLabel": "Role",
+  "@hadith_roleLabel": {
+    "description": "Hadith feature string"
+  },
   "hadith_searchHint": "Search hadiths…",
   "hadith_searchPrompt": "Type a word or more, then search",
   "@hadith_searchPrompt": {
@@ -238,13 +431,77 @@
   "@hadith_searchTitle": {
     "description": "Hadith feature string"
   },
+  "hadith_similarityLabel": "Similarity",
+  "@hadith_similarityLabel": {
+    "description": "Hadith feature string"
+  },
   "hadith_sourceLabel": "Source",
+  "hadith_sourceMatchLabel": "Source match",
+  "@hadith_sourceMatchLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_sourcesTitle": "Sources",
+  "@hadith_sourcesTitle": {
+    "description": "Hadith feature string"
+  },
+  "hadith_statsTitle": "Corpus statistics",
+  "@hadith_statsTitle": {
+    "description": "Hadith feature string"
+  },
+  "hadith_statusLabel": "Status",
+  "@hadith_statusLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_takhrijAgreesLabel": "Takhrij agrees",
+  "@hadith_takhrijAgreesLabel": {
+    "description": "Hadith feature string"
+  },
   "hadith_takhrijLabel": "Takhrij",
+  "hadith_takhrijTextLabel": "Takhrij text",
+  "@hadith_takhrijTextLabel": {
+    "description": "Hadith feature string"
+  },
   "hadith_textWithheld": "Text unavailable until publishing rights are confirmed",
   "hadith_title": "Hadith",
   "hadith_unverified": "Not yet verified",
+  "hadith_verdictCorroborated": "Corroborated",
+  "@hadith_verdictCorroborated": {
+    "description": "Hadith feature string"
+  },
+  "hadith_verdictLabel": "Verdict",
+  "@hadith_verdictLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_verdictNotFound": "Not found",
+  "@hadith_verdictNotFound": {
+    "description": "Hadith feature string"
+  },
+  "hadith_verdictPartial": "Partial",
+  "@hadith_verdictPartial": {
+    "description": "Hadith feature string"
+  },
   "hadith_verified": "Verified",
+  "hadith_volumeCountLabel": "Volumes",
+  "@hadith_volumeCountLabel": {
+    "description": "Hadith feature string"
+  },
+  "hadith_volumeLabel": "Volume {volume}",
+  "@hadith_volumeLabel": {
+    "placeholders": {
+      "volume": {
+        "type": "int"
+      }
+    }
+  },
   "hadith_volumePage": "Volume {volume} — page {page}",
+  "hadith_volumesTitle": "Volumes",
+  "@hadith_volumesTitle": {
+    "description": "Hadith feature string"
+  },
+  "hadith_yes": "Yes",
+  "@hadith_yes": {
+    "description": "Hadith feature string"
+  },
   "help_cat1": "Creating and design",
   "help_cat2": "Saving and backup",
   "help_cat3": "Reading and tools",
