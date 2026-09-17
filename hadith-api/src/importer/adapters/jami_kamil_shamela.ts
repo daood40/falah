@@ -74,21 +74,41 @@ interface Heading {
 
 /**
  * Collections this edition cites in its takhrij lines. A closed list: a name is
- * recorded only when it appears verbatim in the line, and the reference text is
- * the line itself. Numbers inside the line are NOT parsed into references —
- * guessing which number belongs to which collection would be invention.
+ * recorded only when it appears verbatim, and only in a CITATION position.
+ *
+ * Several of these names are also people who appear in the isnad — «أنس بن
+ * مالك», «علي بن مسلم», «عن أحمد بن حنبل», «عن الحميدي». Matching the bare name
+ * attributed 2,400 records to collections their takhrij never cited, so a name
+ * is rejected when an isnad marker precedes it or «بن/ابن» follows it.
  */
 const COLLECTIONS = [
-  'البخاري', 'مسلم', 'أبو داود', 'أبي داود', 'الترمذي', 'النسائي', 'ابن ماجه',
-  'أحمد', 'مالك', 'الدارمي', 'ابن حبان', 'ابن خزيمة', 'الحاكم', 'الطبراني',
+  'البخاري', 'مسلم', 'أبو داود', 'أبي داود', 'الترمذي', 'النسائي في الكبرى', 'النسائي',
+  'ابن ماجه', 'أحمد', 'مالك', 'الدارمي', 'ابن حبان', 'ابن خزيمة', 'الحاكم', 'الطبراني',
   'البيهقي', 'الدارقطني', 'أبو يعلى', 'أبي يعلى', 'عبد الرزاق', 'ابن أبي شيبة',
-  'الطيالسي', 'البزار', 'الطحاوي', 'سعيد بن منصور', 'الحميدي', 'النسائي في الكبرى',
+  'الطيالسي', 'البزار', 'الطحاوي', 'سعيد بن منصور', 'الحميدي',
 ];
 
-function citedCollections(takhrijLine: string): string[] {
+/** A word that marks the following name as a narrator, not a collection. */
+const ISNAD_BEFORE =
+  /(?:^|\s)(?:عن|حدثنا|حدثني|ثنا|نا|أنبأنا|أخبرنا|طريق|حديث|بن|ابن|أبي|أبو|والد|مولى|يرويه|رواية)\s*$/u;
+/** «مسلم بن الحجاج» is a man; «مسلم في الإيمان» is a citation. */
+const PERSON_AFTER = /^\s*(?:بن|ابن)\s/u;
+
+export function citedCollections(takhrijLine: string): string[] {
   const found: string[] = [];
   for (const name of COLLECTIONS) {
-    if (takhrijLine.includes(name) && !found.includes(name)) found.push(name);
+    for (let at = takhrijLine.indexOf(name); at !== -1; at = takhrijLine.indexOf(name, at + 1)) {
+      const before = takhrijLine.slice(Math.max(0, at - 30), at);
+      const after = takhrijLine.slice(at + name.length, at + name.length + 12);
+      if (ISNAD_BEFORE.test(before) || PERSON_AFTER.test(after)) continue;
+      found.push(name);
+      break;
+    }
+  }
+  // «النسائي في الكبرى» already says النسائي; keeping both would double-count.
+  if (found.includes('النسائي في الكبرى')) {
+    const i = found.indexOf('النسائي');
+    if (i >= 0) found.splice(i, 1);
   }
   return found;
 }

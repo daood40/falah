@@ -3,7 +3,7 @@ import { ok, paginated } from '../http/respond.ts';
 import { query, queryOne } from '../db.ts';
 import { notFound } from '../http/errors.ts';
 import { optionalText, optionalUuid, pagination, uuidParam } from '../http/validate.ts';
-import { serializeHadith, type HadithRow } from '../domain/serialize.ts';
+import { serializeHadithListItem, type HadithRow } from '../domain/serialize.ts';
 import { HADITH_FROM, HADITH_SELECT, SqlFilters, isAdminRequest } from './shared.ts';
 
 // ---------------- sources ----------------
@@ -17,6 +17,21 @@ get('/api/v1/sources', async ({ res, query: q }) => {
     [limit, offset],
   );
   paginated(res, rows, page, limit, total);
+});
+
+get('/api/v1/sources/:id', async ({ res, params }) => {
+  const row = await queryOne(
+    `select s.id, s.slug, s.name, s.description, s.url, s.publisher, s.country,
+            s.language, s.source_type, s.license_status, s.created_at, s.updated_at,
+            (select count(*)::int from corpus.editions e where e.source_id = s.id) as edition_count,
+            (select count(*)::int from corpus.hadiths h
+              join corpus.editions e2 on e2.id = h.edition_id
+             where e2.source_id = s.id) as hadith_count
+     from corpus.sources s where s.id = $1`,
+    [uuidParam(params['id'] as string)],
+  );
+  if (!row) throw notFound('Source');
+  ok(res, row);
 });
 
 // ---------------- editions ----------------
@@ -81,6 +96,29 @@ get('/api/v1/books/:id', async ({ res, params }) => {
   ok(res, row);
 });
 
+/** §6 — the chapters of one book, the way Falah walks the tree. */
+get('/api/v1/books/:id/chapters', async ({ res, params, query: q }) => {
+  const id = uuidParam(params['id'] as string);
+  const exists = await queryOne('select 1 from corpus.books where id = $1', [id]);
+  if (!exists) throw notFound('Book');
+  const { page, limit, offset } = pagination(q);
+  const total =
+    (await queryOne<{ total: number }>(
+      'select count(*)::int as total from corpus.chapters where book_id = $1', [id]))?.total ?? 0;
+  const rows = await query(
+    `select c.id, c.book_id, c.parent_id, c.chapter_number as number, c.name as title,
+            c.order_number,
+            (select min(h.page_number) from corpus.hadiths h where h.chapter_id = c.id) as page_start,
+            (select max(h.page_number) from corpus.hadiths h where h.chapter_id = c.id) as page_end,
+            (select count(*)::int from corpus.hadiths h where h.chapter_id = c.id) as hadith_count
+     from corpus.chapters c where c.book_id = $1
+     order by c.order_number nulls last, c.name
+     limit $2 offset $3`,
+    [id, limit, offset],
+  );
+  paginated(res, rows, page, limit, total);
+});
+
 get('/api/v1/books/:id/hadiths', async ({ res, params, query: q, req }) => {
   const id = uuidParam(params['id'] as string);
   const exists = await queryOne('select 1 from corpus.books where id = $1', [id]);
@@ -89,8 +127,11 @@ get('/api/v1/books/:id/hadiths', async ({ res, params, query: q, req }) => {
 });
 
 // ---------------- chapters ----------------
-const CHAPTER_COLS = `c.id, c.book_id, c.parent_id, c.external_key, c.name, c.chapter_number,
+const CHAPTER_COLS = `c.id, c.book_id, c.parent_id, c.external_key,
+                      c.name as title, c.name, c.chapter_number as number,
                       c.order_number, c.created_at, c.updated_at,
+                      (select min(h.page_number) from corpus.hadiths h where h.chapter_id = c.id) as page_start,
+                      (select max(h.page_number) from corpus.hadiths h where h.chapter_id = c.id) as page_end,
                       (select count(*)::int from corpus.hadiths h where h.chapter_id = c.id) as hadith_count`;
 
 get('/api/v1/chapters', async ({ res, query: q }) => {
@@ -175,7 +216,7 @@ get('/api/v1/narrators/:id/hadiths', async ({ res, params, query: q, req }) => {
     f.params,
   );
   const isAdmin = isAdminRequest(req);
-  paginated(res, rows.map((r) => serializeHadith(r, isAdmin)), page, limit, total);
+  paginated(res, rows.map((r) => serializeHadithListItem(r, isAdmin)), page, limit, total);
 });
 
 async function listChildHadiths(
@@ -199,5 +240,5 @@ async function listChildHadiths(
     f.params,
   );
   const isAdmin = isAdminRequest(req);
-  paginated(res, rows.map((r) => serializeHadith(r, isAdmin)), page, limit, total);
+  paginated(res, rows.map((r) => serializeHadithListItem(r, isAdmin)), page, limit, total);
 }

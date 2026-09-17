@@ -66,40 +66,69 @@ describe('hadiths', () => {
     expect(body.meta.total).toBeGreaterThan(0);
   });
 
-  it('GET /api/v1/hadiths/{id} returns the documented shape', async () => {
+  it('GET /api/v1/hadiths/{id} returns the standard detail shape (§13)', async () => {
     const { body } = await api.get(`/api/v1/hadiths/${hadithId}`);
     const d = body.data;
     expect(d.id).toBe(hadithId);
-    expect(d.hadith_number).toBe('1');
+    expect(d.number).toBe('1');
     expect(d.book.name).toContain('قسم اختباري');
-    expect(d.chapter.name).toContain('باب اختباري');
-    expect(d.narrator.name).toContain('راوٍ اختباريّ');
-    expect(d.volume).toBe(1);
-    expect(d.page).toBe(25);
-    expect(d.content_hash).toHaveLength(64);
-    expect(d.source.edition).toBe('TEST FIXTURE EDITION');
+    expect(d.chapter.title).toContain('باب اختباري');
+    expect(d.source.name).toBe('TEST FIXTURE SOURCE');
+    expect(d.location).toMatchObject({ volume: 1, page: 25 });
+    expect(d.dataset.hash).toHaveLength(64);
+    expect(d.dataset.version).toBe(TEST_DATASET);
     expect(d.verification).toEqual({ verified: false, status: 'pending' });
     expect(d.source_locked).toBe(true);
+    // heavy blocks are absent until asked for (§14)
+    expect(d.narrators).toBeUndefined();
+    expect(d.gradings).toBeUndefined();
+  });
+
+  it('adds only the blocks ?include= asks for', async () => {
+    const one = await api.get(`/api/v1/hadiths/${hadithId}?include=gradings`);
+    expect(Array.isArray(one.body.data.gradings)).toBe(true);
+    expect(one.body.data.narrators).toBeUndefined();
+
+    const many = await api.get(
+      `/api/v1/hadiths/${hadithId}?include=narrators,references,takhrij,gradings,verification`,
+    );
+    const d = many.body.data;
+    expect(d.narrators[0].name).toContain('راوٍ اختباريّ');
+    expect(Array.isArray(d.references)).toBe(true);
+    expect(d.takhrij.sources).toContain('TEST SOURCE A');
+    expect(d.gradings[0].grading_text).toContain('TEST GRADE');
+    expect(d.verification).toMatchObject({ human_review: false, verified: false });
+    expect(d.verification.cross_check).toBeDefined();
+  });
+
+  it('rejects an unknown include instead of ignoring it', async () => {
+    const { status, body } = await api.get(`/api/v1/hadiths/${hadithId}?include=secrets`);
+    expect(status).toBe(422);
+    expect(body.error.message).toMatch(/unknown include/);
   });
 
   it('withholds the text while the content licence is unconfirmed', async () => {
-    const { body } = await api.get(`/api/v1/hadiths/${hadithId}`);
-    expect(body.data.raw_text).toBeNull();
-    expect(body.data.matn).toBeNull();
-    expect(body.data.isnad).toBeNull();
-    expect(body.data.takhrij).toBeNull();
+    const { body } = await api.get(`/api/v1/hadiths/${hadithId}?include=takhrij,references`);
+    expect(body.data.text).toBeNull();
     expect(body.data.text_available).toBe(false);
+    expect(body.data.takhrij.takhrij_text).toBeNull();
+    for (const ref of body.data.references) expect(ref.reference_text).toBeNull();
+
+    const list = await api.get('/api/v1/hadiths?limit=1');
+    expect(list.body.data[0].text).toBeNull();
+    expect(list.body.meta.text_available).toBe(false);
   });
 
   it('serves the text to an admin credential (internal use)', async () => {
-    const { body } = await api.get(`/api/v1/hadiths/${hadithId}`, { headers: auth });
-    expect(body.data.raw_text).toContain('TEST DATA');
+    const { body } = await api.get(`/api/v1/hadiths/${hadithId}?include=takhrij`, { headers: auth });
+    expect(body.data.text).toContain('TEST DATA');
     expect(body.data.text_available).toBe(true);
+    expect(body.data.takhrij.takhrij_text).toContain('TEST TAKHRIJ');
   });
 
   it('GET /api/v1/hadiths/by-number/{number} finds the record', async () => {
     const { body } = await api.get('/api/v1/hadiths/by-number/2');
-    expect(body.data[0].hadith_number).toBe('2');
+    expect(body.data[0].number).toBe('2');
   });
 
   it('returns 404 for an unknown number and an unknown id', async () => {

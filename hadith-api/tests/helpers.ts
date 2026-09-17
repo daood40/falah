@@ -86,4 +86,13 @@ export async function wipeTestData(): Promise<void> {
   // without removing their samples would leave orphaned ids behind — integrity
   // rule 17 exists precisely to catch that.
   await query(`delete from corpus.verification_samples where dataset_version = 'TEST-FIXTURE-V1'`);
+  // Books, chapters and narrators belong to the synthetic edition too: leaving
+  // them behind let one test file's fixtures leak into another's counts.
+  await query(
+    `delete from corpus.chapters c using corpus.books b
+      where c.book_id = b.id and b.edition_id in
+        (select id from corpus.editions where slug like 'test-%')`,
+  );
+  await query(`delete from corpus.books where edition_id in (select id from corpus.editions where slug like 'test-%')`);
+  await query(`delete from corpus.narrators where edition_id in (select id from corpus.editions where slug like 'test-%')`);
 }

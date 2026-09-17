@@ -1,16 +1,27 @@
 import { get } from '../http/router.ts';
 import { paginated, ok } from '../http/respond.ts';
 import { query, queryOne } from '../db.ts';
-import { serializeHadith, textVisible, type HadithRow } from '../domain/serialize.ts';
-import { notFound } from '../http/errors.ts';
-import { optionalEnum, optionalInt, optionalText, optionalUuid, pagination, sortDirection, uuidParam } from '../http/validate.ts';
-import { HADITH_FROM, HADITH_SELECT, SqlFilters, isAdminRequest } from './shared.ts';
+import {
+  serializeHadith,
+  serializeHadithListItem,
+  serializeTakhrij,
+  textVisible,
+  type HadithRow,
+} from '../domain/serialize.ts';
+import { badRequest, notFound } from '../http/errors.ts';
+import {
+  optionalEnum, optionalInt, optionalText, optionalUuid, pagination, sortDirection, uuidParam,
+} from '../http/validate.ts';
+import { HADITH_FROM, HADITH_ORDER, HADITH_SELECT, SqlFilters, isAdminRequest } from './shared.ts';
+import { hadithIncludes, INCLUDABLE, type IncludeName } from './hadith-parts.ts';
 
 const STATUSES = ['pending', 'verified', 'needs_review', 'rejected'] as const;
 
+/** §16 — the filters Falah combines: book, chapter, source, grading, volume, page. */
 export function hadithFilters(q: URLSearchParams): SqlFilters {
   const f = new SqlFilters();
   f.add((p) => `h.edition_id = ${p}`, optionalUuid(q, 'edition_id'));
+  f.add((p) => `e.source_id = ${p}`, optionalUuid(q, 'source_id'));
   f.add((p) => `h.book_id = ${p}`, optionalUuid(q, 'book_id'));
   f.add((p) => `h.chapter_id = ${p}`, optionalUuid(q, 'chapter_id'));
   f.add((p) => `h.narrator_id = ${p}`, optionalUuid(q, 'narrator_id'));
@@ -25,7 +36,25 @@ export function hadithFilters(q: URLSearchParams): SqlFilters {
   return f;
 }
 
-async function listHadiths(q: URLSearchParams, isAdmin: boolean) {
+/** ?include=narrators,references,takhrij,gradings,verification */
+function parseIncludes(q: URLSearchParams): IncludeName[] {
+  const raw = q.get('include');
+  if (!raw) return [];
+  const names = raw.split(',').map((n) => n.trim()).filter(Boolean);
+  const unknown = names.filter((n) => !(INCLUDABLE as readonly string[]).includes(n));
+  if (unknown.length > 0) {
+    throw badRequest(`unknown include: ${unknown.join(', ')}. Available: ${INCLUDABLE.join(', ')}`);
+  }
+  return names as IncludeName[];
+}
+
+async function fetchHadith(id: string): Promise<HadithRow | null> {
+  return queryOne<HadithRow>(`select ${HADITH_SELECT} ${HADITH_FROM} where h.id = $1`, [id]);
+}
+
+// ---------------- list ----------------
+get('/api/v1/hadiths', async ({ res, query: q, req }) => {
+  const isAdmin = isAdminRequest(req);
   const { page, limit, offset } = pagination(q);
   const dir = sortDirection(q);
   const f = hadithFilters(q);
@@ -37,36 +66,78 @@ async function listHadiths(q: URLSearchParams, isAdmin: boolean) {
   );
   const rows = await query<HadithRow>(
     `select ${HADITH_SELECT} ${HADITH_FROM} ${where}
-     order by h.hadith_number_int ${dir} nulls last,
-              h.volume_number ${dir} nulls last, h.page_number ${dir} nulls last,
-              h.source_ordinal ${dir} nulls last, h.created_at ${dir}
+     order by ${dir === 'desc' ? HADITH_ORDER.replaceAll('nulls last', 'desc nulls last') : HADITH_ORDER}
      limit ${f.push(limit)} offset ${f.push(offset)}`,
     f.params,
   );
-  return {
+  paginated(
+    res,
+    rows.map((r) => serializeHadithListItem(r, isAdmin)),
     page,
     limit,
-    total: countRow?.total ?? 0,
-    data: rows.map((r) => serializeHadith(r, isAdmin)),
-  };
-}
-
-get('/api/v1/hadiths', async ({ res, query: q, req }) => {
-  const isAdmin = isAdminRequest(req);
-  const out = await listHadiths(q, isAdmin);
-  paginated(res, out.data, out.page, out.limit, out.total, { text_available: textVisible(isAdmin) });
+    countRow?.total ?? 0,
+    { text_available: textVisible(isAdmin) },
+  );
 });
 
-get('/api/v1/hadiths/:id', async ({ res, params, req }) => {
-  const id = uuidParam(params['id'] as string);
+// ---------------- random (§18) ----------------
+get('/api/v1/hadiths/random', async ({ res, query: q, req }) => {
+  const isAdmin = isAdminRequest(req);
+  const f = hadithFilters(q);
+  // Only a record that exists is ever returned — nothing is generated.
   const row = await queryOne<HadithRow>(
-    `select ${HADITH_SELECT} ${HADITH_FROM} where h.id = $1`,
-    [id],
+    `select ${HADITH_SELECT} ${HADITH_FROM} ${f.where()} order by random() limit 1`,
+    f.params,
   );
   if (!row) throw notFound('Hadith');
-  ok(res, serializeHadith(row, isAdminRequest(req)));
+  ok(res, serializeHadith(row, isAdmin, await hadithIncludes(row, parseIncludes(q), isAdmin)));
 });
 
+// ---------------- daily (§19) ----------------
+get('/api/v1/hadiths/daily', async ({ res, query: q, req }) => {
+  const isAdmin = isAdminRequest(req);
+  const date = optionalText(q, 'date', 10) ?? new Date().toISOString().slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw badRequest('"date" must be YYYY-MM-DD');
+
+  const f = hadithFilters(q);
+  const where = f.where();
+  const totalRow = await queryOne<{ total: number }>(
+    `select count(*)::int as total ${HADITH_FROM} ${where}`,
+    f.params,
+  );
+  const total = totalRow?.total ?? 0;
+  if (total === 0) throw notFound('Hadith');
+
+  /**
+   * Deterministic: the same day and the same dataset always pick the same
+   * record. The seed is the date plus the dataset fingerprint, so a dataset
+   * change rotates the selection instead of silently keeping a stale pick.
+   */
+  const dataset = await queryOne<{ version: string; dataset_hash: string | null }>(
+    `select version, dataset_hash from corpus.dataset_versions
+     where is_active order by created_at desc limit 1`,
+  );
+  const seed = `${date}:${dataset?.version ?? ''}:${dataset?.dataset_hash ?? ''}`;
+  const offsetRow = await queryOne<{ idx: number }>(
+    `select (abs(hashtextextended($1, 0)) % $2)::int as idx`,
+    [seed, total],
+  );
+  const index = offsetRow?.idx ?? 0;
+
+  const row = await queryOne<HadithRow>(
+    `select ${HADITH_SELECT} ${HADITH_FROM} ${where}
+     order by ${HADITH_ORDER} limit 1 offset ${f.push(index)}`,
+    f.params,
+  );
+  if (!row) throw notFound('Hadith');
+  ok(
+    res,
+    serializeHadith(row, isAdmin, await hadithIncludes(row, parseIncludes(q), isAdmin)),
+    { date, dataset_version: dataset?.version ?? null, deterministic: true },
+  );
+});
+
+// ---------------- by the number the source prints ----------------
 get('/api/v1/hadiths/by-number/:number', async ({ res, params, query: q, req }) => {
   const number = (params['number'] as string).trim();
   const f = new SqlFilters();
@@ -81,5 +152,17 @@ get('/api/v1/hadiths/by-number/:number', async ({ res, params, query: q, req }) 
   if (rows.length === 0) throw notFound('Hadith');
   const isAdmin = isAdminRequest(req);
   // A number can repeat across editions; the source structure is preserved (§37).
-  ok(res, rows.map((r) => serializeHadith(r, isAdmin)), { total: rows.length });
+  ok(res, rows.map((r) => serializeHadithListItem(r, isAdmin)), { total: rows.length });
 });
+
+// ---------------- detail (§13) ----------------
+get('/api/v1/hadiths/:id', async ({ res, params, query: q, req }) => {
+  const id = uuidParam(params['id'] as string);
+  const includes = parseIncludes(q);
+  const row = await fetchHadith(id);
+  if (!row) throw notFound('Hadith');
+  const isAdmin = isAdminRequest(req);
+  ok(res, serializeHadith(row, isAdmin, await hadithIncludes(row, includes, isAdmin)));
+});
+
+export { fetchHadith, serializeTakhrij };

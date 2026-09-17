@@ -40,9 +40,10 @@ describe('CONTENT_LICENSE_CONFIRMED=true', () => {
   });
 
   it('serves the full text to the public API', async () => {
-    const { body } = await api.get(`/api/v1/hadiths/${hadithId}`);
-    expect(body.data.raw_text).toContain('TEST DATA');
+    const { body } = await api.get(`/api/v1/hadiths/${hadithId}?include=takhrij`);
+    expect(body.data.text).toContain('TEST DATA');
     expect(body.data.text_available).toBe(true);
+    expect(body.data.takhrij.takhrij_text).toContain('TEST TAKHRIJ');
   });
 
   it('health reports the flag as confirmed', async () => {

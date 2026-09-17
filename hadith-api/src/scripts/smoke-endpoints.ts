@@ -49,6 +49,7 @@ async function main(): Promise<void> {
     'select source_name from corpus.hadith_sources limit 1'))?.source_name ?? null;
   const volume = (await queryOne<{ volume_number: number }>(
     'select volume_number from corpus.hadiths where volume_number is not null limit 1'))?.volume_number ?? null;
+  const sourceId = (await queryOne<{ id: string }>('select id from corpus.sources limit 1'))?.id ?? null;
   const number = (await queryOne<{ hadith_number: string }>(
     'select hadith_number from corpus.hadiths where hadith_number is not null limit 1'))?.hadith_number;
 
@@ -66,6 +67,8 @@ async function main(): Promise<void> {
       if (collectionName) path = path.replace(':name', encodeURIComponent(collectionName));
     } else if (path.includes('/volumes/:volume/')) {
       if (volume !== null) path = path.replace(':volume', String(volume));
+    } else if (path.includes('/sources/:id')) {
+      path = path.replace(':id', sourceId ?? '');
     } else if (path.includes('/hadiths/by-number/')) {
       // An edition that prints no hadith numbers (e.g. الجامع الكامل) has
       // nothing to look up here — 404 is the correct answer, not a failure.

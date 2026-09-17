@@ -31,6 +31,9 @@ export function paginated(
 ): void {
   ok(res, data, {
     page,
+    // `current_page` is the name the Falah client reads; `page` stays for
+    // every existing consumer.
+    current_page: page,
     limit,
     total,
     total_pages: limit > 0 ? Math.ceil(total / limit) : 0,

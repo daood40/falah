@@ -1,118 +1,377 @@
-/// Domain models for the FALAH Hadith API.
+/// Typed models for the FALAH Hadith API.
 ///
-/// SOURCE_LOCK: every field is exactly what the API returned. Nothing is
-/// completed, corrected or guessed on the client. A field the source does not
-/// carry stays `null`, and the UI shows nothing rather than inventing a value.
+/// SOURCE_LOCK: every field is exactly what the API returned. A field the
+/// source does not carry is null — the client never substitutes anything, and
+/// text fields stay null while the server withholds them.
 library;
 
-class HadithRef {
-  const HadithRef({required this.id, required this.name});
+T? _as<T>(Object? v) => v is T ? v : null;
+
+/// A `{id, name}` pointer to another resource.
+class Ref {
+  const Ref({required this.id, required this.name});
 
   final String id;
   final String name;
 
-  static HadithRef? fromJson(Object? json) {
+  static Ref? fromJson(Object? json, {String nameKey = 'name'}) {
     if (json is! Map<String, dynamic>) return null;
     final id = json['id'];
     if (id is! String) return null;
-    return HadithRef(id: id, name: json['name'] as String? ?? '');
+    return Ref(id: id, name: _as<String>(json[nameKey]) ?? '');
   }
 }
 
-class HadithSourceInfo {
-  const HadithSourceInfo({this.name, this.edition, this.publisher});
+/// Where a record sits in the printed edition.
+class HadithLocation {
+  const HadithLocation({this.volume, this.page, this.locator});
 
-  final String? name;
-  final String? edition;
-  final String? publisher;
+  final int? volume;
+  final int? page;
 
-  factory HadithSourceInfo.fromJson(Map<String, dynamic>? json) => HadithSourceInfo(
-        name: json?['name'] as String?,
-        edition: json?['edition'] as String?,
-        publisher: json?['publisher'] as String?,
+  /// Position in the print (`ج1/ص107/#1`). Never a hadith number.
+  final String? locator;
+
+  factory HadithLocation.fromJson(Map<String, dynamic>? json) => HadithLocation(
+        volume: _as<int>(json?['volume']),
+        page: _as<int>(json?['page']),
+        locator: _as<String>(json?['locator']),
       );
 }
 
-class HadithVerification {
-  const HadithVerification({required this.verified, required this.status});
+/// Which dataset a record came from, and its fingerprints.
+class DatasetRef {
+  const DatasetRef({required this.version, required this.hash, this.datasetHash});
 
+  final String version;
+
+  /// SHA-256 of this record's text.
+  final String hash;
+
+  /// SHA-256 of the whole dataset — use it as a cache key.
+  final String? datasetHash;
+
+  factory DatasetRef.fromJson(Map<String, dynamic>? json) => DatasetRef(
+        version: _as<String>(json?['version']) ?? '',
+        hash: _as<String>(json?['hash']) ?? '',
+        datasetHash: _as<String>(json?['dataset_hash']),
+      );
+}
+
+class Verification {
+  const Verification({
+    required this.verified,
+    required this.status,
+    this.sourceMatch,
+    this.crossCheck,
+    this.crossCheckSimilarity,
+    this.crossCheckCollection,
+    this.humanReview,
+  });
+
+  /// Only a recorded human check can make this true.
   final bool verified;
   final String status;
 
-  factory HadithVerification.fromJson(Map<String, dynamic>? json) => HadithVerification(
-        verified: json?['verified'] as bool? ?? false,
-        status: json?['status'] as String? ?? 'pending',
+  /// The stored text still matches the file it was imported from.
+  final bool? sourceMatch;
+
+  /// SUPPORTED · PARTIAL · NOT_FOUND · UNKNOWN — from an independent corpus.
+  final String? crossCheck;
+  final double? crossCheckSimilarity;
+  final String? crossCheckCollection;
+
+  /// A human compared this record against the printed edition.
+  final bool? humanReview;
+
+  factory Verification.fromJson(Map<String, dynamic>? json) {
+    final detail = _as<Map<String, dynamic>>(json?['cross_check_detail']);
+    return Verification(
+      verified: _as<bool>(json?['verified']) ?? false,
+      status: _as<String>(json?['status']) ?? 'pending',
+      sourceMatch: _as<bool>(json?['source_match']),
+      crossCheck: _as<String>(json?['cross_check']),
+      crossCheckSimilarity: (detail?['similarity'] as num?)?.toDouble(),
+      crossCheckCollection: _as<String>(detail?['collection']),
+      humanReview: _as<bool>(json?['human_review']),
+    );
+  }
+}
+
+class Narrator {
+  const Narrator({
+    required this.id,
+    required this.name,
+    this.kunya,
+    this.laqab,
+    this.position,
+    this.role,
+    this.sourceReference,
+    this.hadithCount,
+  });
+
+  final String id;
+  final String name;
+  final String? kunya;
+  final String? laqab;
+  final int? position;
+  final String? role;
+
+  /// How the name was obtained — it is copied, never inferred.
+  final String? sourceReference;
+  final int? hadithCount;
+
+  factory Narrator.fromJson(Map<String, dynamic> json) => Narrator(
+        id: json['id'] as String,
+        name: json['name'] as String,
+        kunya: _as<String>(json['kunya']),
+        laqab: _as<String>(json['laqab']),
+        position: _as<int>(json['position']),
+        role: _as<String>(json['role']),
+        sourceReference: _as<String>(json['source_reference']),
+        hadithCount: _as<int>(json['hadith_count']),
       );
 }
 
-class Hadith {
-  const Hadith({
-    required this.id,
-    required this.contentHash,
-    required this.datasetVersion,
-    required this.sourceLocked,
-    required this.textAvailable,
-    required this.source,
-    required this.verification,
-    this.hadithNumber,
+class HadithReference {
+  const HadithReference({
+    this.source,
     this.book,
-    this.chapter,
-    this.narrator,
-    this.rawText,
-    this.matn,
-    this.isnad,
-    this.takhrij,
-    this.grading,
+    this.edition,
+    this.volume,
+    this.page,
+    this.locator,
+    this.referenceNumber,
+    this.referenceText,
+  });
+
+  final String? source;
+  final String? book;
+  final String? edition;
+  final int? volume;
+  final int? page;
+  final String? locator;
+  final String? referenceNumber;
+
+  /// Null while the server withholds text.
+  final String? referenceText;
+
+  factory HadithReference.fromJson(Map<String, dynamic> json) => HadithReference(
+        source: _as<String>(json['source']),
+        book: _as<String>(json['book']),
+        edition: _as<String>(json['edition']),
+        volume: _as<int>(json['volume']),
+        page: _as<int>(json['page']),
+        locator: _as<String>(json['locator']),
+        referenceNumber: _as<String>(json['reference_number']),
+        referenceText: _as<String>(json['reference_text']),
+      );
+}
+
+class Takhrij {
+  const Takhrij({
+    required this.hadithId,
+    required this.sources,
+    required this.references,
+    required this.datasetVersion,
+    required this.textAvailable,
+    this.text,
+  });
+
+  final String hadithId;
+
+  /// The collections the author's takhrij names, verbatim.
+  final List<String> sources;
+  final List<HadithReference> references;
+  final String datasetVersion;
+  final bool textAvailable;
+
+  /// The takhrij line itself; null while text is withheld.
+  final String? text;
+
+  factory Takhrij.fromJson(Map<String, dynamic> json) => Takhrij(
+        hadithId: json['hadith_id'] as String,
+        text: _as<String>(json['takhrij_text']),
+        textAvailable: _as<bool>(json['text_available']) ?? false,
+        sources: (json['sources'] as List? ?? const []).cast<String>(),
+        references: (json['references'] as List? ?? const [])
+            .cast<Map<String, dynamic>>()
+            .map(HadithReference.fromJson)
+            .toList(growable: false),
+        datasetVersion: _as<String>(json['dataset_version']) ?? '',
+      );
+}
+
+/// A record may carry several gradings, or none. None is mandatory.
+class Grading {
+  const Grading({required this.text, this.source, this.reference, this.notes, this.datasetVersion});
+
+  final String text;
+  final String? source;
+  final String? reference;
+  final String? notes;
+  final String? datasetVersion;
+
+  factory Grading.fromJson(Map<String, dynamic> json) => Grading(
+        text: (json['grading_text'] ?? json['label']) as String,
+        source: _as<String>(json['source']) ?? _as<String>(json['grader']),
+        reference: _as<String>(json['reference']),
+        notes: _as<String>(json['notes']),
+        datasetVersion: _as<String>(json['dataset_version']),
+      );
+}
+
+/// The slim shape lists and search results return.
+class HadithSummary {
+  const HadithSummary({
+    required this.id,
+    required this.datasetVersion,
+    required this.contentHash,
+    required this.verificationStatus,
+    required this.textAvailable,
+    this.number,
+    this.text,
+    this.bookId,
+    this.chapterId,
+    this.sourceId,
     this.volume,
     this.page,
   });
 
   final String id;
-  final String? hadithNumber;
-  final HadithRef? book;
-  final HadithRef? chapter;
-  final HadithRef? narrator;
+  final String? number;
 
-  /// Null while the API withholds the text (content licence unconfirmed).
-  final String? rawText;
-  final String? matn;
-  final String? isnad;
-  final String? takhrij;
-  final String? grading;
+  /// Null while the server withholds the text — show nothing, never a fallback.
+  final String? text;
+  final bool textAvailable;
+  final String? bookId;
+  final String? chapterId;
+  final String? sourceId;
   final int? volume;
   final int? page;
-
-  final HadithSourceInfo source;
-  final HadithVerification verification;
-  final bool sourceLocked;
-  final String contentHash;
   final String datasetVersion;
+  final String contentHash;
+  final String verificationStatus;
 
-  /// False means the server did not send the text; it is not an error state.
+  factory HadithSummary.fromJson(Map<String, dynamic> json) => HadithSummary(
+        id: json['id'] as String,
+        number: _as<String>(json['number']),
+        text: _as<String>(json['text']),
+        textAvailable: _as<bool>(json['text_available']) ?? false,
+        bookId: _as<String>(json['book_id']),
+        chapterId: _as<String>(json['chapter_id']),
+        sourceId: _as<String>(json['source_id']),
+        volume: _as<int>(json['volume']),
+        page: _as<int>(json['page']),
+        datasetVersion: _as<String>(json['dataset_version']) ?? '',
+        contentHash: _as<String>(json['content_hash']) ?? '',
+        verificationStatus: _as<String>(json['verification_status']) ?? 'pending',
+      );
+}
+
+/// The full record, as `GET /api/v1/hadiths/{id}` returns it.
+class Hadith {
+  const Hadith({
+    required this.id,
+    required this.location,
+    required this.dataset,
+    required this.verification,
+    required this.sourceLocked,
+    required this.textAvailable,
+    this.number,
+    this.text,
+    this.source,
+    this.book,
+    this.chapter,
+    this.narrators = const [],
+    this.references = const [],
+    this.gradings = const [],
+    this.takhrij,
+  });
+
+  final String id;
+  final String? number;
+  final String? text;
   final bool textAvailable;
 
-  /// The text to display, or null. Never a fallback string, never a guess.
-  String? get displayText => rawText ?? matn;
+  final Ref? source;
+  final Ref? book;
+  final Ref? chapter;
+
+  final HadithLocation location;
+  final DatasetRef dataset;
+  final Verification verification;
+  final bool sourceLocked;
+
+  /// Present only when requested with `include:`.
+  final List<Narrator> narrators;
+  final List<HadithReference> references;
+  final List<Grading> gradings;
+  final Takhrij? takhrij;
+
+  /// The text to display, or null. Never a fallback, never a guess.
+  String? get displayText => text;
 
   factory Hadith.fromJson(Map<String, dynamic> json) => Hadith(
         id: json['id'] as String,
-        hadithNumber: json['hadith_number'] as String?,
-        book: HadithRef.fromJson(json['book']),
-        chapter: HadithRef.fromJson(json['chapter']),
-        narrator: HadithRef.fromJson(json['narrator']),
-        rawText: json['raw_text'] as String?,
-        matn: json['matn'] as String?,
-        isnad: json['isnad'] as String?,
-        takhrij: json['takhrij'] as String?,
-        grading: json['grading'] as String?,
-        volume: json['volume'] as int?,
-        page: json['page'] as int?,
-        source: HadithSourceInfo.fromJson(json['source'] as Map<String, dynamic>?),
-        verification: HadithVerification.fromJson(json['verification'] as Map<String, dynamic>?),
-        sourceLocked: json['source_locked'] as bool? ?? true,
-        contentHash: json['content_hash'] as String? ?? '',
-        datasetVersion: json['dataset_version'] as String? ?? '',
-        textAvailable: json['text_available'] as bool? ?? false,
+        number: _as<String>(json['number']),
+        text: _as<String>(json['text']),
+        textAvailable: _as<bool>(json['text_available']) ?? false,
+        source: Ref.fromJson(json['source']),
+        book: Ref.fromJson(json['book']),
+        chapter: Ref.fromJson(json['chapter'], nameKey: 'title'),
+        location: HadithLocation.fromJson(_as<Map<String, dynamic>>(json['location'])),
+        dataset: DatasetRef.fromJson(_as<Map<String, dynamic>>(json['dataset'])),
+        verification: Verification.fromJson(_as<Map<String, dynamic>>(json['verification'])),
+        sourceLocked: _as<bool>(json['source_locked']) ?? true,
+        narrators: (json['narrators'] as List? ?? const [])
+            .cast<Map<String, dynamic>>()
+            .map(Narrator.fromJson)
+            .toList(growable: false),
+        references: (json['references'] as List? ?? const [])
+            .cast<Map<String, dynamic>>()
+            .map(HadithReference.fromJson)
+            .toList(growable: false),
+        gradings: (json['gradings'] as List? ?? const [])
+            .cast<Map<String, dynamic>>()
+            .map(Grading.fromJson)
+            .toList(growable: false),
+        takhrij: json['takhrij'] is Map<String, dynamic>
+            ? Takhrij.fromJson(json['takhrij'] as Map<String, dynamic>)
+            : null,
+      );
+}
+
+class HadithSource {
+  const HadithSource({
+    required this.id,
+    required this.name,
+    required this.licenseStatus,
+    this.slug,
+    this.type,
+    this.publisher,
+    this.url,
+    this.hadithCount,
+  });
+
+  final String id;
+  final String name;
+  final String licenseStatus;
+  final String? slug;
+  final String? type;
+  final String? publisher;
+  final String? url;
+  final int? hadithCount;
+
+  factory HadithSource.fromJson(Map<String, dynamic> json) => HadithSource(
+        id: json['id'] as String,
+        name: json['name'] as String,
+        licenseStatus: _as<String>(json['license_status']) ?? 'unconfirmed',
+        slug: _as<String>(json['slug']),
+        type: _as<String>(json['source_type']),
+        publisher: _as<String>(json['publisher']),
+        url: _as<String>(json['url']),
+        hadithCount: _as<int>(json['hadith_count']),
       );
 }
 
@@ -123,6 +382,7 @@ class HadithBook {
     required this.name,
     required this.hadithCount,
     this.orderNumber,
+    this.chapterCount,
     this.description,
   });
 
@@ -131,15 +391,17 @@ class HadithBook {
   final String name;
   final int hadithCount;
   final int? orderNumber;
+  final int? chapterCount;
   final String? description;
 
   factory HadithBook.fromJson(Map<String, dynamic> json) => HadithBook(
         id: json['id'] as String,
-        editionId: json['edition_id'] as String,
+        editionId: _as<String>(json['edition_id']) ?? '',
         name: json['name'] as String,
-        hadithCount: json['hadith_count'] as int? ?? 0,
-        orderNumber: json['order_number'] as int?,
-        description: json['description'] as String?,
+        hadithCount: _as<int>(json['hadith_count']) ?? 0,
+        orderNumber: _as<int>(json['order_number']),
+        chapterCount: _as<int>(json['chapter_count']),
+        description: _as<String>(json['description']),
       );
 }
 
@@ -147,128 +409,145 @@ class HadithChapter {
   const HadithChapter({
     required this.id,
     required this.bookId,
-    required this.name,
+    required this.title,
     required this.hadithCount,
     this.parentId,
-    this.chapterNumber,
+    this.number,
     this.orderNumber,
+    this.pageStart,
+    this.pageEnd,
   });
 
   final String id;
   final String bookId;
-  final String name;
+  final String title;
   final int hadithCount;
   final String? parentId;
-  final String? chapterNumber;
+  final String? number;
   final int? orderNumber;
+  final int? pageStart;
+  final int? pageEnd;
 
   factory HadithChapter.fromJson(Map<String, dynamic> json) => HadithChapter(
         id: json['id'] as String,
         bookId: json['book_id'] as String,
-        name: json['name'] as String,
-        hadithCount: json['hadith_count'] as int? ?? 0,
-        parentId: json['parent_id'] as String?,
-        chapterNumber: json['chapter_number'] as String?,
-        orderNumber: json['order_number'] as int?,
+        title: (json['title'] ?? json['name']) as String,
+        hadithCount: _as<int>(json['hadith_count']) ?? 0,
+        parentId: _as<String>(json['parent_id']),
+        number: json['number']?.toString() ?? json['chapter_number']?.toString(),
+        orderNumber: _as<int>(json['order_number']),
+        pageStart: _as<int>(json['page_start']),
+        pageEnd: _as<int>(json['page_end']),
       );
 }
 
-class Narrator {
-  const Narrator({
-    required this.id,
-    required this.name,
-    required this.hadithCount,
-    this.kunya,
-    this.laqab,
-    this.biography,
-    this.sourceReference,
+class DatasetVersion {
+  const DatasetVersion({
+    required this.version,
+    required this.status,
+    this.datasetHash,
+    this.recordCount,
+    this.isActive,
+    this.sourceName,
   });
 
-  final String id;
-  final String name;
-  final int hadithCount;
-  final String? kunya;
-  final String? laqab;
+  final String version;
+  final String status;
+  final String? datasetHash;
+  final int? recordCount;
+  final bool? isActive;
+  final String? sourceName;
 
-  /// Only what the source itself carries; never enriched from elsewhere.
-  final String? biography;
-  final String? sourceReference;
-
-  factory Narrator.fromJson(Map<String, dynamic> json) => Narrator(
-        id: json['id'] as String,
-        name: json['name'] as String,
-        hadithCount: json['hadith_count'] as int? ?? 0,
-        kunya: json['kunya'] as String?,
-        laqab: json['laqab'] as String?,
-        biography: json['biography'] as String?,
-        sourceReference: json['source_reference'] as String?,
+  factory DatasetVersion.fromJson(Map<String, dynamic> json) => DatasetVersion(
+        version: json['version'] as String,
+        status: _as<String>(json['status']) ?? 'draft',
+        datasetHash: _as<String>(json['dataset_hash']),
+        recordCount: _as<int>(json['record_count']),
+        isActive: _as<bool>(json['is_active']),
+        sourceName: _as<String>(json['source_name']),
       );
 }
 
-class HadithGrading {
-  const HadithGrading({required this.grading, this.grader, this.sourceReference, this.notes});
-
-  final String grading;
-  final String? grader;
-  final String? sourceReference;
-  final String? notes;
-
-  factory HadithGrading.fromJson(Map<String, dynamic> json) => HadithGrading(
-        grading: json['grading'] as String,
-        grader: json['grader'] as String?,
-        sourceReference: json['source_reference'] as String?,
-        notes: json['notes'] as String?,
-      );
-}
-
-class HadithEdition {
-  const HadithEdition({
-    required this.id,
-    required this.slug,
-    required this.title,
-    this.author,
-    this.publisher,
-    this.editionNumber,
-    this.publicationYear,
-    this.hijriYear,
-    this.volumeCount,
+/// `GET /api/v1/version` — what a client is holding right now.
+class ApiVersion {
+  const ApiVersion({
+    required this.apiVersion,
+    required this.contentLicenseConfirmed,
     this.datasetVersion,
+    this.datasetHash,
+    this.recordCount,
+    this.status,
   });
 
-  final String id;
-  final String slug;
-  final String title;
-  final String? author;
-  final String? publisher;
-  final int? editionNumber;
-  final int? publicationYear;
-  final int? hijriYear;
-  final int? volumeCount;
+  final String apiVersion;
+  final bool contentLicenseConfirmed;
   final String? datasetVersion;
+  final String? datasetHash;
+  final int? recordCount;
+  final String? status;
 
-  factory HadithEdition.fromJson(Map<String, dynamic> json) => HadithEdition(
-        id: json['id'] as String,
-        slug: json['slug'] as String,
-        title: json['title'] as String,
-        author: json['author'] as String?,
-        publisher: json['publisher'] as String?,
-        editionNumber: json['edition_number'] as int?,
-        publicationYear: json['publication_year'] as int?,
-        hijriYear: json['hijri_year'] as int?,
-        volumeCount: json['volume_count'] as int?,
-        datasetVersion: json['dataset_version'] as String?,
+  factory ApiVersion.fromJson(Map<String, dynamic> json) => ApiVersion(
+        apiVersion: _as<String>(json['api_version']) ?? 'v1',
+        contentLicenseConfirmed: _as<bool>(json['content_license_confirmed']) ?? false,
+        datasetVersion: _as<String>(json['dataset_version']),
+        datasetHash: _as<String>(json['dataset_hash']),
+        recordCount: _as<int>(json['record_count']),
+        status: _as<String>(json['status']),
       );
+}
+
+class HadithStats {
+  const HadithStats({required this.raw});
+
+  final Map<String, dynamic> raw;
+
+  int get hadiths => _as<int>(raw['hadiths']) ?? 0;
+  int get books => _as<int>(raw['books']) ?? 0;
+  int get chapters => _as<int>(raw['chapters']) ?? 0;
+  int get sources => _as<int>(raw['sources']) ?? 0;
+  int get narrators => _as<int>(raw['narrators']) ?? 0;
+  int get references => _as<int>(raw['references']) ?? 0;
+  int get gradings => _as<int>(raw['gradings']) ?? 0;
+  int get verifiedHadiths => _as<int>(raw['verified_hadiths']) ?? 0;
+  bool get contentLicenseConfirmed => _as<bool>(raw['content_license_confirmed']) ?? false;
+
+  factory HadithStats.fromJson(Map<String, dynamic> json) => HadithStats(raw: json);
 }
 
 /// One page of results plus the API's meta block.
 class Paged<T> {
-  const Paged({required this.items, required this.page, required this.limit, required this.total});
+  const Paged({
+    required this.items,
+    required this.page,
+    required this.limit,
+    required this.total,
+    this.totalPages,
+  });
 
   final List<T> items;
   final int page;
   final int limit;
   final int total;
+  final int? totalPages;
 
+  int get currentPage => page;
   bool get hasMore => page * limit < total;
-  int get totalPages => limit == 0 ? 0 : (total + limit - 1) ~/ limit;
+
+  factory Paged.fromResponse(
+    Object? data,
+    Map<String, dynamic> meta,
+    T Function(Map<String, dynamic>) map,
+  ) {
+    final items =
+        (data as List? ?? const []).cast<Map<String, dynamic>>().map(map).toList(growable: false);
+    final limit = _as<int>(meta['limit']) ?? items.length;
+    final total = _as<int>(meta['total']) ?? items.length;
+    return Paged<T>(
+      items: items,
+      page: _as<int>(meta['current_page']) ?? _as<int>(meta['page']) ?? 1,
+      limit: limit,
+      total: total,
+      totalPages: _as<int>(meta['total_pages']) ?? (limit > 0 ? (total + limit - 1) ~/ limit : 0),
+    );
+  }
 }

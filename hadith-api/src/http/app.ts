@@ -8,6 +8,7 @@ import { fail, sendJson } from './respond.ts';
 // Route modules register themselves on import.
 import '../routes/system.ts';
 import '../routes/hadiths.ts';
+import '../routes/hadith-parts.ts';
 import '../routes/catalogue.ts';
 import '../routes/search.ts';
 import '../routes/classification.ts';

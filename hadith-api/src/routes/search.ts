@@ -3,7 +3,7 @@ import { paginated } from '../http/respond.ts';
 import { query, queryOne } from '../db.ts';
 import { badRequest } from '../http/errors.ts';
 import { optionalEnum, optionalText, pagination } from '../http/validate.ts';
-import { serializeHadith, type HadithRow } from '../domain/serialize.ts';
+import { serializeHadithListItem, type HadithRow } from '../domain/serialize.ts';
 import { HADITH_FROM, HADITH_SELECT, isAdminRequest } from './shared.ts';
 import { hadithFilters } from './hadiths.ts';
 
@@ -74,7 +74,7 @@ get('/api/v1/search', async ({ res, query: q, req }) => {
       f.params,
     );
     const isAdmin = isAdminRequest(req);
-    paginated(res, rows.map((r) => serializeHadith(r, isAdmin)), page, limit, total, {
+    paginated(res, rows.map((r) => serializeHadithListItem(r, isAdmin)), page, limit, total, {
       query: term,
       type,
     });

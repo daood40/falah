@@ -49,12 +49,39 @@ describe('OpenAPI specification', () => {
     expect(unguarded).toEqual([]);
   });
 
-  it('describes the hadith schema with nullable source-dependent fields', () => {
-    const hadith = spec.components.schemas['Hadith'] as {
+  it('describes every source-dependent field as nullable', () => {
+    const detail = spec.components.schemas['Hadith'] as {
       properties: Record<string, { type: unknown }>;
     };
-    for (const field of ['raw_text', 'matn', 'isnad', 'takhrij', 'grading', 'hadith_number']) {
-      expect(hadith.properties[field]?.type).toContain('null');
+    const item = spec.components.schemas['HadithListItem'] as {
+      properties: Record<string, { type: unknown }>;
+    };
+    for (const field of ['number', 'text']) {
+      expect(detail.properties[field]?.type, `detail.${field}`).toContain('null');
+      expect(item.properties[field]?.type, `list.${field}`).toContain('null');
     }
+    for (const field of ['source', 'book', 'chapter']) {
+      expect(detail.properties[field]?.type, `detail.${field}`).toContain('null');
+    }
+    const takhrij = spec.components.schemas['Takhrij'] as {
+      properties: Record<string, { type: unknown }>;
+    };
+    expect(takhrij.properties['takhrij_text']?.type).toContain('null');
+  });
+
+  it('documents the Falah contract resources', () => {
+    const required = [
+      '/api/v1/hadiths', '/api/v1/hadiths/{id}', '/api/v1/hadiths/random',
+      '/api/v1/hadiths/daily', '/api/v1/hadiths/{id}/narrators',
+      '/api/v1/hadiths/{id}/references', '/api/v1/hadiths/{id}/takhrij',
+      '/api/v1/hadiths/{id}/gradings', '/api/v1/hadiths/{id}/verification',
+      '/api/v1/sources', '/api/v1/sources/{id}', '/api/v1/books', '/api/v1/books/{id}',
+      '/api/v1/books/{id}/chapters', '/api/v1/books/{id}/hadiths', '/api/v1/chapters/{id}',
+      '/api/v1/chapters/{id}/hadiths', '/api/v1/narrators', '/api/v1/gradings',
+      '/api/v1/search', '/api/v1/catalog', '/api/v1/stats', '/api/v1/health',
+      '/api/v1/version', '/api/v1/datasets',
+    ];
+    const missing = required.filter((path) => !spec.paths[path]);
+    expect(missing).toEqual([]);
   });
 });

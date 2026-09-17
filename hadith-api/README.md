@@ -33,9 +33,14 @@ npm run dev
 
 ## الموارد
 
+عقد Falah الرسمي في `FALAH_INTEGRATION.md` (15 موردًا). الجدول الكامل:
+
 | المورد | المسار | ماذا يعطي |
 |---|---|---|
-| الأحاديث | `/api/v1/hadiths` · `/{id}` · `/by-number/{n}` | السجل كاملًا مع كتابه وبابه وراويه ودرجته وموضعه |
+| الأحاديث | `/api/v1/hadiths` · `/{id}` · `/by-number/{n}` | قائمة مختصرة، وتفصيل قياسي |
+| عشوائي/يومي | `/api/v1/hadiths/random` · `/daily` | سجل موجود فعلًا؛ واليومي حتمي |
+| أجزاء الحديث | `/api/v1/hadiths/{id}/{narrators\|references\|takhrij\|gradings\|verification}` | أو `?include=` على التفصيل |
+| هوية المجموعة | `/api/v1/version` · `/datasets` | الإصدار والبصمة وعدد السجلات |
 | البحث | `/api/v1/search?q=` | بحث عربي (FTS + trgm) بلا حساسية للتشكيل والهمزات |
 | الفهرس | `/api/v1/catalog?chapters=true` | شجرة الكتب والأبواب في نداء واحد |
 | الكتب/الأبواب | `/api/v1/books` · `/chapters` (+ `/{id}/hadiths`) | التصفّح الهرمي |
@@ -53,9 +58,11 @@ npm run dev
 
 ## عملاء جاهزون
 
+* Dart/Flutter: `clients/dart/` — حزمة `falah_hadith_api` **العميل الرسمي لـFalah**:
+  نماذج مكتوبة الأنواع (‏`Hadith`, `HadithSummary`, `Takhrij`, `Grading`,
+  `Verification`, `DatasetVersion`…) و24 دالة تغطي كل موارد العقد.
+  دليل الربط: `FALAH_INTEGRATION.md`.
 * TypeScript/JS: `clients/typescript/falah-hadith.ts` — ملف واحد بلا تبعيات.
-* Dart/Flutter: `clients/dart/` — حزمة `falah_hadith_api` (تعتمد `http` فقط).
-  تطبيق Flutter في هذا المستودع يستهلكها كما يستهلكها أي مشروع آخر.
 
 ## موثوقية البيانات — ثلاث طبقات
 
@@ -95,7 +102,7 @@ npm run dev
 ## الاختبارات
 
 ```bash
-npm run db:reset && npm test    # 160 اختبارًا على PostgreSQL حقيقي
+npm run db:reset && npm test    # 183 اختبارًا على PostgreSQL حقيقي
 npm run typecheck
 npm run verify                  # سلامة البيانات (21 قاعدة)
 npm run cross-verify            # المقارنة بالمصدر المستقل

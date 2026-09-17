@@ -59,11 +59,19 @@ components:
       in: path
       required: true
       schema: { type: string, format: uuid }
+    include:
+      name: include
+      in: query
+      description: >-
+        Comma-separated extra blocks (§14): narrators, references, takhrij,
+        gradings, verification. Nothing heavy is sent unless asked for.
+      schema: { type: string, example: 'narrators,gradings' }
   schemas:
     Meta:
       type: object
       properties:
         page: { type: integer }
+        current_page: { type: integer, description: Same value as page, under the name the Falah client reads. }
         limit: { type: integer }
         total: { type: integer }
         total_pages: { type: integer }
@@ -93,47 +101,128 @@ components:
       properties:
         id: { type: string, format: uuid }
         name: { type: string }
-    Hadith:
+    HadithListItem:
       type: object
+      description: The slim shape lists and search results return (§3).
       properties:
         id: { type: string, format: uuid }
-        hadith_number: { type: [string, 'null'] }
-        book: { $ref: '#/components/schemas/Ref' }
-        chapter: { $ref: '#/components/schemas/Ref' }
-        narrator: { $ref: '#/components/schemas/Ref' }
-        isnad: { type: [string, 'null'], description: Only when the source separates it. }
-        matn: { type: [string, 'null'], description: Only when the source separates it. }
-        raw_text: { type: [string, 'null'], description: Verbatim source text; null while the licence is unconfirmed. }
-        takhrij: { type: [string, 'null'] }
-        grading: { type: [string, 'null'], description: As written in the source; never inferred. }
+        number: { type: [string, 'null'], description: As the source prints it; null when it prints none. }
+        text: { type: [string, 'null'], description: Null while the content licence is unconfirmed. }
+        text_available: { type: boolean }
+        book_id: { type: [string, 'null'], format: uuid }
+        chapter_id: { type: [string, 'null'], format: uuid }
+        source_id: { type: [string, 'null'], format: uuid }
         volume: { type: [integer, 'null'] }
         page: { type: [integer, 'null'] }
-        original_reference: { type: [string, 'null'] }
-        original_hadith_number: { type: [string, 'null'] }
+        dataset_version: { type: string }
+        content_hash: { type: string, description: SHA-256 of the text, computed by the database. }
+        verification_status: { type: string, enum: [pending, verified, needs_review, rejected] }
+    Hadith:
+      type: object
+      description: The standard detail response (§13). Optional blocks arrive via ?include=.
+      properties:
+        id: { type: string, format: uuid }
+        number: { type: [string, 'null'] }
+        text: { type: [string, 'null'] }
+        text_available: { type: boolean }
         source:
+          type: [object, 'null']
+          properties:
+            id: { type: string, format: uuid }
+            name: { type: string }
+        book:
+          type: [object, 'null']
+          properties:
+            id: { type: string, format: uuid }
+            name: { type: string }
+        chapter:
+          type: [object, 'null']
+          properties:
+            id: { type: string, format: uuid }
+            title: { type: string }
+        location:
           type: object
           properties:
-            name: { type: [string, 'null'] }
-            edition: { type: [string, 'null'] }
-            publisher: { type: [string, 'null'] }
+            volume: { type: [integer, 'null'] }
+            page: { type: [integer, 'null'] }
+            locator: { type: [string, 'null'], description: Position in the print; never a hadith number. }
+        dataset:
+          type: object
+          properties:
+            version: { type: string }
+            hash: { type: string, description: This record's SHA-256. }
+            dataset_hash: { type: [string, 'null'], description: Fingerprint of the whole dataset. }
         verification:
           type: object
           properties:
             verified: { type: boolean }
-            status: { type: string, enum: [pending, verified, needs_review, rejected] }
+            status: { type: string }
         source_locked: { type: boolean }
-        content_hash: { type: string, description: SHA-256 of raw_text, computed by the database. }
-        dataset_version: { type: string }
+        narrators: { type: array, items: { $ref: '#/components/schemas/Narrator' }, description: Only with ?include=narrators }
+        references: { type: array, items: { $ref: '#/components/schemas/Reference' }, description: Only with ?include=references }
+        takhrij: { $ref: '#/components/schemas/Takhrij' }
+        gradings: { type: array, items: { $ref: '#/components/schemas/Grading' }, description: Only with ?include=gradings }
+    Reference:
+      type: object
+      properties:
+        source: { type: [string, 'null'] }
+        book: { type: [string, 'null'] }
+        edition: { type: [string, 'null'] }
+        volume: { type: [integer, 'null'] }
+        page: { type: [integer, 'null'] }
+        locator: { type: [string, 'null'] }
+        reference_number: { type: [string, 'null'] }
+        reference_text: { type: [string, 'null'] }
+    Takhrij:
+      type: object
+      properties:
+        hadith_id: { type: string, format: uuid }
+        takhrij_text: { type: [string, 'null'] }
         text_available: { type: boolean }
-        created_at: { type: string, format: date-time }
-        updated_at: { type: string, format: date-time }
+        sources: { type: array, items: { type: string } }
+        references: { type: array, items: { $ref: '#/components/schemas/Reference' } }
+        dataset_version: { type: string }
+    Grading:
+      type: object
+      description: A hadith may carry several gradings; none is mandatory (§10).
+      properties:
+        grading_text: { type: string }
+        source: { type: [string, 'null'] }
+        reference: { type: [string, 'null'] }
+        notes: { type: [string, 'null'] }
+        dataset_version: { type: string }
+    Verification:
+      type: object
+      description: The three layers, kept apart (§11).
+      properties:
+        source_match: { type: boolean, description: The stored text still matches the file it came from. }
+        cross_check: { type: string, enum: [SUPPORTED, PARTIAL, NOT_FOUND, UNKNOWN] }
+        cross_check_detail:
+          type: object
+          properties:
+            similarity: { type: [number, 'null'] }
+            collection: { type: [string, 'null'] }
+        human_review: { type: boolean, description: A human compared this record against the printed edition. }
+        verified: { type: boolean, description: Never true without a recorded human check. }
+        status: { type: string }
+        content_hash: { type: string }
+        dataset_version: { type: string }
+    DatasetVersion:
+      type: object
+      properties:
+        version: { type: string }
+        dataset_hash: { type: [string, 'null'] }
+        record_count: { type: [integer, 'null'] }
+        status: { type: string, enum: [draft, sealed, superseded] }
+        is_active: { type: boolean }
+        source_name: { type: [string, 'null'] }
     HadithList:
       type: object
       properties:
         success: { type: boolean }
         data:
           type: array
-          items: { $ref: '#/components/schemas/Hadith' }
+          items: { $ref: '#/components/schemas/HadithListItem' }
         meta: { $ref: '#/components/schemas/Meta' }
     Book:
       type: object
@@ -151,9 +240,12 @@ components:
         id: { type: string, format: uuid }
         book_id: { type: string, format: uuid }
         parent_id: { type: [string, 'null'], format: uuid }
-        name: { type: string }
-        chapter_number: { type: [string, 'null'] }
+        title: { type: string }
+        name: { type: string, description: Same value as title, kept for existing consumers. }
+        number: { type: [string, 'null'] }
         order_number: { type: [integer, 'null'] }
+        page_start: { type: [integer, 'null'] }
+        page_end: { type: [integer, 'null'] }
         hadith_count: { type: integer }
     Narrator:
       type: object
@@ -269,6 +361,7 @@ paths:
         - $ref: '#/components/parameters/page'
         - $ref: '#/components/parameters/limit'
         - { name: edition_id, in: query, schema: { type: string, format: uuid } }
+        - { name: source_id, in: query, schema: { type: string, format: uuid } }
         - { name: book_id, in: query, schema: { type: string, format: uuid } }
         - { name: chapter_id, in: query, schema: { type: string, format: uuid } }
         - { name: narrator_id, in: query, schema: { type: string, format: uuid } }
@@ -285,11 +378,64 @@ paths:
         '422': { $ref: '#/components/responses/Validation' }
         '429': { $ref: '#/components/responses/RateLimited' }
 
+  /api/v1/hadiths/random:
+    get:
+      tags: [hadiths]
+      summary: One existing record at random (§18 — nothing is generated)
+      parameters:
+        - { name: book_id, in: query, schema: { type: string, format: uuid } }
+        - { name: chapter_id, in: query, schema: { type: string, format: uuid } }
+        - { name: source_id, in: query, schema: { type: string, format: uuid } }
+        - { name: grading, in: query, schema: { type: string } }
+        - $ref: '#/components/parameters/include'
+      responses:
+        '200':
+          description: A record that exists in the dataset
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { $ref: '#/components/schemas/Hadith' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/hadiths/daily:
+    get:
+      tags: [hadiths]
+      summary: The record of the day — deterministic (§19)
+      description: >-
+        The same date and the same dataset always return the same record. The
+        seed is the date plus the dataset fingerprint, so a new dataset rotates
+        the choice instead of silently keeping a stale one. No AI, no generation.
+      parameters:
+        - { name: date, in: query, schema: { type: string, format: date }, description: Defaults to today (UTC). }
+        - $ref: '#/components/parameters/include'
+      responses:
+        '200':
+          description: The record for that day
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { $ref: '#/components/schemas/Hadith' }
+                  meta:
+                    type: object
+                    properties:
+                      date: { type: string, format: date }
+                      dataset_version: { type: string }
+                      deterministic: { type: boolean }
+        '404': { $ref: '#/components/responses/NotFound' }
+
   /api/v1/hadiths/{id}:
     get:
       tags: [hadiths]
-      summary: One hadith
-      parameters: [{ $ref: '#/components/parameters/id' }]
+      summary: One hadith (the standard detail response)
+      parameters:
+        - $ref: '#/components/parameters/id'
+        - $ref: '#/components/parameters/include'
       responses:
         '200':
           description: The hadith
@@ -316,6 +462,167 @@ paths:
           description: Matching hadiths
           content: { application/json: { schema: { $ref: '#/components/schemas/HadithList' } } }
         '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/hadiths/{id}/narrators:
+    get:
+      tags: [hadiths]
+      summary: The narrators this record names (§7)
+      parameters: [{ $ref: '#/components/parameters/id' }]
+      responses:
+        '200':
+          description: Narrators, verbatim from the source
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { type: array, items: { $ref: '#/components/schemas/Narrator' } }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/hadiths/{id}/references:
+    get:
+      tags: [hadiths]
+      summary: Where this record sits and what it points at (§8)
+      parameters: [{ $ref: '#/components/parameters/id' }]
+      responses:
+        '200':
+          description: References
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { type: array, items: { $ref: '#/components/schemas/Reference' } }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/hadiths/{id}/takhrij:
+    get:
+      tags: [hadiths]
+      summary: The takhrij line, unchanged (§9)
+      parameters: [{ $ref: '#/components/parameters/id' }]
+      responses:
+        '200':
+          description: The takhrij
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { $ref: '#/components/schemas/Takhrij' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/hadiths/{id}/gradings:
+    get:
+      tags: [hadiths]
+      summary: Every grading recorded for this record (§10)
+      parameters: [{ $ref: '#/components/parameters/id' }]
+      responses:
+        '200':
+          description: Gradings — possibly none, possibly several
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { type: array, items: { $ref: '#/components/schemas/Grading' } }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/hadiths/{id}/verification:
+    get:
+      tags: [verification]
+      summary: Source match, cross-check and human review, kept apart (§11)
+      parameters: [{ $ref: '#/components/parameters/id' }]
+      responses:
+        '200':
+          description: The verification state
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { $ref: '#/components/schemas/Verification' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/sources/{id}:
+    get:
+      tags: [catalogue]
+      summary: One source with its licence status
+      parameters: [{ $ref: '#/components/parameters/id' }]
+      responses:
+        '200':
+          description: The source
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { $ref: '#/components/schemas/Source' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/books/{id}/chapters:
+    get:
+      tags: [catalogue]
+      summary: The chapters of one book (§6)
+      parameters:
+        - $ref: '#/components/parameters/id'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: A page of chapters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { type: array, items: { $ref: '#/components/schemas/Chapter' } }
+                  meta: { $ref: '#/components/schemas/Meta' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/version:
+    get:
+      tags: [system]
+      summary: API version and dataset fingerprint (§12)
+      responses:
+        '200':
+          description: What a client is holding
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: object
+                    properties:
+                      api_version: { type: string }
+                      dataset_version: { type: [string, 'null'] }
+                      dataset_hash: { type: [string, 'null'] }
+                      record_count: { type: [integer, 'null'] }
+                      status: { type: [string, 'null'] }
+                      content_license_confirmed: { type: boolean }
+
+  /api/v1/datasets:
+    get:
+      tags: [system]
+      summary: Every dataset version known to this service
+      responses:
+        '200':
+          description: Dataset versions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { type: array, items: { $ref: '#/components/schemas/DatasetVersion' } }
 
   /api/v1/books:
     get:
@@ -711,6 +1018,7 @@ paths:
         - { name: q, in: query, required: true, schema: { type: string, minLength: 2, maxLength: 200 } }
         - { name: type, in: query, schema: { type: string, enum: [hadiths, narrators, chapters, books], default: hadiths } }
         - { name: source, in: query, schema: { type: string }, description: Matches takhrij text or a linked source name. }
+        - { name: source_id, in: query, schema: { type: string, format: uuid } }
         - { name: hadith_number, in: query, schema: { type: string } }
         - { name: grading, in: query, schema: { type: string } }
         - { name: volume, in: query, schema: { type: integer } }
