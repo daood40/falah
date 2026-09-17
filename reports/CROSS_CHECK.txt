@@ -1,9 +1,9 @@
-generated 2026-09-17T15:32:15Z — dataset JAMI-KAMIL-1437-V2
+generated 2026-09-17T19:23:19Z — dataset JAMI-KAMIL-1437-V2
 reading the reference corpus: /tmp/ref/node_modules/hadith/data/hadith.db
   46906 reference records in 16 collections
-  indexed 1162992 distinct shingles (3323 ms)
+  indexed 1162992 distinct shingles (3416 ms)
   9 printed names map onto reference collections
-(node:4522) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(node:3166) ExperimentalWarning: SQLite is an experimental feature and might change at any time
 (Use `node --trace-warnings ...` to show where the warning was created)
 checking 15959 imported records…
 writing 15959 verdicts…
@@ -34,5 +34,5 @@ best-matching collection:
   مسند أحمد              95
   الأدب المفرد           82
   حصن المسلم             79
-elapsed            5.9 s
+elapsed            6.1 s
 ============================================

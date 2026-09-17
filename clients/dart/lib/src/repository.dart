@@ -274,6 +274,29 @@ class HadithRepository {
 
   /// `GET /api/v1/cross-checks/summary` — how the dataset compares with an
   /// independent corpus. Never treat this as human verification.
+  /// `GET /api/v1/hadiths/{id}/cross-checks` — what an independent corpus says
+  /// about this record. Machine evidence only; it never sets `verified`.
+  Future<List<CrossCheck>> getCrossChecks(String hadithId) async {
+    final res = await _api.get('/api/v1/hadiths/$hadithId/cross-checks');
+    return (res.data as List)
+        .cast<Map<String, dynamic>>()
+        .map(CrossCheck.fromJson)
+        .toList(growable: false);
+  }
+
+  /// `GET /api/v1/narrators/{id}/hadiths`
+  Future<Paged<HadithSummary>> getNarratorHadiths(
+    String narratorId, {
+    int page = 1,
+    int limit = 20,
+  }) async {
+    final res = await _api.get('/api/v1/narrators/$narratorId/hadiths', query: {
+      'page': page,
+      'limit': limit,
+    });
+    return Paged.fromResponse(res.data, res.meta, HadithSummary.fromJson);
+  }
+
   Future<List<CrossCheckSummary>> getCrossCheckSummary() async {
     final res = await _api.get('/api/v1/cross-checks/summary');
     return (res.data as List)
@@ -284,12 +307,17 @@ class HadithRepository {
 
   /// `GET /api/v1/cross-checks/review-queue` — the records a human still has
   /// to look at, worst match first.
-  Future<Paged<HadithSummary>> getCrossCheckReviewQueue({int page = 1, int limit = 20}) async {
+  Future<Paged<ReviewQueueItem>> getCrossCheckReviewQueue({
+    int page = 1,
+    int limit = 20,
+    String? verdict,
+  }) async {
     final res = await _api.get('/api/v1/cross-checks/review-queue', query: {
       'page': page,
       'limit': limit,
+      if (verdict != null) 'verdict': verdict,
     });
-    return Paged.fromResponse(res.data, res.meta, HadithSummary.fromJson);
+    return Paged.fromResponse(res.data, res.meta, ReviewQueueItem.fromJson);
   }
 
   // ---------------- dataset and system ----------------
