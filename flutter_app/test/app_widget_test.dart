@@ -126,13 +126,15 @@ void main() {
     await tester.ensureVisible(find.text('السجدات'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('السجدات'));
-    await _settle(tester);
+    // A tab switch is an animation, not an asset load: settle it fully so
+    // the next tap lands on the page that is actually on screen.
+    await tester.pumpAndSettle();
     expect(find.textContaining('الأعراف'), findsWidgets);
 
     await tester.ensureVisible(find.text('الأجزاء'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('الأجزاء'));
-    await _settle(tester);
+    await tester.pumpAndSettle();
     await tester.tap(find.text('الجزء 1'));
     await _settle(tester);
     expect(find.textContaining('﴿1﴾'), findsOneWidget);

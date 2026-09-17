@@ -358,7 +358,7 @@ export async function run(ctx: GateContext): Promise<void> {
     // then fails with "See exception logs above" — keep those lines too.
     if (event.type === 'print' && typeof event.testID === 'number' && typeof event.message === 'string') {
       const text = event.message.replace(/\s+/g, ' ').trim();
-      if (/exception|error|overflow|failed|thrown/i.test(text)) {
+      if (/exception|error|overflow|failed|thrown|warning/i.test(text)) {
         errors.set(event.testID, `${errors.get(event.testID) ?? ''}${text} `.slice(0, 2500));
       }
     }
