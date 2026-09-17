@@ -359,5 +359,117 @@
   "werd_progress": "Khatmah progress",
   "werd_streak": "Day streak",
   "werd_subtitle": "Track your khatmah: mark the last ayah you read; FALAH computes progress and streak",
-  "werd_title": "Daily werd"
+  "werd_title": "Daily werd",
+  "mushaf_browse": "Browse the mushaf",
+  "mushaf_juzs": "Juz",
+  "mushaf_hizbs": "Hizb",
+  "mushaf_rubs": "Quarters",
+  "mushaf_pages": "Pages",
+  "mushaf_manzils": "Manzils",
+  "mushaf_rukus": "Rukus",
+  "mushaf_sajdahs": "Sajdahs",
+  "mushaf_juzN": "Juz {n}",
+  "@mushaf_juzN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "mushaf_hizbN": "Hizb {n}",
+  "@mushaf_hizbN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "mushaf_rubN": "Quarter {q} of hizb {h}",
+  "@mushaf_rubN": {
+    "placeholders": {
+      "q": {
+        "type": "int"
+      },
+      "h": {
+        "type": "int"
+      }
+    }
+  },
+  "mushaf_pageN": "Page {n}",
+  "@mushaf_pageN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "mushaf_manzilN": "Manzil {n}",
+  "@mushaf_manzilN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "mushaf_rukuN": "Ruku {n}",
+  "@mushaf_rukuN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "mushaf_range": "{startSurah} {startAyah} to {endSurah} {endAyah} · {count} ayahs",
+  "@mushaf_range": {
+    "placeholders": {
+      "startSurah": {
+        "type": "String"
+      },
+      "startAyah": {
+        "type": "int"
+      },
+      "endSurah": {
+        "type": "String"
+      },
+      "endAyah": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mushaf_sajdahAt": "Sajdah — {surah} ayah {ayah}",
+  "@mushaf_sajdahAt": {
+    "placeholders": {
+      "surah": {
+        "type": "String"
+      },
+      "ayah": {
+        "type": "int"
+      }
+    }
+  },
+  "surah_filterAll": "All",
+  "surah_filterMakki": "Makki",
+  "surah_filterMadani": "Madani",
+  "surah_sortMushaf": "Mushaf order",
+  "surah_sortRevelation": "Revelation order",
+  "surah_meta": "{place} · revealed {order} · p. {page} · juz {juz}",
+  "@surah_meta": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      },
+      "order": {
+        "type": "int"
+      },
+      "page": {
+        "type": "int"
+      },
+      "juz": {
+        "type": "int"
+      }
+    }
+  }
 }

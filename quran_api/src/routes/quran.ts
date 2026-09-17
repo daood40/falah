@@ -5,13 +5,21 @@ import { resolveEdition } from '../repositories/editions.ts';
 import {
   findHizb,
   findJuz,
+  findManzil,
   findPage,
+  findRub,
+  findRuku,
   findSurah,
   listJuzs,
   listHizbs,
   listManzils,
+  listPages,
+  listRubs,
+  listRukus,
   listSurahs,
   queryAyahs,
+  surahStructure,
+  type SurahFilter,
 } from '../repositories/quran.ts';
 import { serializeAyah } from '../repositories/serializers.ts';
 
@@ -47,6 +55,26 @@ function requireNumber(raw: string, field: string, min: number, max: number): nu
   return value;
 }
 
+/** `?revelation=makkah|madinah` and `?sort=number|revelation_order` on the surah list. */
+function surahFilter(ctx: Ctx): SurahFilter {
+  const filter: SurahFilter = {};
+  const revelation = ctx.query.get('revelation');
+  if (revelation) {
+    if (revelation !== 'makkah' && revelation !== 'madinah') {
+      throw new ApiError('VALIDATION_ERROR', 'revelation must be makkah or madinah');
+    }
+    filter.revelationPlace = revelation;
+  }
+  const sort = ctx.query.get('sort');
+  if (sort) {
+    if (sort !== 'number' && sort !== 'revelation_order') {
+      throw new ApiError('VALIDATION_ERROR', 'sort must be number or revelation_order');
+    }
+    filter.sort = sort;
+  }
+  return filter;
+}
+
 async function ayahRange(ctx: Ctx, where: string, params: unknown[]) {
   const ed = await edition(ctx);
   const page = paging(ctx);
@@ -75,8 +103,9 @@ export const quranRoutes: Route[] = [
         defaultLimit: Math.max(ctx.env.defaultPageLimit, 114),
         maxLimit: Math.max(ctx.env.maxPageLimit, 114),
       });
-      const { rows, total } = await listSurahs(ctx.client, ed.id, page.limit, page.offset);
-      return { data: rows, meta: { ...pageMeta(page, total), edition: ed.slug } };
+      const filter = surahFilter(ctx);
+      const { rows, total } = await listSurahs(ctx.client, ed.id, page.limit, page.offset, filter);
+      return { data: rows, meta: { ...pageMeta(page, total), edition: ed.slug, ...filter } };
     },
   },
   {
@@ -87,7 +116,8 @@ export const quranRoutes: Route[] = [
       const ed = await edition(ctx);
       const surah = await findSurah(ctx.client, ed.id, ctx.params.id ?? '');
       if (!surah) throw ApiError.notFound('Surah not found');
-      return { data: { ...surah, edition: { id: ed.id, slug: ed.slug, name: ed.name } } };
+      const structure = await surahStructure(ctx.client, ed.id, surah.id);
+      return { data: { ...surah, structure, edition: { id: ed.id, slug: ed.slug, name: ed.name } } };
     },
   },
   {
@@ -209,11 +239,43 @@ export const quranRoutes: Route[] = [
   },
   {
     method: 'GET',
+    path: '/api/v1/rubs',
+    licensed: true,
+    handler: async (ctx) => {
+      const ed = await edition(ctx);
+      const rows = await listRubs(ctx.client, ed.id);
+      return { data: rows, meta: { total: rows.length, edition: ed.slug } };
+    },
+  },
+  {
+    method: 'GET',
+    path: '/api/v1/rubs/:number',
+    licensed: true,
+    handler: async (ctx) => {
+      const ed = await edition(ctx);
+      const number = requireNumber(ctx.params.number ?? '', 'rub', 1, 240);
+      const rub = await findRub(ctx.client, ed.id, number);
+      if (!rub) throw ApiError.notFound('Rub not found');
+      return { data: rub, meta: { edition: ed.slug } };
+    },
+  },
+  {
+    method: 'GET',
     path: '/api/v1/rubs/:number/ayahs',
     licensed: true,
     handler: async (ctx) => {
       const number = requireNumber(ctx.params.number ?? '', 'rub', 1, 240);
       return ayahRange(ctx, 'a.rub_number = $2::int', [number]);
+    },
+  },
+  {
+    method: 'GET',
+    path: '/api/v1/pages',
+    licensed: true,
+    handler: async (ctx) => {
+      const ed = await edition(ctx);
+      const rows = await listPages(ctx.client, ed.id);
+      return { data: rows, meta: { total: rows.length, edition: ed.slug } };
     },
   },
   {
@@ -245,6 +307,18 @@ export const quranRoutes: Route[] = [
       const ed = await edition(ctx);
       const rows = await listManzils(ctx.client, ed.id);
       return { data: rows, meta: { total: rows.length, edition: ed.slug } };
+    },
+  },
+  {
+    method: 'GET',
+    path: '/api/v1/manzils/:number',
+    licensed: true,
+    handler: async (ctx) => {
+      const ed = await edition(ctx);
+      const number = requireNumber(ctx.params.number ?? '', 'manzil', 1, 7);
+      const manzil = await findManzil(ctx.client, ed.id, number);
+      if (!manzil) throw ApiError.notFound('Manzil not found');
+      return { data: manzil, meta: { edition: ed.slug } };
     },
   },
   {
@@ -281,6 +355,39 @@ export const quranRoutes: Route[] = [
         })),
         meta: { total: rows.length, edition: ed.slug },
       };
+    },
+  },
+  {
+    method: 'GET',
+    path: '/api/v1/rukus',
+    licensed: true,
+    handler: async (ctx) => {
+      const ed = await edition(ctx);
+      const surahParam = ctx.query.get('surah');
+      const surah = surahParam ? requireNumber(surahParam, 'surah', 1, 114) : undefined;
+      const rows = await listRukus(ctx.client, ed.id, surah);
+      return { data: rows, meta: { total: rows.length, edition: ed.slug, ...(surah ? { surah } : {}) } };
+    },
+  },
+  {
+    method: 'GET',
+    path: '/api/v1/rukus/:number',
+    licensed: true,
+    handler: async (ctx) => {
+      const ed = await edition(ctx);
+      const number = requireNumber(ctx.params.number ?? '', 'ruku', 1, 556);
+      const ruku = await findRuku(ctx.client, ed.id, number);
+      if (!ruku) throw ApiError.notFound('Ruku not found');
+      return { data: ruku, meta: { edition: ed.slug } };
+    },
+  },
+  {
+    method: 'GET',
+    path: '/api/v1/rukus/:number/ayahs',
+    licensed: true,
+    handler: async (ctx) => {
+      const number = requireNumber(ctx.params.number ?? '', 'ruku', 1, 556);
+      return ayahRange(ctx, 'a.ruku_number = $2::int', [number]);
     },
   },
 ];

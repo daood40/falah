@@ -74,6 +74,7 @@ export async function runImport(
     rubs: dataset.rubs.length,
     pages: dataset.pages.length,
     manzils: dataset.manzils.length,
+    rukus: dataset.rukus.length,
     sajdahs: dataset.ayahs.filter((a) => a.sajdah).length,
     translations: dataset.translations.length,
     ayah_translations: dataset.translations.reduce((sum, t) => sum + t.entries.length, 0),
@@ -302,6 +303,18 @@ export async function runImport(
          start_global_ayah = excluded.start_global_ayah, end_global_ayah = excluded.end_global_ayah`,
       [editionId, manzil.number, manzil.start_surah, manzil.start_ayah, manzil.end_surah,
        manzil.end_ayah, manzil.start_global_ayah, manzil.end_global_ayah, 'quran-meta'],
+    );
+  }
+
+  for (const ruku of dataset.rukus) {
+    await client.query(
+      `insert into quran.rukus (edition_id, ruku_number, surah_number, start_surah, start_ayah,
+         end_surah, end_ayah, start_global_ayah, end_global_ayah, source_id, verified)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,true)
+       on conflict (edition_id, ruku_number) do update set
+         start_global_ayah = excluded.start_global_ayah, end_global_ayah = excluded.end_global_ayah`,
+      [editionId, ruku.number, ruku.surah_number, ruku.start_surah, ruku.start_ayah, ruku.end_surah,
+       ruku.end_ayah, ruku.start_global_ayah, ruku.end_global_ayah, 'quran-meta'],
     );
   }
 

@@ -89,6 +89,45 @@ class QuranApiRepository implements QuranApiRepositoryContract {
   }
 
   @override
+  Future<List<QuranHizb>> listHizbs() => _remote.listHizbs(edition: edition);
+
+  @override
+  Future<List<QuranRub>> listRubs() => _remote.listRubs(edition: edition);
+
+  @override
+  Future<List<QuranPage>> listPages() => _remote.listPages(edition: edition);
+
+  @override
+  Future<List<QuranManzil>> listManzils() =>
+      _remote.listManzils(edition: edition);
+
+  @override
+  Future<List<QuranRuku>> listRukus({int? surah}) =>
+      _remote.listRukus(surah: surah, edition: edition);
+
+  @override
+  Future<List<QuranAyah>> getRukuAyahs(int ruku) async {
+    final first = await _remote.getRukuAyahs(
+      ruku,
+      edition: edition,
+      limit: kMaxApiPageLimit,
+    );
+    return _collect(
+      first,
+      (page) => _remote.getRukuAyahs(
+        ruku,
+        edition: edition,
+        page: page,
+        limit: kMaxApiPageLimit,
+      ),
+    );
+  }
+
+  @override
+  Future<List<QuranSajdah>> listSajdahs() =>
+      _remote.listSajdahs(edition: edition);
+
+  @override
   Future<List<QuranAyah>> getPageAyahs(int page) async {
     final result = await _remote.getPageAyahs(page, edition: edition);
     return result.items;

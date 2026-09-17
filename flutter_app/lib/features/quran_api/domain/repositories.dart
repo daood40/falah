@@ -11,6 +11,13 @@ abstract class QuranApiRepositoryContract {
   Future<List<QuranJuz>> listJuzs();
   Future<List<QuranAyah>> getJuzAyahs(int juz);
   Future<List<QuranAyah>> getPageAyahs(int page);
+  Future<List<QuranHizb>> listHizbs();
+  Future<List<QuranRub>> listRubs();
+  Future<List<QuranPage>> listPages();
+  Future<List<QuranManzil>> listManzils();
+  Future<List<QuranRuku>> listRukus({int? surah});
+  Future<List<QuranAyah>> getRukuAyahs(int ruku);
+  Future<List<QuranSajdah>> listSajdahs();
   Future<List<QuranTranslation>> listTranslations({String? language});
 }
 

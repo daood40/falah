@@ -47,7 +47,7 @@ describe('declared data schemes', () => {
     expect(body.data.integrity.ayahs).toBe(6236);
     expect(body.data.integrity.unverified).toBe(0);
     expect(body.data.data_status).toBe('verified'); // never `published` without a human
-    expect(body.data.schema.migrations_applied).toBe('007');
+    expect(body.data.schema.migrations_applied).toBe('008');
   });
 
   it('refuses to confirm a scheme without a named person', async () => {

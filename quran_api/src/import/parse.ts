@@ -59,6 +59,8 @@ export type ParsedDataset = {
   rubs: (Division & { rub_number: number; hizb_number: number; quarter: number; juz_number: number })[];
   pages: Division[];
   manzils: Division[];
+  /** The 556 rukuʿ boundaries; each also carries the surah it belongs to. */
+  rukus: (Division & { surah_number: number })[];
   translations: ParsedTranslation[];
 };
 
@@ -237,6 +239,12 @@ export function parseDataset(languages: string[]): ParsedDataset {
       (hafs.ManzilList as unknown as number[]).length - 2,
       index,
     ),
+    // A ruku never crosses a surah, so its surah is the surah of its first ayah.
+    rukus: divisions(
+      hafs.RukuList as unknown as number[],
+      (hafs.RukuList as unknown as number[]).length - 2,
+      index,
+    ).map((division) => ({ ...division, surah_number: division.start_surah })),
   };
 }
 

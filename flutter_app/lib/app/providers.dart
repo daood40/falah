@@ -12,6 +12,10 @@ final surahListProvider = FutureProvider<List<Surah>>(
   (ref) => ref.watch(quranRepositoryProvider).listSurahs(),
 );
 
+final quranStructureProvider = FutureProvider<QuranStructure>(
+  (ref) => ref.watch(quranRepositoryProvider).loadStructure(),
+);
+
 final surahMetaProvider = FutureProvider.family<Surah?, int>(
   (ref, n) => ref.watch(quranRepositoryProvider).surahByNumber(n),
 );

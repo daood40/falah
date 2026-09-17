@@ -14,7 +14,7 @@ const openapiDocument = (): string => {
 export const API_RELEASE = '1.2.0';
 
 /** Migration series this build expects; checked against the database at runtime. */
-export const SCHEMA_VERSION = '007';
+export const SCHEMA_VERSION = '008';
 
 /** Set by the build (e.g. a commit SHA); unknown when not provided. */
 export const BUILD_INFO = {
@@ -178,6 +178,7 @@ export const metaRoutes: Route[] = [
           (select count(*) from quran.hizbs)::text as rubs,
           (select count(*) from quran.pages)::text as pages,
           (select count(*) from quran.manzils)::text as manzils,
+          (select count(*) from quran.rukus)::text as rukus,
           (select count(*) from quran.ayahs where sajdah)::text as sajdahs,
           (select count(*) from quran.translations)::text as translations,
           (select count(*) from quran.ayah_translations)::text as ayah_translations,

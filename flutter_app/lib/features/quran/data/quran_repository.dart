@@ -29,6 +29,20 @@ class QuranRepository {
     return list;
   }
 
+  QuranStructure? _structure;
+
+  /// Every classification of the mushaf (juz, hizb, rub, page, manzil, ruku,
+  /// sajdah) plus where each surah sits — boundaries only, bundled offline.
+  Future<QuranStructure> loadStructure() async {
+    if (_structure != null) return _structure!;
+    final raw = await _bundle.loadString('assets/quran/structure.json');
+    final structure = QuranStructure.fromJson(
+      jsonDecode(raw) as Map<String, dynamic>,
+    );
+    _structure = structure;
+    return structure;
+  }
+
   Future<Surah?> surahByNumber(int n) async =>
       (await listSurahs()).where((s) => s.number == n).firstOrNull;
 

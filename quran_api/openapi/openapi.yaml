@@ -142,6 +142,28 @@ components:
         source_id: { type: string }
         verified: { type: boolean }
         dataset_version: { type: [string, 'null'] }
+    SurahStructure:
+      type: object
+      description: Where the surah sits in the mushaf, counted from its ayahs.
+      properties:
+        start_page: { type: integer }
+        end_page: { type: integer }
+        start_juz: { type: integer }
+        end_juz: { type: integer }
+        start_hizb: { type: integer }
+        end_hizb: { type: integer }
+        manzil: { type: integer }
+        ruku_count: { type: integer }
+        sajdah_count: { type: integer }
+        first_global_ayah: { type: integer }
+        last_global_ayah: { type: integer }
+    SurahDetail:
+      allOf:
+        - $ref: '#/components/schemas/Surah'
+        - type: object
+          properties:
+            structure: { $ref: '#/components/schemas/SurahStructure' }
+            edition: { type: object, additionalProperties: true }
     Ayah:
       type: object
       properties:
@@ -207,6 +229,10 @@ components:
         end_global_ayah: { type: integer }
         source_id: { type: string }
         verified: { type: boolean }
+        juz_number: { type: integer, description: 'rubs and hizbs only' }
+        hizb_number: { type: integer, description: 'rubs only' }
+        quarter: { type: integer, minimum: 1, maximum: 4, description: 'rubs only' }
+        surah_number: { type: integer, description: 'rukus only: the surah the ruku belongs to' }
     Qiraah:
       type: object
       properties:
@@ -726,11 +752,21 @@ paths:
   /api/v1/surahs:
     get:
       tags: [quran]
-      summary: List surahs of an edition
+      summary: List surahs of an edition, optionally by place of revelation or in revelation order
       parameters:
         - $ref: '#/components/parameters/edition'
         - $ref: '#/components/parameters/page'
         - $ref: '#/components/parameters/limit'
+        - name: revelation
+          in: query
+          required: false
+          schema: { type: string, enum: [makkah, madinah] }
+          description: Only surahs revealed in Makkah or in Madinah, as recorded by the source.
+        - name: sort
+          in: query
+          required: false
+          schema: { type: string, enum: [number, revelation_order], default: number }
+          description: Mushaf order (default) or the order of revelation recorded by the source.
       responses:
         '200':
           description: Surahs
@@ -761,7 +797,7 @@ paths:
                 allOf:
                   - $ref: '#/components/schemas/Success'
                   - type: object
-                    properties: { data: { $ref: '#/components/schemas/Surah' } }
+                    properties: { data: { $ref: '#/components/schemas/SurahDetail' } }
         '404': { $ref: '#/components/responses/NotFound' }
         '451': { $ref: '#/components/responses/LicenseRestricted' }
   /api/v1/surahs/{id}/ayahs:
@@ -981,6 +1017,43 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Success' }
         '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/rubs:
+    get:
+      tags: [structure]
+      summary: The 240 rub al-hizb quarters, each with its hizb and juz
+      parameters:
+        - $ref: '#/components/parameters/edition'
+      responses:
+        '200':
+          description: List
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data: { type: array, items: { $ref: '#/components/schemas/Division' } }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/rubs/{number}:
+    get:
+      tags: [structure]
+      summary: One rub al-hizb (1..240)
+      parameters:
+        - { name: number, in: path, required: true, schema: { type: integer, minimum: 1, maximum: 240 } }
+        - $ref: '#/components/parameters/edition'
+      responses:
+        '200':
+          description: Rub
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties: { data: { $ref: '#/components/schemas/Division' } }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
   /api/v1/rubs/{number}/ayahs:
     get:
       tags: [structure]
@@ -996,6 +1069,24 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Success' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/pages:
+    get:
+      tags: [structure]
+      summary: All 604 mushaf pages with their boundaries (numbering is edition specific)
+      parameters:
+        - $ref: '#/components/parameters/edition'
+      responses:
+        '200':
+          description: List
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data: { type: array, items: { $ref: '#/components/schemas/Division' } }
         '422': { $ref: '#/components/responses/ValidationError' }
   /api/v1/pages/{page}:
     get:
@@ -1049,6 +1140,25 @@ paths:
                   - type: object
                     properties:
                       data: { type: array, items: { $ref: '#/components/schemas/Division' } }
+  /api/v1/manzils/{number}:
+    get:
+      tags: [structure]
+      summary: One manzil
+      parameters:
+        - { name: number, in: path, required: true, schema: { type: integer, minimum: 1, maximum: 7 } }
+        - $ref: '#/components/parameters/edition'
+      responses:
+        '200':
+          description: Manzil
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties: { data: { $ref: '#/components/schemas/Division' } }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
   /api/v1/manzils/{number}/ayahs:
     get:
       tags: [structure]
@@ -1077,6 +1187,64 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Success' }
+  /api/v1/rukus:
+    get:
+      tags: [structure]
+      summary: The 556 rukuʿ boundaries of the Hafs mushaf, optionally for one surah
+      parameters:
+        - $ref: '#/components/parameters/edition'
+        - name: surah
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 114 }
+          description: Only the rukus of this surah.
+      responses:
+        '200':
+          description: List
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data: { type: array, items: { $ref: '#/components/schemas/Division' } }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/rukus/{number}:
+    get:
+      tags: [structure]
+      summary: One ruku (1..556)
+      parameters:
+        - { name: number, in: path, required: true, schema: { type: integer, minimum: 1, maximum: 556 } }
+        - $ref: '#/components/parameters/edition'
+      responses:
+        '200':
+          description: Ruku
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties: { data: { $ref: '#/components/schemas/Division' } }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /api/v1/rukus/{number}/ayahs:
+    get:
+      tags: [structure]
+      summary: Ayahs of one ruku
+      parameters:
+        - { name: number, in: path, required: true, schema: { type: integer, minimum: 1, maximum: 556 } }
+        - $ref: '#/components/parameters/edition'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Ayahs
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Success' }
+        '422': { $ref: '#/components/responses/ValidationError' }
   /api/v1/search:
     get:
       tags: [search]

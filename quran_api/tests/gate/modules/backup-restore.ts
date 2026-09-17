@@ -71,6 +71,7 @@ export async function run(ctx: GateContext): Promise<void> {
         { table: 'hizbs', expected: 240 },
         { table: 'pages', expected: 604 },
         { table: 'manzils', expected: 7 },
+        { table: 'rukus', expected: 556 },
       ];
       for (const item of counts) {
         const { rows } = await restored.query<{ count: number }>(`select count(*)::int as count from quran.${item.table}`);

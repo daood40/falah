@@ -52,6 +52,7 @@ export async function run(ctx: GateContext): Promise<void> {
     { prefix: 'II-RUB', table: 'quran.hizbs', column: 'rub_number', source: dataset.rubs },
     { prefix: 'II-PAGE', table: 'quran.pages', column: 'page_number', source: dataset.pages },
     { prefix: 'II-MANZIL', table: 'quran.manzils', column: 'manzil_number', source: dataset.manzils },
+    { prefix: 'II-RUKU', table: 'quran.rukus', column: 'ruku_number', source: dataset.rukus },
   ];
 
   for (const division of divisions) {

@@ -368,4 +368,109 @@ void _configGuards() {
       expect(isPrivate, isTrue, reason: 'development must not point at a public host');
     });
   });
+
+  group('mushaf classifications', () {
+    Map<String, Object> division(int n, {Map<String, Object?> extra = const {}}) => {
+      'id': '00000000-0000-0000-0000-0000000000${n.toString().padLeft(2, '0')}',
+      'number': n,
+      'start_surah': 1,
+      'start_ayah': 1,
+      'end_surah': 2,
+      'end_ayah': 141,
+      'start_global_ayah': 1,
+      'end_global_ayah': 148,
+      'source_id': 'quran-meta',
+      'verified': true,
+      ...extra,
+    };
+    Map<String, Object> ok(Object data, [Map<String, Object>? meta]) => {
+      'success': true,
+      'data': data,
+      'meta': meta ?? {'total': 1},
+    };
+
+    test('reads rubs, pages, rukus and sajdahs through the repository', () async {
+      final transport = FakeTransport({
+        '/api/v1/rubs': ok([
+          division(5, extra: {'hizb_number': 2, 'quarter': 1, 'juz_number': 1}),
+        ]),
+        '/api/v1/pages': ok([division(604)]),
+        '/api/v1/rukus/2/ayahs': ok(
+          [ayahJson(surah: 2, ayah: 1), ayahJson(surah: 2, ayah: 2)],
+          {'page': 1, 'limit': 100, 'total': 2, 'total_pages': 1},
+        ),
+        '/api/v1/rukus?surah=2': ok([division(2, extra: {'surah_number': 2})]),
+        '/api/v1/rukus': ok([division(1, extra: {'surah_number': 1})]),
+        '/api/v1/sajdahs': ok([
+          {
+            'ayah_id': '00000000-0000-0000-0000-000000000206',
+            'surah': 7,
+            'ayah': 206,
+            'global_ayah_number': 1160,
+            'juz': 9,
+            'page': 176,
+            'sajdah_type': null,
+            'source_id': 'quran-meta',
+            'verified': true,
+          },
+        ]),
+      });
+      final client = QuranApiClient(
+        baseUrl: 'https://api.test',
+        transport: transport,
+      );
+      final repo = QuranApiRepository(remote: QuranApiDataSource(client));
+
+      final rubs = await repo.listRubs();
+      expect(rubs.single.hizbNumber, 2);
+      expect(rubs.single.quarter, 1);
+
+      expect((await repo.listPages()).single.number, 604);
+
+      final rukus = await repo.listRukus(surah: 2);
+      expect(rukus.single.surahNumber, 2);
+      expect((await repo.listRukus()).single.number, 1);
+
+      final ayahs = await repo.getRukuAyahs(2);
+      expect(ayahs.map((a) => a.ayahKey), ['2:1', '2:2']);
+      expect(
+        transport.requests
+            .firstWhere((u) => u.path == '/api/v1/rukus/2/ayahs')
+            .queryParameters['limit'],
+        '100',
+      );
+
+      final sajdahs = await repo.listSajdahs();
+      expect(sajdahs.single.key, '7:206');
+      expect(sajdahs.single.sajdahType, isNull);
+    });
+
+    test('asks the API for surahs by place and order of revelation', () async {
+      final transport = FakeTransport({
+        '/api/v1/surahs': ok([
+          {
+            'id': '00000000-0000-0000-0000-000000000096',
+            'surah_number': 96,
+            'name_ar': 'العلق',
+            'ayah_count': 19,
+            'revelation_place': 'makkah',
+            'revelation_order': 1,
+            'verified': true,
+          },
+        ]),
+      });
+      final client = QuranApiClient(
+        baseUrl: 'https://api.test',
+        transport: transport,
+      );
+      final surahs = await QuranApiDataSource(
+        client,
+      ).listSurahsBy(revelation: 'makkah', sort: 'revelation_order');
+      expect(surahs.single.number, 96);
+      expect(surahs.single.revelationOrder, 1);
+      final query = transport.requests.single.queryParameters;
+      expect(query['revelation'], 'makkah');
+      expect(query['sort'], 'revelation_order');
+    });
+  });
 }

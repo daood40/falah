@@ -117,6 +117,7 @@ export function validateDataset(dataset: ParsedDataset): ValidationIssue[] {
   coverage('rub', dataset.rubs);
   coverage('page', dataset.pages);
   coverage('manzil', dataset.manzils);
+  coverage('ruku', dataset.rukus);
 
   // --- Ayah ↔ division consistency ---
   for (const juz of dataset.juzs) {
@@ -134,6 +135,18 @@ export function validateDataset(dataset: ParsedDataset): ValidationIssue[] {
     const first = dataset.ayahs[page.start_global_ayah - 1];
     if (first && first.page_number !== page.number) {
       error('page.mapping', `page ${page.number} boundary does not match ayah page numbers`);
+      break;
+    }
+  }
+  for (const ruku of dataset.rukus) {
+    const first = dataset.ayahs[ruku.start_global_ayah - 1];
+    const last = dataset.ayahs[ruku.end_global_ayah - 1];
+    if (first && first.ruku_number !== ruku.number) {
+      error('ruku.mapping', `ruku ${ruku.number} boundary does not match ayah ruku numbers`);
+      break;
+    }
+    if (first && last && first.surah_number !== last.surah_number) {
+      error('ruku.surah', `ruku ${ruku.number} crosses a surah boundary`);
       break;
     }
   }

@@ -98,6 +98,11 @@ export async function run(ctx: GateContext): Promise<void> {
     { path: (n) => `${V1}/pages/${n}`, count: 604, prefix: 'API-PAGE', expect: 200 },
     { path: (n) => `${V1}/pages/${n}/ayahs?limit=100`, count: 604, prefix: 'API-PAGE-AYAHS', expect: 200 },
     { path: (n) => `${V1}/manzils/${n}/ayahs?limit=100`, count: 7, prefix: 'API-MANZIL-AYAHS', expect: 200 },
+    { path: (n) => `${V1}/manzils/${n}`, count: 7, prefix: 'API-MANZIL', expect: 200 },
+    { path: (n) => `${V1}/rubs/${n}`, count: 240, prefix: 'API-RUB', expect: 200 },
+    { path: (n) => `${V1}/rukus/${n}`, count: 556, prefix: 'API-RUKU', expect: 200 },
+    { path: (n) => `${V1}/rukus/${n}/ayahs?limit=100`, count: 556, prefix: 'API-RUKU-AYAHS', expect: 200 },
+    { path: (n) => `${V1}/rukus?surah=${n}`, count: 114, prefix: 'API-RUKU-BY-SURAH', expect: 200 },
   ];
   for (const division of divisions) {
     for (let number = 1; number <= division.count; number += 1) {
@@ -220,7 +225,7 @@ export async function run(ctx: GateContext): Promise<void> {
   }
 
   // 7. Metadata endpoints.
-  const metaEndpoints = ['/health', '/version', '/stats', '/sources', '/editions', '/datasets', '/schemes', '/qiraat', '/riwayat', '/translations', '/sajdahs', '/juzs', '/hizbs', '/manzils', '/surahs', '/reciters'];
+  const metaEndpoints = ['/health', '/version', '/stats', '/sources', '/editions', '/datasets', '/schemes', '/qiraat', '/riwayat', '/translations', '/sajdahs', '/juzs', '/hizbs', '/manzils', '/rubs', '/pages', '/rukus', '/surahs', '/surahs?revelation=makkah', '/surahs?revelation=madinah', '/surahs?sort=revelation_order', '/reciters'];
   for (const endpoint of metaEndpoints) {
     const response = await request(`${V1}${endpoint}`);
     gate.check(

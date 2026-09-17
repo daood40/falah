@@ -20,6 +20,25 @@ class _SurahListScreenState extends ConsumerState<SurahListScreen> {
   List<QuranSearchResult>? _results;
   bool _searching = false;
 
+  /// Place-of-revelation filter (null = every surah) and the ordering.
+  Revelation? _place;
+  bool _byRevelation = false;
+
+  /// Applies the filter and the ordering; the revelation order comes from the
+  /// bundled structure and is only used once it has loaded.
+  List<Surah> _arrange(List<Surah> surahs, QuranStructure? structure) {
+    final filtered = _place == null
+        ? surahs
+        : surahs.where((s) => s.revelation == _place).toList(growable: false);
+    if (!_byRevelation || structure == null) return filtered;
+    final order = {
+      for (final p in structure.surahs) p.number: p.revelationOrder,
+    };
+    final sorted = [...filtered]
+      ..sort((a, b) => (order[a.number] ?? 0).compareTo(order[b.number] ?? 0));
+    return sorted;
+  }
+
   @override
   void dispose() {
     _controller.dispose();
@@ -48,9 +67,19 @@ class _SurahListScreenState extends ConsumerState<SurahListScreen> {
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
     final surahsAsync = ref.watch(surahListProvider);
+    final structure = ref.watch(quranStructureProvider).value;
 
     return Scaffold(
-      appBar: AppBar(title: Text(t.create_quran)),
+      appBar: AppBar(
+        title: Text(t.create_quran),
+        actions: [
+          IconButton(
+            tooltip: t.mushaf_browse,
+            icon: const Icon(Icons.view_list_outlined),
+            onPressed: () => context.goNamed('mushafBrowse'),
+          ),
+        ],
+      ),
       body: Column(
         children: [
           Padding(
@@ -69,6 +98,45 @@ class _SurahListScreenState extends ConsumerState<SurahListScreen> {
               ),
             ),
           ),
+          if (_results == null && !_searching)
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 4),
+              child: Row(
+                children: [
+                  ChoiceChip(
+                    label: Text(t.surah_filterAll),
+                    selected: _place == null,
+                    onSelected: (_) => setState(() => _place = null),
+                  ),
+                  const SizedBox(width: 6),
+                  ChoiceChip(
+                    label: Text(t.surah_filterMakki),
+                    selected: _place == Revelation.meccan,
+                    onSelected: (_) =>
+                        setState(() => _place = Revelation.meccan),
+                  ),
+                  const SizedBox(width: 6),
+                  ChoiceChip(
+                    label: Text(t.surah_filterMadani),
+                    selected: _place == Revelation.medinan,
+                    onSelected: (_) =>
+                        setState(() => _place = Revelation.medinan),
+                  ),
+                  const SizedBox(width: 14),
+                  FilterChip(
+                    avatar: const Icon(Icons.history_outlined, size: 16),
+                    label: Text(
+                      _byRevelation
+                          ? t.surah_sortRevelation
+                          : t.surah_sortMushaf,
+                    ),
+                    selected: _byRevelation,
+                    onSelected: (v) => setState(() => _byRevelation = v),
+                  ),
+                ],
+              ),
+            ),
           Expanded(
             child: _results != null || _searching
                 ? _SearchResults(
@@ -81,10 +149,19 @@ class _SurahListScreenState extends ConsumerState<SurahListScreen> {
                     error: (e, _) => _ErrorRetry(
                       onRetry: () => ref.refresh(surahListProvider),
                     ),
-                    data: (surahs) => ListView.builder(
+                    data: (all) {
+                      final surahs = _arrange(all, structure);
+                      if (surahs.isEmpty) {
+                        return Center(child: Text(t.common_noResults));
+                      }
+                      return ListView.builder(
                       itemCount: surahs.length,
                       itemBuilder: (context, i) {
                         final s = surahs[i];
+                        final p = structure?.placement(s.number);
+                        final place = s.revelation == Revelation.meccan
+                            ? t.surah_filterMakki
+                            : t.surah_filterMadani;
                         return ListTile(
                           key: ValueKey(s.number),
                           leading: CircleAvatar(
@@ -96,7 +173,10 @@ class _SurahListScreenState extends ConsumerState<SurahListScreen> {
                           ),
                           title: Text(s.name),
                           subtitle: Text(
-                            '${t.create_ayahCount}: ${s.ayahCount}',
+                            p == null
+                                ? '${t.create_ayahCount}: ${s.ayahCount}'
+                                : '${t.create_ayahCount}: ${s.ayahCount} · '
+                                      '${t.surah_meta(place, p.revelationOrder, p.startPage, p.startJuz)}',
                           ),
                           onTap: () => context.goNamed(
                             'surah',
@@ -104,7 +184,8 @@ class _SurahListScreenState extends ConsumerState<SurahListScreen> {
                           ),
                         );
                       },
-                    ),
+                    );
+                    },
                   ),
           ),
         ],

@@ -195,6 +195,77 @@ class QuranApiDataSource {
     return envelope.data;
   }
 
+  Future<List<QuranRub>> listRubs({String? edition}) async {
+    final envelope = await _client.get<List<QuranRub>>(
+      '/rubs',
+      query: {'edition': edition},
+      parse: (data) => parseList(data, QuranDivision.fromJson),
+    );
+    return envelope.data;
+  }
+
+  Future<List<QuranPage>> listPages({String? edition}) async {
+    final envelope = await _client.get<List<QuranPage>>(
+      '/pages',
+      query: {'edition': edition},
+      parse: (data) => parseList(data, QuranDivision.fromJson),
+    );
+    return envelope.data;
+  }
+
+  /// All 556 rukus, or only those of one surah.
+  Future<List<QuranRuku>> listRukus({int? surah, String? edition}) async {
+    final envelope = await _client.get<List<QuranRuku>>(
+      '/rukus',
+      query: {'surah': surah?.toString(), 'edition': edition},
+      parse: (data) => parseList(data, QuranDivision.fromJson),
+    );
+    return envelope.data;
+  }
+
+  Future<Paginated<QuranAyah>> getRukuAyahs(
+    int ruku, {
+    String? edition,
+    int page = 1,
+    int limit = 100,
+  }) async {
+    final envelope = await _client.get<List<QuranAyah>>(
+      '/rukus/$ruku/ayahs',
+      query: {'edition': edition, 'page': '$page', 'limit': '$limit'},
+      parse: (data) => parseList(data, QuranAyah.fromJson),
+    );
+    return Paginated.fromEnvelope(envelope);
+  }
+
+  Future<List<QuranSajdah>> listSajdahs({String? edition}) async {
+    final envelope = await _client.get<List<QuranSajdah>>(
+      '/sajdahs',
+      query: {'edition': edition},
+      parse: (data) => parseList(data, QuranSajdah.fromJson),
+    );
+    return envelope.data;
+  }
+
+  /// Surahs revealed in one place (`makkah` / `madinah`), optionally in the
+  /// order of revelation the source records.
+  Future<List<QuranSurah>> listSurahsBy({
+    String? revelation,
+    String? sort,
+    String? edition,
+  }) async {
+    final envelope = await _client.get<List<QuranSurah>>(
+      '/surahs',
+      query: {
+        'edition': edition,
+        'limit': '114',
+        'revelation': revelation,
+        'sort': sort,
+      },
+      parse: (data) => parseList(data, QuranSurah.fromJson),
+    );
+    return envelope.data;
+  }
+
   Future<List<QuranTranslation>> listTranslations({String? language}) async {
     final envelope = await _client.get<List<QuranTranslation>>(
       '/translations',

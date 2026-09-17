@@ -24,6 +24,7 @@ export const MIGRATIONS = [
   '005_data_schemes.sql',
   '006_data_catalog_v2.sql',
   '007_ops_policies.sql',
+  '008_rukus.sql',
 ];
 
 export const GATE_JWT_SECRET = 'gate-secret-for-falah-quran-api-quality-gate';

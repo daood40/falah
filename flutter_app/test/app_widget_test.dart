@@ -61,6 +61,7 @@ void main() {
 
   setUpAll(() async {
     await _repo.listSurahs();
+    await _repo.loadStructure();
     for (var n = 1; n <= 114; n++) {
       await _repo.getSurahAyahs(n);
     }
@@ -95,6 +96,39 @@ void main() {
     expect(find.text('الفاتحة'), findsOneWidget);
 
     await tester.tap(find.text('الفاتحة'));
+    await _settle(tester);
+    expect(find.textContaining('﴿1﴾'), findsOneWidget);
+    expect(find.textContaining('بِسۡمِ'), findsWidgets);
+  });
+
+  testWidgets('mushaf browser lists the divisions and opens the reader', (
+    tester,
+  ) async {
+    await _pumpApp(tester);
+
+    await tester.tap(_navIcon(Icons.menu_book_outlined));
+    await _settle(tester);
+
+    // Filter chips narrow the list by place of revelation.
+    await tester.tap(find.text('مدنية'));
+    await _settle(tester);
+    expect(find.text('الفاتحة'), findsNothing);
+    expect(find.text('البقرة'), findsOneWidget);
+    await tester.tap(find.text('الكل'));
+    await _settle(tester);
+
+    await tester.tap(find.byIcon(Icons.view_list_outlined));
+    await _settle(tester);
+    expect(find.text('تصفح المصحف'), findsOneWidget);
+    expect(find.text('الجزء 1'), findsOneWidget);
+
+    await tester.tap(find.text('السجدات'));
+    await _settle(tester);
+    expect(find.textContaining('الأعراف'), findsWidgets);
+
+    await tester.tap(find.text('الأجزاء'));
+    await _settle(tester);
+    await tester.tap(find.text('الجزء 1'));
     await _settle(tester);
     expect(find.textContaining('﴿1﴾'), findsOneWidget);
     expect(find.textContaining('بِسۡمِ'), findsWidgets);

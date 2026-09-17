@@ -292,7 +292,7 @@ export async function run(ctx: GateContext): Promise<void> {
 
   const version = await apiCall('/api/v1/version');
   gate.check('DK-VERSION', CATEGORY, 'the containerised API reports its build and schema version', { path: '/api/v1/version' }, version.status === 200 && typeof version.body?.data?.api_release === 'string' && version.body?.data?.build?.commit === buildCommit, `200, api_release and commit ${buildCommit}`, `${version.status} ${JSON.stringify({ api_release: version.body?.data?.api_release ?? null, ...(version.body?.data?.build ?? {}) }).slice(0, 160)}`, 'HIGH', 2);
-  gate.check('DK-VERSION-SCHEMA', CATEGORY, 'the containerised API reports the schema version it was built against', { path: '/api/v1/version' }, version.body?.data?.schema?.migrations_applied === '007', '007', version.body?.data?.schema?.migrations_applied ?? null, 'MEDIUM', 1);
+  gate.check('DK-VERSION-SCHEMA', CATEGORY, 'the containerised API reports the schema version it was built against', { path: '/api/v1/version' }, version.body?.data?.schema?.migrations_applied === '008', '008', version.body?.data?.schema?.migrations_applied ?? null, 'MEDIUM', 1);
 
   const stats = await apiCall('/api/v1/stats', internalToken);
   gate.check('DK-STATS', CATEGORY, 'the containerised API reports the imported dataset size', { path: '/api/v1/stats' }, stats.status === 200, 200, stats.status, 'HIGH', 1);

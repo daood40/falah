@@ -283,6 +283,10 @@ class QuranDivision {
     required this.endGlobalAyah,
     this.sourceId,
     this.verified = false,
+    this.juzNumber,
+    this.hizbNumber,
+    this.quarter,
+    this.surahNumber,
   });
 
   final String id;
@@ -296,6 +300,12 @@ class QuranDivision {
   final String? sourceId;
   final bool verified;
 
+  /// Rubs and hizbs carry their juz; rubs their hizb and quarter; rukus their surah.
+  final int? juzNumber;
+  final int? hizbNumber;
+  final int? quarter;
+  final int? surahNumber;
+
   factory QuranDivision.fromJson(Map<String, dynamic> json) => QuranDivision(
     id: json['id'] as String,
     number: (json['number'] as num).toInt(),
@@ -307,6 +317,10 @@ class QuranDivision {
     endGlobalAyah: (json['end_global_ayah'] as num).toInt(),
     sourceId: _str(json['source_id']),
     verified: json['verified'] as bool? ?? false,
+    juzNumber: _int(json['juz_number']),
+    hizbNumber: _int(json['hizb_number']),
+    quarter: _int(json['quarter']),
+    surahNumber: _int(json['surah_number']),
   );
 }
 
@@ -314,6 +328,49 @@ typedef QuranJuz = QuranDivision;
 typedef QuranHizb = QuranDivision;
 typedef QuranPage = QuranDivision;
 typedef QuranManzil = QuranDivision;
+typedef QuranRub = QuranDivision;
+typedef QuranRuku = QuranDivision;
+
+/// A sajdah position as `/api/v1/sajdahs` reports it.
+class QuranSajdah {
+  const QuranSajdah({
+    required this.ayahId,
+    required this.surah,
+    required this.ayah,
+    required this.globalAyahNumber,
+    required this.juz,
+    required this.page,
+    this.sajdahType,
+    this.sourceId,
+    this.verified = false,
+  });
+
+  final String ayahId;
+  final int surah;
+  final int ayah;
+  final int globalAyahNumber;
+  final int juz;
+  final int page;
+
+  /// Null unless the source states the ruling — never inferred.
+  final String? sajdahType;
+  final String? sourceId;
+  final bool verified;
+
+  factory QuranSajdah.fromJson(Map<String, dynamic> json) => QuranSajdah(
+    ayahId: json['ayah_id'] as String,
+    surah: (json['surah'] as num).toInt(),
+    ayah: (json['ayah'] as num).toInt(),
+    globalAyahNumber: (json['global_ayah_number'] as num).toInt(),
+    juz: (json['juz'] as num).toInt(),
+    page: (json['page'] as num).toInt(),
+    sajdahType: _str(json['sajdah_type']),
+    sourceId: _str(json['source_id']),
+    verified: json['verified'] as bool? ?? false,
+  );
+
+  String get key => '$surah:$ayah';
+}
 
 class QuranTranslation {
   const QuranTranslation({

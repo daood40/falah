@@ -9,7 +9,7 @@
  * gate-flutter job in .github/workflows/quality-gate.yml).
  */
 import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import type { GateContext } from '../context.ts';
 
@@ -272,6 +272,46 @@ export async function run(ctx: GateContext): Promise<void> {
 
   const genL10n = flutter(root, ['gen-l10n'], 600_000);
   gate.check('FL-GEN-L10N', CATEGORY, 'the localisation bundle generates from the .arb files', { command: 'flutter gen-l10n' }, genL10n.ok, 'exit 0', genL10n.ok ? 'exit 0' : `exit ${genL10n.code}: ${genL10n.stderr.slice(-300)}`, 'HIGH', 1);
+
+  // The mushaf structure the app browses offline is generated from the source
+  // dataset; the committed asset must be byte-identical to a fresh generation.
+  const structurePath = path.join(root, 'assets', 'quran', 'structure.json');
+  const committed = existsSync(structurePath) ? readFileSync(structurePath) : null;
+  const apiRoot = path.join(import.meta.dirname, '..', '..', '..');
+  const generated = spawnSync('node', [path.join(apiRoot, 'scripts', 'quran-structure.ts')], {
+    cwd: apiRoot,
+    encoding: 'utf8',
+    timeout: 300_000,
+  });
+  const regenerate = { ok: generated.status === 0, code: generated.status };
+  const fresh = existsSync(structurePath) ? readFileSync(structurePath) : null;
+  const identical = committed !== null && fresh !== null && committed.equals(fresh);
+  gate.check(
+    'FL-STRUCTURE-FRESH',
+    CATEGORY,
+    'assets/quran/structure.json is exactly what the source dataset generates',
+    { file: 'assets/quran/structure.json', command: 'node scripts/quran-structure.ts' },
+    regenerate.ok && identical,
+    'byte-identical to a fresh generation',
+    !regenerate.ok ? `generator exit ${regenerate.code}` : identical ? 'identical' : committed === null ? 'asset missing' : 'DIFFERENT — regenerate and commit',
+    'HIGH',
+    2,
+  );
+  if (committed !== null && !identical) writeFileSync(structurePath, committed);
+  const structure = fresh ? JSON.parse(fresh.toString('utf8')) : null;
+  for (const [key, expected] of Object.entries({ surahs: 114, ayahs: 6236, juzs: 30, hizbs: 60, rubs: 240, pages: 604, manzils: 7, rukus: 556, sajdahs: 15 })) {
+    gate.check(
+      `FL-STRUCTURE-COUNT-${key.toUpperCase()}`,
+      CATEGORY,
+      `the bundled structure holds every ${key} of the mushaf`,
+      { file: 'assets/quran/structure.json', key },
+      structure?.totals?.[key] === expected,
+      expected,
+      structure?.totals?.[key] ?? 'missing',
+      'HIGH',
+      1,
+    );
+  }
 
   const analyze = flutter(root, ['analyze'], 900_000);
   const issues = (analyze.stdout.match(/^\s*(info|warning|error)\s+•/gm) ?? []).length;

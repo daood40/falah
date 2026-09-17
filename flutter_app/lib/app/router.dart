@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../features/azkar/azkar_screen.dart';
 import '../features/home/home_screen.dart';
+import '../features/quran/presentation/mushaf_browser_screen.dart';
 import '../features/quran/presentation/surah_list_screen.dart';
 import '../features/quran/presentation/surah_reader_screen.dart';
 import '../features/settings/settings_screen.dart';
@@ -35,6 +36,11 @@ final routerProvider = Provider<GoRouter>((ref) {
                 name: 'quran',
                 builder: (c, s) => const SurahListScreen(),
                 routes: [
+                  GoRoute(
+                    path: 'browse',
+                    name: 'mushafBrowse',
+                    builder: (c, s) => const MushafBrowserScreen(),
+                  ),
                   GoRoute(
                     path: ':n',
                     name: 'surah',

@@ -61,9 +61,81 @@ describe('system endpoints', () => {
       rubs: 240,
       pages: 604,
       manzils: 7,
+      rukus: 556,
       sajdahs: 15,
       ayah_translations: 6236,
     });
+  });
+
+  it('lists every classification of the mushaf with its boundaries', async () => {
+    const rubs = await api.request('/api/v1/rubs');
+    expect(rubs.body.data).toHaveLength(240);
+    expect(rubs.body.data[0]).toMatchObject({ number: 1, hizb_number: 1, quarter: 1, juz_number: 1 });
+    expect(rubs.body.data[239]).toMatchObject({ number: 240, hizb_number: 60, quarter: 4, juz_number: 30 });
+
+    const rub = await api.request('/api/v1/rubs/5');
+    expect(rub.body.data).toMatchObject({ number: 5, hizb_number: 2, quarter: 1 });
+
+    const pages = await api.request('/api/v1/pages');
+    expect(pages.body.data).toHaveLength(604);
+    expect(pages.body.data[603]).toMatchObject({ number: 604, end_surah: 114, end_ayah: 6 });
+
+    const manzil = await api.request('/api/v1/manzils/7');
+    expect(manzil.body.data).toMatchObject({ number: 7, end_surah: 114, end_global_ayah: 6236 });
+
+    const rukus = await api.request('/api/v1/rukus');
+    expect(rukus.body.data).toHaveLength(556);
+    expect(rukus.body.data[0]).toMatchObject({ number: 1, surah_number: 1, start_ayah: 1, end_ayah: 7 });
+    expect(rukus.body.data[555]).toMatchObject({ number: 556, surah_number: 114 });
+
+    const baqarah = await api.request('/api/v1/rukus?surah=2');
+    expect(baqarah.body.data).toHaveLength(40);
+    expect(baqarah.body.data.every((r: any) => r.surah_number === 2)).toBe(true);
+
+    const ruku = await api.request('/api/v1/rukus/2');
+    expect(ruku.body.data).toMatchObject({ number: 2, surah_number: 2, start_ayah: 1, end_ayah: 7 });
+
+    const rukuAyahs = await api.request('/api/v1/rukus/2/ayahs?limit=100');
+    expect(rukuAyahs.body.meta.total).toBe(7);
+    expect(rukuAyahs.body.data[0].ayah_key).toBe('2:1');
+    expect(rukuAyahs.body.data.every((a: any) => a.ruku === 2)).toBe(true);
+
+    for (const bad of ['/api/v1/rukus/557', '/api/v1/rukus/0', '/api/v1/rukus?surah=115', '/api/v1/rubs/241', '/api/v1/manzils/8']) {
+      expect((await api.request(bad)).status).toBe(422);
+    }
+  });
+
+  it('classifies surahs by place and order of revelation and reports where each sits', async () => {
+    const makkah = await api.request('/api/v1/surahs?revelation=makkah');
+    const madinah = await api.request('/api/v1/surahs?revelation=madinah');
+    expect(makkah.body.meta.total + madinah.body.meta.total).toBe(114);
+    expect(makkah.body.data.every((s: any) => s.revelation_place === 'makkah')).toBe(true);
+    expect(madinah.body.data.every((s: any) => s.revelation_place === 'madinah')).toBe(true);
+    expect(makkah.body.data.map((s: any) => s.surah_number)).toContain(1);
+    expect(madinah.body.data.map((s: any) => s.surah_number)).toContain(2);
+
+    const byRevelation = await api.request('/api/v1/surahs?sort=revelation_order');
+    const orders = byRevelation.body.data.map((s: any) => s.revelation_order);
+    expect(orders).toEqual([...orders].sort((a, b) => a - b));
+    expect(byRevelation.body.data[0].surah_number).toBe(96); // al-ʿAlaq, first revealed
+
+    expect((await api.request('/api/v1/surahs?revelation=mars')).status).toBe(422);
+    expect((await api.request('/api/v1/surahs?sort=length')).status).toBe(422);
+
+    const surah = await api.request('/api/v1/surahs/2');
+    expect(surah.body.data.structure).toMatchObject({
+      start_page: 2,
+      end_page: 49,
+      start_juz: 1,
+      end_juz: 3,
+      manzil: 1,
+      ruku_count: 40,
+      sajdah_count: 0,
+      first_global_ayah: 8,
+      last_global_ayah: 293,
+    });
+    const alaq = await api.request('/api/v1/surahs/96');
+    expect(alaq.body.data.structure.sajdah_count).toBe(1);
   });
 
   it('exposes the source registry with licences', async () => {

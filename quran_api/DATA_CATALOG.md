@@ -27,6 +27,13 @@
 | الصفحات `pages` | 604 | quran-meta | CONFIRMED |
 | المنازل `manzils` | 7 | quran-meta | CONFIRMED |
 | السجدات (علم على الآية) | 15 | quran-meta | CONFIRMED |
+| الركوعات `rukus` | 556 | quran-meta | CONFIRMED |
+| مكان النزول وترتيبه (عمودان في `surahs`) | 114 | quran-meta | CONFIRMED |
+
+كل تصنيف له مساره في الـAPI (`/juzs`, `/hizbs`, `/rubs`, `/pages`, `/manzils`,
+`/rukus`, `/sajdahs`، و`/surahs?revelation=&sort=`، و`structure` في `/surahs/{id}`)
+ونسخة بلا نصّ للتطبيق في `flutter_app/assets/quran/structure.json`
+(تُولَّد بـ`npm run quran:structure` من المصدر نفسه، وتفحصها البوابة بايتًا بايت).
 
 ## 3. القراءات والروايات
 

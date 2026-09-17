@@ -359,5 +359,117 @@
   "werd_progress": "تقدم الختمة",
   "werd_streak": "سلسلة الأيام",
   "werd_subtitle": "تابع ختمتك: علّم آخر آية قرأتها ويحسب فلاح تقدمك وسلسلتك اليومية",
-  "werd_title": "الورد اليومي"
+  "werd_title": "الورد اليومي",
+  "mushaf_browse": "تصفح المصحف",
+  "mushaf_juzs": "الأجزاء",
+  "mushaf_hizbs": "الأحزاب",
+  "mushaf_rubs": "الأرباع",
+  "mushaf_pages": "الصفحات",
+  "mushaf_manzils": "المنازل",
+  "mushaf_rukus": "الركوعات",
+  "mushaf_sajdahs": "السجدات",
+  "mushaf_juzN": "الجزء {n}",
+  "@mushaf_juzN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "mushaf_hizbN": "الحزب {n}",
+  "@mushaf_hizbN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "mushaf_rubN": "الربع {q} من الحزب {h}",
+  "@mushaf_rubN": {
+    "placeholders": {
+      "q": {
+        "type": "int"
+      },
+      "h": {
+        "type": "int"
+      }
+    }
+  },
+  "mushaf_pageN": "صفحة {n}",
+  "@mushaf_pageN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "mushaf_manzilN": "المنزل {n}",
+  "@mushaf_manzilN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "mushaf_rukuN": "الركوع {n}",
+  "@mushaf_rukuN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "mushaf_range": "من {startSurah} {startAyah} إلى {endSurah} {endAyah} · {count} آية",
+  "@mushaf_range": {
+    "placeholders": {
+      "startSurah": {
+        "type": "String"
+      },
+      "startAyah": {
+        "type": "int"
+      },
+      "endSurah": {
+        "type": "String"
+      },
+      "endAyah": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mushaf_sajdahAt": "سجدة — {surah} آية {ayah}",
+  "@mushaf_sajdahAt": {
+    "placeholders": {
+      "surah": {
+        "type": "String"
+      },
+      "ayah": {
+        "type": "int"
+      }
+    }
+  },
+  "surah_filterAll": "الكل",
+  "surah_filterMakki": "مكية",
+  "surah_filterMadani": "مدنية",
+  "surah_sortMushaf": "ترتيب المصحف",
+  "surah_sortRevelation": "ترتيب النزول",
+  "surah_meta": "{place} · نزولها {order} · ص {page} · الجزء {juz}",
+  "@surah_meta": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      },
+      "order": {
+        "type": "int"
+      },
+      "page": {
+        "type": "int"
+      },
+      "juz": {
+        "type": "int"
+      }
+    }
+  }
 }

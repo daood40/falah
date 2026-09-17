@@ -185,9 +185,13 @@ token, header or content.
 ```
 system   /health · /version · /openapi.yaml · /stats · /sources · /editions ·
          /datasets · /catalog (auth) · /licenses (auth)
-quran    /surahs · /surahs/{id} · /surahs/{id}/ayahs · /ayahs/{id} · /ayahs/by-key/{s}:{a}
-struct   /juzs · /juzs/{n}[/ayahs] · /hizbs · /hizbs/{n}[/ayahs] · /rubs/{n}/ayahs
-         /pages/{p}[/ayahs] · /manzils · /manzils/{n}/ayahs · /sajdahs
+quran    /surahs[?revelation=makkah|madinah&sort=number|revelation_order] ·
+         /surahs/{id} (with `structure`: pages, juz, hizb, manzil, ruku and
+         sajdah counts) · /surahs/{id}/ayahs · /ayahs/{id} · /ayahs/by-key/{s}:{a}
+struct   /juzs · /juzs/{n}[/ayahs] · /hizbs · /hizbs/{n}[/ayahs] ·
+         /rubs · /rubs/{n}[/ayahs] · /pages · /pages/{p}[/ayahs] ·
+         /manzils · /manzils/{n}[/ayahs] · /rukus[?surah=] · /rukus/{n}[/ayahs] ·
+         /sajdahs
 search   /search
 text     /translations · /qiraat · /riwayat
 audio    /reciters[?search=] · /reciters/{id}[/riwayat|/recitations|/surahs|
